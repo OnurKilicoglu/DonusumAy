@@ -1,0 +1,3455 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Mimar Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-nav a.active {
+            background-color: var(--primary) !important;
+            color: white !important;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .notification {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Architect Container -->
+    <div id="architect-container" class="flex min-h-screen">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 z-30">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center px-6 py-4 border-b border-gray-200">
+                <img src="LogoSade.png" alt="DönüşümAY Logo" class="w-8 h-10 rounded-lg">
+                <div class="ml-3">
+                    <h1 class="text-lg font-bold text-gray-800">DönüşümAY</h1>
+                    <p class="text-sm text-gray-600">Mimar Paneli</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav id="sidebar-nav" class="flex-1 py-6">
+                <ul class="space-y-2 px-4">
+                    <li>
+                        <a href="#" onclick="showSection('dashboard-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200 active">
+                            <i class="fas fa-home w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('service-requests-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-clipboard-list w-5"></i>
+                            <span>Hizmet Talepleri</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('offers-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-hand-holding-usd w-5"></i>
+                            <span>Tekliflerim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('projects-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-hard-hat w-5"></i>
+                            <span>Projelerim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('e-wallet-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-wallet w-5"></i>
+                            <span>E-Cüzdan</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('profile-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-user-circle w-5"></i>
+                            <span>Profilim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('support-section')" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-life-ring w-5"></i>
+                            <span>Destek</span>
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="my-3 border-gray-200">
+                    </li>
+                    <li>
+                        <a href="./ilanlar.html" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-globe w-5"></i>
+                            <span>İlanları Görüntüle</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="logout()" class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt w-5"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleMobileMenu()"></div>
+        
+        <!-- Main Content Area -->
+        <main class="flex-1 lg:ml-64">
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-toggle" onclick="toggleMobileMenu()" title="Menüyü Aç/Kapat" class="lg:hidden fixed top-4 left-4 z-40 bg-purple-600 text-white p-3 rounded-lg shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="min-h-screen">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                        <p class="text-gray-600 mt-1">Mimar panelinize hoş geldiniz! Yeni talepleri keşfedin ve projelerinizi yönetin.</p>
+                    </div>
+                </header>
+                
+                <!-- Dashboard Content -->
+                <div class="p-6">
+                    <!-- Stats Grid -->
+                    <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                        <!-- Stats will be rendered here -->
+                    </div>
+                    
+                    <!-- Content Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- New Requests Section -->
+                        <div id="new-requests-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Yeni Hizmet Talepleri</h3>
+                            </div>
+                            <div id="new-requests-content" class="p-6">
+                                <!-- New requests will be rendered here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Ongoing Projects Section -->
+                        <div id="ongoing-projects-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Devam Eden Projeler</h3>
+                            </div>
+                            <div id="ongoing-projects-content" class="p-6">
+                                <!-- Ongoing projects will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Requests Section -->
+            <div id="service-requests-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Hizmet Talepleri</h1>
+                        <p class="text-gray-600 mt-1">Platforma gelen tüm hizmet taleplerini görüntüleyin ve teklif verin.</p>
+                    </div>
+                </header>
+                
+                <!-- Filters -->
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div>
+                            <label for="city-filter" class="block text-sm font-medium text-gray-700 mb-2">İl</label>
+                            <select id="city-filter" name="city-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Tüm İller</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="district-filter" class="block text-sm font-medium text-gray-700 mb-2">İlçe</label>
+                            <select id="district-filter" name="district-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Tüm İlçeler</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="project-type-filter" class="block text-sm font-medium text-gray-700 mb-2">Proje Tipi</label>
+                            <select id="project-type-filter" name="project-type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Tüm Tipler</option>
+                                <option value="kentsel-donusum">Kentsel Dönüşüm</option>
+                                <option value="arsa-degerlendirme">Arsa Değerlendirme</option>
+                                <option value="bina-yenileme">Bina Yenileme</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Min. Arsa (m²)</label>
+                            <input type="number" id="min-area-filter" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div class="flex items-end space-x-2">
+                            <button onclick="applyFilters()" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                Filtrele
+                            </button>
+                            <button onclick="clearFilters()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors duration-200">
+                                Temizle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Request Cards Grid -->
+                <div class="p-6">
+                    <div id="request-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Request cards will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            <!-- Offers Section -->
+            <div id="offers-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Tekliflerim</h1>
+                        <p class="text-gray-600 mt-1">Size gelen mimari tasarım ve proje tekliflerini yönetin.</p>
+                    </div>
+                </header>
+                
+                <!-- Offers Content -->
+                <div class="p-6">
+                    <!-- Offer Categories Navigation -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                <button id="contractor-offers-tab" onclick="switchOfferCategory('contractor')" class="border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600">
+                                    Müteahhitlerden Gelen Teklifler
+                                </button>
+                                <button id="user-offers-tab" onclick="switchOfferCategory('user')" class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Kullanıcılardan Gelen Teklifler
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <!-- Contractor Offers List -->
+                        <div id="contractor-offers-section" class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Müteahhit Teklifleri</h3>
+                            <div id="contractor-offers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Contractor offers will be rendered here -->
+                            </div>
+                        </div>
+                        
+                        <!-- User Offers List -->
+                        <div id="user-offers-section" class="p-6 hidden">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Kullanıcı Teklifleri</h3>
+                            <div id="user-offers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- User offers will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Projects Section -->
+            <div id="projects-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Projelerim</h1>
+                        <p class="text-gray-600 mt-1">Devam eden ve tamamlanan projelerinizi yönetin, belgeleri yükleyin ve süreçleri takip edin.</p>
+                    </div>
+                </header>
+                
+                <!-- Projects Content -->
+                <div class="p-6">
+                    <!-- Project Categories Navigation -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                <button id="ongoing-projects-tab" onclick="switchProjectCategory('ongoing')" class="border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600">
+                                    Devam Eden Projelerim
+                                </button>
+                                <button id="completed-projects-tab" onclick="switchProjectCategory('completed')" class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Biten Projelerim
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <!-- Ongoing Projects List -->
+                        <div id="projects-section-ongoing" class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Devam Eden Projeler</h3>
+                            <div id="ongoing-projects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Ongoing projects will be rendered here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Completed Projects List -->
+                        <div id="completed-projects-section" class="p-6 hidden">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Tamamlanan Projeler</h3>
+                            <div id="completed-projects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Completed projects will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- E-Wallet Section -->
+            <div id="e-wallet-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">E-Cüzdanım</h1>
+                        <p class="text-gray-600 mt-1">Bakiyenizi yönetin, işlem geçmişinizi görüntüleyin ve finansal işlemlerinizi gerçekleştirin.</p>
+                    </div>
+                </header>
+                
+                <!-- E-Wallet Content -->
+                <div class="p-6">
+                    <!-- Balance Card -->
+                    <div id="balance-card" class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-8 text-white mb-8">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-medium mb-2">Mevcut Bakiye</h2>
+                                <p class="text-4xl font-bold mb-4">₺ 12.450,00</p>
+                                <p class="text-purple-200 opacity-90">Son güncelleme: Bugün, 14:30</p>
+                            </div>
+                            <div class="flex flex-col space-y-3">
+                                <button onclick="showModal('deposit-modal')" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Para Yatır</span>
+                                </button>
+                                <button onclick="showModal('withdraw-modal')" class="bg-purple-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-900 transition-colors duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-minus"></i>
+                                    <span>Para Çek</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Commission Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-info-circle text-blue-600"></i>
+                            <div class="text-sm text-blue-800">
+                                <strong>Komisyon Bilgisi:</strong> Platform, tamamlanan projelerden %8 komisyon almaktadır. Ödeme tamamlanan projeler için komisyon otomatik olarak bakiyenizden düşülür.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transaction History -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Son İşlemler</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table id="transaction-history-table" class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem Tipi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transaction-tbody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Transactions will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Profile Section -->
+            <div id="profile-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0 flex justify-between items-start">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Profilim</h1>
+                            <p class="text-gray-600 mt-1">Hesap ayarlarınızı, güvenlik tercihlerinizi ve fiyatlandırma bilgilerinizi yönetin.</p>
+                        </div>
+                        <button onclick="openEditProfileModal()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors duration-200 font-medium">
+                            <i class="fas fa-edit mr-2"></i>
+                            Profili Düzenle
+                        </button>
+                    </div>
+                </header>
+                
+                <!-- Profile Content -->
+                <div class="p-6">
+                    <!-- Profile Summary Card -->
+                    <div id="profile-summary-card" class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                        <!-- Profile summary will be rendered here -->
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Specialties Section -->
+                        <div id="specialties-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Uzmanlık Alanları</h3>
+                            </div>
+                            <div id="specialties-content" class="p-6">
+                                <!-- Specialties will be rendered here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Section -->
+                        <div id="pricing-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Fiyatlandırma Bilgileri</h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="avan-proje-ucreti" class="block text-sm font-medium text-gray-700 mb-2">Daire Başı Avan Proje Ücreti (₺)</label>
+                                        <input type="number" id="avan-proje-ucreti" min="0" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label for="uygulama-proje-ucreti" class="block text-sm font-medium text-gray-700 mb-2">Daire Başı Uygulama Projesi Ücreti (₺)</label>
+                                        <input type="number" id="uygulama-proje-ucreti" min="0" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <p class="text-sm text-gray-600">Belirlediğiniz fiyatlar, müteahhitlerin taslak tasarım taleplerinde ve uygulama projesi anlaşmalarında dikkate alınacaktır.</p>
+                                    <button onclick="updatePricing()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium">
+                                        Fiyatları Güncelle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Security Settings Section -->
+                    <div id="security-settings-section" class="bg-white rounded-xl shadow-sm border border-gray-200 mt-8">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Güvenlik ve Hesap Ayarları</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Password Change -->
+                                <div class="space-y-3">
+                                    <h4 class="text-md font-medium text-gray-800">Şifre Yönetimi</h4>
+                                    <button onclick="openChangePasswordModal()" class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                        <i class="fas fa-key mr-2"></i>
+                                        Şifre Değiştir
+                                    </button>
+                                </div>
+                                
+                                <!-- 2FA Toggle -->
+                                <div class="space-y-3">
+                                    <h4 class="text-md font-medium text-gray-800">İki Faktörlü Kimlik Doğrulama</h4>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">2FA Durumu:</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span id="2fa-status" class="text-sm font-medium"></span>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="2fa-toggle" class="sr-only peer" onchange="toggle2FA()" aria-label="İki Faktörlü Kimlik Doğrulama Açma/Kapama">
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Email Verification -->
+                                <div class="space-y-3">
+                                    <h4 class="text-md font-medium text-gray-800">E-posta Doğrulama</h4>
+                                    <div class="flex items-center justify-between">
+                                        <span id="email-display" class="text-sm text-gray-600"></span>
+                                        <button onclick="openVerifyEmailModal()" class="px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200">
+                                            <span id="email-verify-btn">Doğrula</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Phone Verification -->
+                                <div class="space-y-3">
+                                    <h4 class="text-md font-medium text-gray-800">Telefon Doğrulama</h4>
+                                    <div class="flex items-center justify-between">
+                                        <span id="phone-display" class="text-sm text-gray-600"></span>
+                                        <button onclick="openVerifyPhoneModal()" class="px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200">
+                                            <span id="phone-verify-btn">Doğrula</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reviews Section -->
+                    <div id="reviews-section" class="bg-white rounded-xl shadow-sm border border-gray-200 mt-8">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Değerlendirmeler ve Yorumlar</h3>
+                        </div>
+                        <div id="reviews-content" class="p-6">
+                            <!-- Reviews will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Support Section -->
+            <div id="support-section" class="min-h-screen hidden">
+                <!-- Page Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Destek Merkezi</h1>
+                        <p class="text-gray-600 mt-1">Yardıma mı ihtiyacınız var? Sıkça sorulan sorulara göz atın veya bizimle iletişime geçin.</p>
+                    </div>
+                </header>
+                
+                <!-- Support Content -->
+                <div class="p-6">
+                    <!-- Main Content Grid -->
+                    <div id="support-content-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- FAQ Section (Left Column) -->
+                        <div id="faq-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Sıkça Sorulan Sorular</h3>
+                            </div>
+                            <div id="faq-content" class="p-6">
+                                <!-- FAQ items will be rendered here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Live Chat Panel (Right Column) -->
+                        <div id="chat-panel" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Canlı Destek</h3>
+                            </div>
+                            <div class="p-6">
+                                <!-- Chat Start Button -->
+                                <div id="chat-start-container" class="text-center py-8">
+                                    <i class="fas fa-comments text-4xl text-purple-300 mb-4"></i>
+                                    <p class="text-gray-600 mb-4">Müşteri temsilcimizle canlı sohbet başlatın</p>
+                                    <button onclick="showModal('pre-chat-modal')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                        <i class="fas fa-play-circle mr-2"></i>
+                                        Sohbeti Başlat
+                                    </button>
+                                </div>
+                                
+                                <!-- Chat Box (Hidden Initially) -->
+                                <div id="chat-box" class="hidden">
+                                    <!-- Chat Messages -->
+                                    <div id="chat-messages" class="h-80 overflow-y-auto bg-gray-50 rounded-lg p-4 mb-4 space-y-3">
+                                        <!-- Chat messages will be rendered here -->
+                                    </div>
+                                    
+                                    <!-- Message Input -->
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="chat-input" placeholder="Mesajınızı yazın..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" onkeypress="handleChatKeyPress(event)">
+                                        <button onclick="sendChatMessage()" title="Mesaj Gönder" aria-label="Mesaj Gönder" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Management Section -->
+                    <div id="account-management-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Hesap Yönetimi</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                    <h4 class="text-md font-medium text-orange-800 mb-2">Hesabı Dondur</h4>
+                                    <p class="text-sm text-orange-700 mb-3">Hesabınızı geçici olarak devre dışı bırakın. Daha sonra tekrar aktifleştirebilirsiniz.</p>
+                                    <button onclick="showModal('freeze-account-confirm-modal')" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors duration-200 text-sm">
+                                        <i class="fas fa-pause-circle mr-2"></i>
+                                        Hesabımı Dondur
+                                    </button>
+                                </div>
+                                
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <h4 class="text-md font-medium text-red-800 mb-2">Hesabı Sil</h4>
+                                    <p class="text-sm text-red-700 mb-3">Hesabınızı kalıcı olarak silin. Bu işlem geri alınamaz.</p>
+                                    <button onclick="showModal('delete-account-confirm-modal')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm">
+                                        <i class="fas fa-trash-alt mr-2"></i>
+                                        Hesabımı Sil
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- Modals -->
+    <!-- Deposit Modal -->
+    <div id="deposit-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('deposit-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">Para Yatır</h2>
+                </div>
+                <div class="px-6 py-6">
+                    <form onsubmit="processDeposit(event)">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="deposit-amount" class="block text-sm font-medium text-gray-700 mb-2">Yatırılacak Miktar</label>
+                                <div class="relative">
+                                    <input type="number" id="deposit-amount" min="50" max="50000" placeholder="0,00" class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <span class="absolute right-3 top-2 text-gray-500">₺</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Minimum: ₺50, Maksimum: ₺50.000</p>
+                            </div>
+                            <div>
+                                <label for="payment-method" class="block text-sm font-medium text-gray-700 mb-2">Ödeme Yöntemi</label>
+                                <select id="payment-method" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="credit-card">Kredi Kartı</option>
+                                    <option value="bank-transfer">Banka Havalesi</option>
+                                    <option value="mobile-payment">Mobil Ödeme</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button type="button" onclick="closeModal('deposit-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                İptal
+                            </button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                                Yatır
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Withdraw Modal -->
+    <div id="withdraw-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('withdraw-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">Para Çek</h2>
+                </div>
+                <div class="px-6 py-6">
+                    <form onsubmit="processWithdraw(event)">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="withdraw-amount" class="block text-sm font-medium text-gray-700 mb-2">Çekilecek Miktar</label>
+                                <div class="relative">
+                                    <input type="number" id="withdraw-amount" min="100" max="12450" placeholder="0,00" class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <span class="absolute right-3 top-2 text-gray-500">₺</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Minimum: ₺100, Mevcut Bakiye: ₺12.450</p>
+                            </div>
+                            <div>
+                                <label for="iban" class="block text-sm font-medium text-gray-700 mb-2">IBAN</label>
+                                <input type="text" id="iban" placeholder="TR00 0000 0000 0000 0000 0000 00" maxlength="32" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="account-holder" class="block text-sm font-medium text-gray-700 mb-2">Hesap Sahibi Adı</label>
+                                <input type="text" id="account-holder" placeholder="Ahmet Yılmaz" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
+                            <p class="text-xs text-yellow-800">Para çekme işlemi 1-3 iş günü içinde hesabınıza geçer.</p>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button type="button" onclick="closeModal('withdraw-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                İptal
+                            </button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                Çekme Talebi Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('edit-profile-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">Profili Düzenle</h2>
+                </div>
+                <div class="px-6 py-6 max-h-96 overflow-y-auto">
+                    <form id="edit-profile-form" onsubmit="updateProfile(event)">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="edit-name" class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                                <input type="text" id="edit-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-surname" class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                                <input type="text" id="edit-surname" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-email" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                                <input type="email" id="edit-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-phone" class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                                <input type="tel" id="edit-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="edit-title" class="block text-sm font-medium text-gray-700 mb-2">Unvan/Pozisyon</label>
+                                <input type="text" id="edit-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="edit-bio" class="block text-sm font-medium text-gray-700 mb-2">Biyografi</label>
+                                <textarea id="edit-bio" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label for="edit-linkedin" class="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
+                                <input type="url" id="edit-linkedin" placeholder="https://linkedin.com/in/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-instagram" class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                                <input type="url" id="edit-instagram" placeholder="https://instagram.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Uzmanlık Alanları</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-3d" value="3D Görselleştirme" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">3D Görselleştirme</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-residential" value="Konut Mimarisi" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">Konut Mimarisi</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-permits" value="Belediye Ruhsat Projeleri" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">Belediye Ruhsat Projeleri</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-risk" value="Riskli Yapı Analizi" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">Riskli Yapı Analizi</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-renovation" value="Bina Renovasyonu" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">Bina Renovasyonu</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="spec-sustainable" value="Sürdürülebilir Mimarlık" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2">
+                                        <span class="text-sm">Sürdürülebilir Mimarlık</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button type="button" onclick="closeModal('edit-profile-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                İptal
+                            </button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('change-password-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">Şifre Değiştir</h2>
+                </div>
+                <div class="px-6 py-6">
+                    <form onsubmit="changePassword(event)">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="current-password" class="block text-sm font-medium text-gray-700 mb-2">Mevcut Şifre</label>
+                                <input type="password" id="current-password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="new-password" class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
+                                <input type="password" id="new-password" required minlength="8" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <p class="text-xs text-gray-500 mt-1">En az 8 karakter olmalıdır</p>
+                            </div>
+                            <div>
+                                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre Tekrarı</label>
+                                <input type="password" id="confirm-password" required minlength="8" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button type="button" onclick="closeModal('change-password-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                İptal
+                            </button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                Şifreyi Değiştir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verify Email Modal -->
+    <div id="verify-email-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('verify-email-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">E-posta Doğrulama</h2>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-4">
+                                <span id="email-to-verify"></span> adresine doğrulama kodu göndereceğiz.
+                            </p>
+                            <button onclick="sendEmailVerificationCode()" id="send-email-code-btn" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-4">
+                                Doğrulama Kodu Gönder
+                            </button>
+                        </div>
+                        <div id="email-code-input-section" class="hidden">
+                            <label for="email-verification-code" class="block text-sm font-medium text-gray-700 mb-2">Doğrulama Kodu</label>
+                            <input type="text" id="email-verification-code" maxlength="6" placeholder="6 haneli kod" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-center tracking-wider">
+                            <p class="text-xs text-gray-500 mt-1">E-posta adresinize gelen 6 haneli kodu girin</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="closeModal('verify-email-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            İptal
+                        </button>
+                        <button onclick="verifyEmailCode()" id="verify-email-btn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 hidden">
+                            Doğrula
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verify Phone Modal -->
+    <div id="verify-phone-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('verify-phone-modal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">Telefon Doğrulama</h2>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-4">
+                                <span id="phone-to-verify"></span> numarasına SMS ile doğrulama kodu göndereceğiz.
+                            </p>
+                            <button onclick="sendPhoneVerificationCode()" id="send-phone-code-btn" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-4">
+                                SMS Doğrulama Kodu Gönder
+                            </button>
+                        </div>
+                        <div id="phone-code-input-section" class="hidden">
+                            <label for="phone-verification-code" class="block text-sm font-medium text-gray-700 mb-2">Doğrulama Kodu</label>
+                            <input type="text" id="phone-verification-code" maxlength="6" placeholder="6 haneli kod" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-center tracking-wider">
+                            <p class="text-xs text-gray-500 mt-1">Telefonunuza gelen 6 haneli SMS kodunu girin</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="closeModal('verify-phone-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            İptal
+                        </button>
+                        <button onclick="verifyPhoneCode()" id="verify-phone-btn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 hidden">
+                            Doğrula
+                        </button>
+                    </div>
+                </div>
+            </div>
+                 </div>
+     </div>
+     
+     <!-- Offer Detail Modal -->
+     <div id="offer-detail-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('offer-detail-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Teklif Detayları</h2>
+                 </div>
+                 <div class="px-6 py-6 max-h-96 overflow-y-auto">
+                     <div id="offer-detail-content">
+                         <!-- Offer details will be rendered here -->
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('offer-detail-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             Kapat
+                         </button>
+                         <button onclick="openApproveConfirmModal()" id="modal-approve-btn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                             Onayla
+                         </button>
+                         <button onclick="openRejectConfirmModal()" id="modal-reject-btn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                             Reddet
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Approve Confirm Modal -->
+     <div id="approve-confirm-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('approve-confirm-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Teklifi Onayla</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Bu teklifi onaylamak istediğinizden emin misiniz?</p>
+                             <p class="text-sm text-gray-500 mt-1">Onaylanan teklif "Projelerim" sekmesine aktarılacaktır.</p>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('approve-confirm-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmApproveOffer()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                             Evet, Onayla
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Reject Confirm Modal -->
+     <div id="reject-confirm-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('reject-confirm-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Teklifi Reddet</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Bu teklifi reddetmek istediğinizden emin misiniz?</p>
+                             <p class="text-sm text-gray-500 mt-1">Bu işlem geri alınamaz.</p>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('reject-confirm-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmRejectOffer()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                             Evet, Reddet
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Project Detail Modal -->
+     <div id="project-detail-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('project-detail-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Proje Detayları</h2>
+                 </div>
+                 <div class="px-6 py-6 max-h-96 overflow-y-auto">
+                     <div id="project-detail-content">
+                         <!-- Project details will be rendered here -->
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('project-detail-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             Kapat
+                         </button>
+                         <button onclick="uploadMissingDocuments()" id="upload-docs-btn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 hidden">
+                             Eksik Evrakları Yükle
+                         </button>
+                         <button onclick="openCompleteProjectModal()" id="complete-project-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 hidden">
+                             Projeyi Tamamla
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Complete Project Confirm Modal -->
+     <div id="complete-project-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('complete-project-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Projeyi Tamamla</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Bu projeyi tamamlamak istediğinizden emin misiniz?</p>
+                             <p class="text-sm text-gray-500 mt-1">Tamamlandıktan sonra ücretiniz çekilebilir hale gelecektir.</p>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('complete-project-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmCompleteProject()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                             Evet, Tamamla
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Approve Application Right Modal -->
+     <div id="approve-application-right-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('approve-application-right-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Uygulama Projesi Hakkı</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-star text-yellow-500 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Uygulama projesi çizme hakkınızı onaylıyor musunuz?</p>
+                             <p class="text-sm text-gray-500 mt-1">Bu hakkı onayladığınızda müşterinizle iletişime geçebilirsiniz.</p>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('approve-application-right-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmApproveApplicationRight()" class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200">
+                             Evet, Onayla
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Pre-Chat Modal -->
+     <div id="pre-chat-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('pre-chat-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Canlı Destek</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="mb-4">
+                         <label class="block text-sm font-medium text-gray-700 mb-3">Sorununuzun kategorisini seçiniz:</label>
+                         <div class="space-y-2">
+                             <label class="flex items-center">
+                                 <input type="radio" name="support-category" value="payment" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                 <span class="text-sm">Para Çekme/Yatırma</span>
+                             </label>
+                             <label class="flex items-center">
+                                 <input type="radio" name="support-category" value="documents" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                 <span class="text-sm">Doküman Yükleme</span>
+                             </label>
+                             <label class="flex items-center">
+                                 <input type="radio" name="support-category" value="account" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                 <span class="text-sm">Hesap Sorunları</span>
+                             </label>
+                             <label class="flex items-center">
+                                 <input type="radio" name="support-category" value="projects" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                 <span class="text-sm">Teklifler/Projeler</span>
+                             </label>
+                             <label class="flex items-center">
+                                 <input type="radio" name="support-category" value="other" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                 <span class="text-sm">Diğer</span>
+                             </label>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('pre-chat-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="startChat()" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                             Sohbeti Başlat
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Freeze Account Confirm Modal -->
+     <div id="freeze-account-confirm-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('freeze-account-confirm-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Hesabı Dondur</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-pause-circle text-orange-600 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Hesabınızı dondurmak istediğinizden emin misiniz?</p>
+                             <p class="text-sm text-gray-500 mt-1">Hesabınız geçici olarak devre dışı bırakılacak. Daha sonra tekrar aktifleştirebilirsiniz.</p>
+                         </div>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('freeze-account-confirm-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmFreezeAccount()" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200">
+                             Evet, Dondur
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- Delete Account Confirm Modal -->
+     <div id="delete-account-confirm-modal" class="modal fixed inset-0 z-50 hidden bg-black bg-opacity-50" onclick="closeModal('delete-account-confirm-modal')">
+         <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+             <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                 <div class="bg-white px-6 py-4 border-b border-gray-200">
+                     <h2 class="text-xl font-bold text-gray-800">Hesabı Sil</h2>
+                 </div>
+                 <div class="px-6 py-6">
+                     <div class="flex items-center mb-4">
+                         <div class="flex-shrink-0">
+                             <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                         </div>
+                         <div class="ml-3">
+                             <p class="text-gray-700">Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz?</p>
+                             <p class="text-sm text-red-600 font-medium mt-1">Bu işlem geri alınamaz!</p>
+                         </div>
+                     </div>
+                     <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                         <p class="text-xs text-red-800">Hesabınız silindiğinde tüm verileriniz, projeleriniz ve ödeme geçmişiniz kalıcı olarak kaldırılacaktır.</p>
+                     </div>
+                     <div class="flex space-x-3 mt-6">
+                         <button type="button" onclick="closeModal('delete-account-confirm-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                             İptal
+                         </button>
+                         <button onclick="confirmDeleteAccount()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                             Evet, Sil
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     
+     <!-- JavaScript -->
+    <script>
+        // Simulated Data
+        const simulatedData = {
+            stats: {
+                offers: 24,
+                acceptedProjects: 8,
+                ongoingProjects: 3,
+                pendingRequests: 5
+            },
+            newRequests: [
+                {
+                    id: 1,
+                    title: "Kadıköy Kentsel Dönüşüm Projesi",
+                    location: "Kadıköy, İstanbul",
+                    description: "15 katlı modern konut kompleksi tasarımı",
+                    area: "1500m²",
+                    expectedUnits: 24,
+                    timeAgo: "2 saat önce"
+                },
+                {
+                    id: 2,
+                    title: "Çankaya Arsa Değerlendirme",
+                    location: "Çankaya, Ankara",
+                    description: "Ticari ve konut karışımı proje değerlendirmesi",
+                    area: "800m²",
+                    expectedUnits: 12,
+                    timeAgo: "5 saat önce"
+                }
+            ],
+            ongoingProjects: [
+                {
+                    id: 1,
+                    title: "Beşiktaş Kat Karşılığı Projesi",
+                    customer: "Mehmet Kaya",
+                    status: "Tasarım Aşamasında",
+                    progress: 65,
+                    lastUpdate: "2 gün önce"
+                },
+                {
+                    id: 2,
+                    title: "Karşıyaka Kentsel Dönüşüm",
+                    customer: "Ayşe Demir",
+                    status: "Onay Bekliyor",
+                    progress: 45,
+                    lastUpdate: "1 gün önce"
+                }
+            ],
+            serviceRequests: [
+                {
+                    id: 1,
+                    title: "Kadıköy Kentsel Dönüşüm Projesi",
+                    location: "Kadıköy, İstanbul",
+                    city: "istanbul",
+                    district: "kadikoy",
+                    type: "kentsel-donusum",
+                    description: "15 katlı modern konut kompleksi için mimari tasarım",
+                    area: 1500,
+                    expectedUnits: 24,
+                    status: "Açık",
+                    timeAgo: "2 saat önce"
+                },
+                {
+                    id: 2,
+                    title: "Çankaya Arsa Değerlendirme",
+                    location: "Çankaya, Ankara",
+                    city: "ankara",
+                    district: "cankaya",
+                    type: "arsa-degerlendirme",
+                    description: "Ticari ve konut karışımı proje fizibilite çalışması",
+                    area: 800,
+                    expectedUnits: 12,
+                    status: "Açık",
+                    timeAgo: "5 saat önce"
+                },
+                {
+                    id: 3,
+                    title: "Bornova Bina Güçlendirme",
+                    location: "Bornova, İzmir",
+                    city: "izmir",
+                    district: "bornova",
+                    type: "bina-yenileme",
+                    description: "Mevcut binanın deprem güçlendirmesi ve yenileme",
+                    area: 600,
+                    expectedUnits: 8,
+                    status: "Açık",
+                    timeAgo: "1 gün önce"
+                }
+            ],
+            transactions: [
+                {
+                    date: "15 Aralık 2024",
+                    type: "Proje Ödemesi",
+                    description: "Beşiktaş Kat Karşılığı Projesi",
+                    amount: 15000,
+                    status: "Başarılı"
+                },
+                {
+                    date: "14 Aralık 2024",
+                    type: "Komisyon",
+                    description: "Platform Komisyonu (%8)",
+                    amount: -1200,
+                    status: "Başarılı"
+                },
+                {
+                    date: "10 Aralık 2024",
+                    type: "Para Çekme",
+                    description: "Banka Havalesi - Garanti BBVA",
+                    amount: -5000,
+                    status: "Başarılı"
+                },
+                {
+                    date: "8 Aralık 2024",
+                    type: "Proje Ödemesi",
+                    description: "Karşıyaka Kentsel Dönüşüm",
+                    amount: 8500,
+                    status: "Başarılı"
+                },
+                {
+                    date: "5 Aralık 2024",
+                    type: "Para Yatırma",
+                    description: "Kredi Kartı - **** 1234",
+                    amount: 2000,
+                    status: "Başarılı"
+                }
+            ],
+            cities: {
+                istanbul: ["Kadıköy", "Beşiktaş", "Şişli", "Bakırköy", "Üsküdar"],
+                ankara: ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Sincan"],
+                izmir: ["Bornova", "Konak", "Karşıyaka", "Buca", "Balçova"]
+            }
+        };
+
+        // Architect Profile Data
+        const architectProfileData = {
+            name: "Mehmet",
+            surname: "Özkan",
+            email: "mehmet.ozkan@email.com",
+            phone: "+90 532 123 45 67",
+            title: "Kentsel Dönüşüm Mimarı",
+            bio: "15 yıllık deneyime sahip mimar olarak, kentsel dönüşüm ve sürdürülebilir mimarlık alanlarında uzmanlaşmış bulunuyorum. Modern tasarım anlayışı ve çevre dostu çözümlerle projelerinizi hayata geçiriyorum.",
+            rating: 4.8,
+            totalReviews: 42,
+            profileImage: "https://placehold.co/120x120/5A00A8/FFFFFF?text=Mimar+Foto",
+            socialMedia: {
+                linkedin: "https://linkedin.com/in/mehmet-ozkan-mimar",
+                instagram: "https://instagram.com/mimarmehmet"
+            },
+            specialties: [
+                "3D Görselleştirme",
+                "Konut Mimarisi", 
+                "Belediye Ruhsat Projeleri",
+                "Riskli Yapı Analizi",
+                "Sürdürülebilir Mimarlık"
+            ],
+            pricing: {
+                avanProjeUcreti: 2500,
+                uygulamaProjeUcreti: 4500
+            },
+            security: {
+                is2faActive: false,
+                isEmailVerified: true,
+                isPhoneVerified: false
+            }
+        };
+
+        
+        // Contractor Offers Data
+        const contractorOffersData = [
+            {
+                id: 1,
+                title: "Kadıköy Kentsel Dönüşüm Avan Proje Talebi",
+                senderName: "Yapı İnşaat A.Ş.",
+                relatedListing: {
+                    title: "Kadıköy Kentsel Dönüşüm Projesi",
+                    location: "Kadıköy, İstanbul"
+                },
+                designType: "Avan Proje",
+                deliveryTime: "10 gün",
+                status: "Bekliyor",
+                description: "15 katlı modern konut kompleksi için avan proje tasarımı talep ediyoruz. Projenin tamamında 48 daire planlanmaktadır. Çevre dostu malzemeler kullanılması tercih edilmektedir.",
+                budget: "₺120.000",
+                createdDate: "12 Aralık 2024"
+            },
+            {
+                id: 2,
+                title: "Çankaya Arsa Değerlendirme 3D Görselleştirme",
+                senderName: "Mega Yapı Ltd. Şti.",
+                relatedListing: {
+                    title: "Çankaya Arsa Değerlendirme",
+                    location: "Çankaya, Ankara"
+                },
+                designType: "3D Görselleştirme",
+                deliveryTime: "7 gün",
+                status: "Bekliyor",
+                description: "Ticari ve konut karışımı proje için 3D görselleştirme hizmeti. Dış cephe ve iç mekan görselleri dahil olmak üzere profesyonel sunum hazırlanması.",
+                budget: "₺85.000",
+                createdDate: "11 Aralık 2024"
+            },
+            {
+                id: 3,
+                title: "Bornova Kentsel Dönüşüm Uygulama Projesi",
+                senderName: "Kent İnşaat Grup",
+                relatedListing: {
+                    title: "Bornova Bina Güçlendirme",
+                    location: "Bornova, İzmir"
+                },
+                designType: "Uygulama Projesi",
+                deliveryTime: "15 gün",
+                status: "Onaylandı",
+                description: "Mevcut binanın deprem güçlendirmesi ve yenileme projesi için detaylı uygulama projesi hazırlanması. Statik hesaplamalar dahil.",
+                budget: "₺200.000",
+                createdDate: "8 Aralık 2024"
+            },
+            {
+                id: 4,
+                title: "Şişli Ofis Binası Renovasyon Tasarımı",
+                senderName: "Modern Yapı San. Tic.",
+                relatedListing: null,
+                designType: "Konsept Tasarım",
+                deliveryTime: "12 gün",
+                status: "Reddedildi",
+                description: "5 katlı ofis binasının modern standartlara göre yenilenmesi için konsept tasarım çalışması.",
+                budget: "₺95.000",
+                createdDate: "5 Aralık 2024"
+            }
+        ];
+
+        // User Offers Data
+        const userOffersData = [
+            {
+                id: 1,
+                title: "Villa Yenileme İç Mekan Tasarımı",
+                senderName: "Ahmet Yılmaz",
+                designType: "İç Mekan Tasarımı",
+                budget: "₺50.000",
+                deliveryTime: "14 gün",
+                status: "Bekliyor",
+                description: "3 katlı villam için modern iç mekan tasarımı istiyorum. Salon, mutfak ve yatak odalarının yeniden düzenlenmesi gerekiyor.",
+                contactInfo: "ahmet.yilmaz@email.com",
+                createdDate: "10 Aralık 2024"
+            },
+            {
+                id: 2,
+                title: "Daire Konsept Geliştirme",
+                senderName: "Zeynep Kaya",
+                designType: "Konsept Geliştirme",
+                budget: "₺25.000",
+                deliveryTime: "8 gün",
+                status: "Bekliyor",
+                description: "120 m² dairem için minimalist konsept geliştirme. Açık mutfak ve oturma alanı entegrasyonu önemli.",
+                contactInfo: "zeynep.kaya@email.com",
+                createdDate: "9 Aralık 2024"
+            },
+            {
+                id: 3,
+                title: "Bahçe Peyzaj Tasarımı",
+                senderName: "Mehmet Demir",
+                designType: "Peyzaj Tasarımı",
+                budget: "₺35.000",
+                deliveryTime: "10 gün",
+                status: "Onaylandı",
+                description: "200 m² bahçe alanı için peyzaj tasarımı. Süs havuzu, barbekü alanı ve çocuk oyun alanı dahil edilmesi isteniyor.",
+                contactInfo: "mehmet.demir@email.com",
+                createdDate: "7 Aralık 2024"
+            }
+        ];
+
+        // Current offer being viewed in modal
+        let currentOfferContext = { id: null, type: null };
+
+        // Ongoing Projects Data
+        const ongoingProjectsData = [
+            {
+                id: 1,
+                title: "Kadıköy Kentsel Dönüşüm Avan Projesi",
+                clientName: "Yapı İnşaat A.Ş.",
+                relatedListing: {
+                    title: "Kadıköy Kentsel Dönüşüm Projesi",
+                    location: "Kadıköy, İstanbul"
+                },
+                status: "Tasarım Aşamasında",
+                progress: 65,
+                uploadedFiles: [
+                    { name: "avan_proje_plan.pdf", size: "2.1 MB" },
+                    { name: "teknik_sartname.docx", size: "850 KB" }
+                ],
+                isPaymentReleased: false,
+                startDate: "5 Aralık 2024",
+                estimatedCompletion: "20 Aralık 2024"
+            },
+            {
+                id: 2,
+                title: "Çankaya 3D Görselleştirme Projesi",
+                clientName: "Mega Yapı Ltd. Şti.",
+                relatedListing: {
+                    title: "Çankaya Arsa Değerlendirme",
+                    location: "Çankaya, Ankara"
+                },
+                status: "Onay Bekliyor",
+                progress: 80,
+                uploadedFiles: [
+                    { name: "3d_gorunum_1.jpg", size: "4.2 MB" },
+                    { name: "3d_gorunum_2.jpg", size: "3.8 MB" },
+                    { name: "ic_mekan_tasarim.pdf", size: "1.5 MB" }
+                ],
+                isPaymentReleased: false,
+                startDate: "8 Aralık 2024",
+                estimatedCompletion: "18 Aralık 2024"
+            },
+            {
+                id: 3,
+                title: "Villa İç Mekan Tasarımı",
+                clientName: "Ahmet Yılmaz",
+                relatedListing: null,
+                status: "Revizyon",
+                progress: 45,
+                uploadedFiles: [
+                    { name: "ic_mekan_konsept.pdf", size: "1.8 MB" }
+                ],
+                isPaymentReleased: false,
+                startDate: "10 Aralık 2024",
+                estimatedCompletion: "25 Aralık 2024"
+            },
+            {
+                id: 4,
+                title: "Bornova Kentsel Dönüşüm Uygulama Projesi",
+                clientName: "Kent İnşaat Grup",
+                relatedListing: {
+                    title: "Bornova Bina Güçlendirme",
+                    location: "Bornova, İzmir"
+                },
+                status: "Tasarım Aşamasında",
+                progress: 30,
+                uploadedFiles: [],
+                isPaymentReleased: false,
+                startDate: "12 Aralık 2024",
+                estimatedCompletion: "30 Aralık 2024"
+            }
+        ];
+
+        // Completed Projects Data
+        const completedProjectsData = [
+            {
+                id: 5,
+                title: "Beşiktaş Kat Karşılığı Projesi",
+                clientName: "Güven İnşaat A.Ş.",
+                relatedListing: {
+                    title: "Beşiktaş Kentsel Dönüşüm",
+                    location: "Beşiktaş, İstanbul"
+                },
+                completionDate: "1 Aralık 2024",
+                status: "Tamamlandı",
+                earnedApplicationProjectRight: true,
+                isPaymentReleased: true,
+                uploadedFiles: [
+                    { name: "final_proje.pdf", size: "5.2 MB" },
+                    { name: "statik_hesap.pdf", size: "2.8 MB" },
+                    { name: "belediye_onay.pdf", size: "1.2 MB" }
+                ]
+            },
+            {
+                id: 6,
+                title: "Karşıyaka Peyzaj Tasarımı",
+                clientName: "Mehmet Demir",
+                relatedListing: null,
+                completionDate: "25 Kasım 2024",
+                status: "Uygulama Projesine Geçildi",
+                earnedApplicationProjectRight: false,
+                isPaymentReleased: true,
+                uploadedFiles: [
+                    { name: "peyzaj_plan.pdf", size: "3.1 MB" },
+                    { name: "bitki_listesi.xlsx", size: "450 KB" }
+                ]
+            },
+            {
+                id: 7,
+                title: "Şişli Ofis Renovasyon Konsepti",
+                clientName: "Modern Yapı San. Tic.",
+                relatedListing: null,
+                completionDate: "20 Kasım 2024",
+                status: "Tamamlandı",
+                earnedApplicationProjectRight: true,
+                isPaymentReleased: false,
+                uploadedFiles: [
+                    { name: "konsept_tasarim.pdf", size: "4.5 MB" },
+                    { name: "malzeme_listesi.docx", size: "720 KB" }
+                ]
+            }
+        ];
+
+        // Municipality Process Data
+        const belediyeSureciData = [
+            {
+                projectId: 1,
+                stages: [
+                    { stage: "Ruhsat Başvurusu Yapıldı", date: "10 Aralık 2024", status: "completed" },
+                    { stage: "İmar Durumu Kontrolü", date: "12 Aralık 2024", status: "completed" },
+                    { stage: "Eksik Evrak Bildirimi", date: "14 Aralık 2024", status: "pending", missingDocuments: ["Tapu Sureti", "İmza Sirküleri"] },
+                    { stage: "Teknik Değerlendirme", date: null, status: "waiting" },
+                    { stage: "Ruhsat Onayı", date: null, status: "waiting" }
+                ]
+            },
+            {
+                projectId: 2,
+                stages: [
+                    { stage: "Ruhsat Başvurusu Yapıldı", date: "8 Aralık 2024", status: "completed" },
+                    { stage: "İmar Durumu Kontrolü", date: "10 Aralık 2024", status: "completed" },
+                    { stage: "Teknik Değerlendirme", date: "15 Aralık 2024", status: "pending" },
+                    { stage: "Ruhsat Onayı", date: null, status: "waiting" }
+                ]
+            },
+            {
+                projectId: 5,
+                stages: [
+                    { stage: "Ruhsat Başvurusu Yapıldı", date: "15 Kasım 2024", status: "completed" },
+                    { stage: "İmar Durumu Kontrolü", date: "18 Kasım 2024", status: "completed" },
+                    { stage: "Teknik Değerlendirme", date: "22 Kasım 2024", status: "completed" },
+                    { stage: "Ruhsat Onayı", date: "1 Aralık 2024", status: "completed" }
+                ]
+            }
+        ];
+
+        // Current project being viewed in modal
+        let currentProjectContext = { id: null, type: null };
+
+        // Architect Reviews
+        const architectReviews = [
+            {
+                id: 1,
+                reviewer: "Ayşe Yılmaz",
+                rating: 5,
+                comment: "Mehmet Bey'le çalışmak harika bir deneyimdi. Projemizi zamanında ve beklentilerimizin üzerinde teslim etti. Kesinlikle tavsiye ederim.",
+                date: "15 Aralık 2024",
+                project: "Villa Projesi"
+            },
+            {
+                id: 2,
+                reviewer: "Can Demir",
+                rating: 5,
+                comment: "Çok profesyonel yaklaşım. 3D görselleştirmeler sayesinde projeyi önceden görebildik. Mükemmel hizmet!",
+                date: "10 Aralık 2024",
+                project: "Ofis Renovasyonu"
+            },
+            {
+                id: 3,
+                reviewer: "Zehra Kaya",
+                rating: 4,
+                comment: "Kentsel dönüşüm projemizde çok başarılıydı. Belediye süreçlerinde de yardımcı oldu.",
+                date: "5 Aralık 2024",
+                project: "Kentsel Dönüşüm"
+            },
+            {
+                id: 4,
+                reviewer: "Ahmet Çelik",
+                rating: 5,
+                comment: "Sürdürülebilir mimarlık konusundaki uzmanlığı etkileyici. Çevre dostu çözümleriyle fark yarattı.",
+                date: "1 Aralık 2024",
+                project: "Rezidans Projesi"
+            }
+        ];
+        
+        // Core Functions
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = ['dashboard-section', 'service-requests-section', 'offers-section', 'projects-section', 'e-wallet-section', 'profile-section', 'support-section'];
+            sections.forEach(section => {
+                document.getElementById(section).classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update active nav item
+            const navLinks = document.querySelectorAll('#sidebar-nav a');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Find and activate the clicked nav item
+            const activeLink = document.querySelector(`#sidebar-nav a[onclick*="${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Close mobile menu if open
+            closeMobileMenu();
+        }
+        
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+        
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            
+            let bgColor = 'bg-blue-500';
+            switch(type) {
+                case 'success': bgColor = 'bg-green-500'; break;
+                case 'error': bgColor = 'bg-red-500'; break;
+                case 'warning': bgColor = 'bg-yellow-500'; break;
+            }
+            
+            notification.className = `notification ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+        
+        function logout() {
+            showNotification('Çıkış yapılıyor...', 'info');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
+        }
+        
+        // Render Functions
+        function renderStats() {
+            const statsGrid = document.getElementById('stats-grid');
+            const stats = [
+                { title: 'Verilen Teklif Sayısı', value: simulatedData.stats.offers, icon: 'fas fa-file-alt', color: 'blue' },
+                { title: 'Kabul Edilen Proje Sayısı', value: simulatedData.stats.acceptedProjects, icon: 'fas fa-check-circle', color: 'green' },
+                { title: 'Devam Eden Proje Sayısı', value: simulatedData.stats.ongoingProjects, icon: 'fas fa-clock', color: 'yellow' },
+                { title: 'Bekleyen Hizmet Talepleri', value: simulatedData.stats.pendingRequests, icon: 'fas fa-bell', color: 'purple' }
+            ];
+            
+            statsGrid.innerHTML = stats.map(stat => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-${stat.color}-100 p-3 rounded-lg">
+                            <i class="${stat.icon} text-2xl text-${stat.color}-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">${stat.title}</p>
+                            <p class="text-2xl font-bold text-gray-800">${stat.value}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderNewRequests() {
+            const content = document.getElementById('new-requests-content');
+            content.innerHTML = simulatedData.newRequests.map(request => `
+                <div class="bg-gray-50 rounded-lg p-4 mb-4 hover:bg-gray-100 transition-colors duration-200">
+                    <h4 class="font-semibold text-gray-800 mb-2">${request.title}</h4>
+                    <p class="text-sm text-gray-600 mb-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        ${request.location}
+                    </p>
+                    <p class="text-sm text-gray-600 mb-3">${request.description}</p>
+                    <p class="text-sm text-gray-600 mb-3">Arsa Alanı: ${request.area}, Beklenen Daire: ${request.expectedUnits}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-500">${request.timeAgo}</span>
+                        <button onclick="submitOffer(${request.id})" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors duration-200">
+                            Teklif Ver
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderDashboardOngoingProjects() {
+            const content = document.getElementById('ongoing-projects-content');
+            content.innerHTML = simulatedData.ongoingProjects.map(project => `
+                <div class="bg-gray-50 rounded-lg p-4 mb-4 hover:bg-gray-100 transition-colors duration-200">
+                    <h4 class="font-semibold text-gray-800 mb-2">${project.title}</h4>
+                    <p class="text-sm text-gray-600 mb-2">
+                        <i class="fas fa-user mr-1"></i>
+                        Müşteri: ${project.customer}
+                    </p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                            ${project.status}
+                        </span>
+                        <span class="text-xs text-gray-500">Son güncelleme: ${project.lastUpdate}</span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>İlerleme</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    <button onclick="viewProjectDetails(${project.id})" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors duration-200">
+                        Detayları Görüntüle
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Action Functions
+        function submitOffer(requestId) {
+            showNotification(`Proje ${requestId} için teklif verme sayfası açılıyor...`, 'info');
+        }
+        
+        function viewProjectDetails(projectId) {
+            showNotification(`Proje ${projectId} detayları görüntüleniyor...`, 'info');
+        }
+        
+        // Initialize Dashboard
+        function initializeDashboard() {
+            renderStats();
+            renderNewRequests();
+            renderDashboardOngoingProjects();
+        }
+        
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+        
+        // E-Wallet Functions
+        function renderTransactions() {
+            const tbody = document.getElementById('transaction-tbody');
+            tbody.innerHTML = simulatedData.transactions.map(transaction => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${transaction.type}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${transaction.amount > 0 ? '+' : ''} ₺ ${Math.abs(transaction.amount).toLocaleString('tr-TR')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">${transaction.status}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function processDeposit(event) {
+            event.preventDefault();
+            const amount = document.getElementById('deposit-amount').value;
+            showNotification(`₺${amount} para yatırma işlemi başlatıldı.`, 'success');
+            closeModal('deposit-modal');
+        }
+        
+        function processWithdraw(event) {
+            event.preventDefault();
+            const amount = document.getElementById('withdraw-amount').value;
+            showNotification(`₺${amount} para çekme talebi oluşturuldu.`, 'success');
+            closeModal('withdraw-modal');
+        }
+        
+        // Service Requests Functions
+        let filteredRequests = [...simulatedData.serviceRequests];
+        
+        function renderServiceRequests() {
+            const grid = document.getElementById('request-cards-grid');
+            grid.innerHTML = filteredRequests.map(request => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <h4 class="font-semibold text-gray-800 mb-2">${request.title}</h4>
+                    <p class="text-sm text-gray-600 mb-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        ${request.location}
+                    </p>
+                    <p class="text-sm text-gray-600 mb-3">${request.description}</p>
+                    <div class="space-y-2 mb-4">
+                        <p class="text-sm text-gray-600">Arsa Alanı: ${request.area}m²</p>
+                        <p class="text-sm text-gray-600">Beklenen Daire: ${request.expectedUnits}</p>
+                        <p class="text-sm text-gray-600">Durum: <span class="text-green-600 font-medium">${request.status}</span></p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-500">${request.timeAgo}</span>
+                        <button onclick="submitOffer(${request.id})" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors duration-200">
+                            Teklif Ver
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function applyFilters() {
+            const cityFilter = document.getElementById('city-filter').value;
+            const districtFilter = document.getElementById('district-filter').value;
+            const typeFilter = document.getElementById('project-type-filter').value;
+            const minAreaFilter = parseInt(document.getElementById('min-area-filter').value) || 0;
+            
+            filteredRequests = simulatedData.serviceRequests.filter(request => {
+                return (!cityFilter || request.city === cityFilter) &&
+                       (!districtFilter || request.district === districtFilter) &&
+                       (!typeFilter || request.type === typeFilter) &&
+                       (request.area >= minAreaFilter);
+            });
+            
+            renderServiceRequests();
+            showNotification(`${filteredRequests.length} talep bulundu.`, 'info');
+        }
+        
+        function clearFilters() {
+            document.getElementById('city-filter').value = '';
+            document.getElementById('district-filter').value = '';
+            document.getElementById('project-type-filter').value = '';
+            document.getElementById('min-area-filter').value = '';
+            
+            filteredRequests = [...simulatedData.serviceRequests];
+            renderServiceRequests();
+            updateDistrictOptions();
+            showNotification('Filtreler temizlendi.', 'info');
+        }
+        
+        function updateDistrictOptions() {
+            const cityFilter = document.getElementById('city-filter').value;
+            const districtSelect = document.getElementById('district-filter');
+            
+            districtSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
+            
+            if (cityFilter && simulatedData.cities[cityFilter]) {
+                simulatedData.cities[cityFilter].forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.toLowerCase().replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u');
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Section initialization
+        function initializeSection(sectionId) {
+            switch(sectionId) {
+                case 'dashboard-section':
+                    initializeDashboard();
+                    break;
+                case 'service-requests-section':
+                    renderServiceRequests();
+                    break;
+                case 'offers-section':
+                    initializeOffers();
+                    break;
+                case 'projects-section':
+                    initializeProjects();
+                    break;
+                case 'e-wallet-section':
+                    renderTransactions();
+                    break;
+                case 'profile-section':
+                    initializeProfile();
+                    break;
+            }
+        }
+        
+        // Enhanced showSection function
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = ['dashboard-section', 'service-requests-section', 'offers-section', 'projects-section', 'e-wallet-section', 'profile-section', 'support-section'];
+            sections.forEach(section => {
+                document.getElementById(section).classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Initialize section-specific content
+            initializeSection(sectionId);
+            
+            // Update active nav item
+            const navLinks = document.querySelectorAll('#sidebar-nav a');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Find and activate the clicked nav item
+            const activeLink = document.querySelector(`#sidebar-nav a[onclick*="${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Close mobile menu if open
+            closeMobileMenu();
+        }
+        
+        // Profile Functions
+        function initializeProfile() {
+            renderProfileSummary(architectProfileData);
+            renderSpecialties(architectProfileData.specialties);
+            renderPricingInfo(architectProfileData);
+            renderSecuritySettings(architectProfileData);
+            renderReviews(architectReviews);
+        }
+        
+        function renderProfileSummary(data) {
+            const container = document.getElementById('profile-summary-card');
+            
+            // Generate star rating
+            const fullStars = Math.floor(data.rating);
+            const hasHalfStar = data.rating % 1 !== 0;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
+            let starsHtml = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+            }
+            if (hasHalfStar) {
+                starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<i class="far fa-star text-gray-300"></i>';
+            }
+            
+            container.innerHTML = `
+                <div class="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
+                    <!-- Profile Image -->
+                    <div class="flex-shrink-0 relative">
+                        <img src="${data.profileImage}" alt="Profil Fotoğrafı" class="w-32 h-32 rounded-full object-cover border-4 border-purple-100">
+                        <button onclick="changeProfilePhoto()" class="absolute bottom-0 right-0 bg-purple-600 text-white p-2 rounded-full text-sm hover:bg-purple-700 transition-colors duration-200" title="Fotoğrafı Değiştir">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Info -->
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">${data.name} ${data.surname}</h2>
+                        <p class="text-lg text-purple-600 font-medium mb-3">${data.title}</p>
+                        
+                        <!-- Rating -->
+                        <div class="flex items-center space-x-2 mb-4">
+                            <div class="flex space-x-1">${starsHtml}</div>
+                            <span class="text-lg font-semibold text-gray-800">${data.rating}</span>
+                            <span class="text-sm text-gray-600">(${data.totalReviews} değerlendirme)</span>
+                        </div>
+                        
+                        <!-- Bio -->
+                        <p class="text-gray-600 mb-6 leading-relaxed">${data.bio}</p>
+                        
+                        <!-- Contact Info -->
+                        <div class="flex flex-wrap items-center gap-4 mb-4">
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span>${data.email}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-phone mr-2"></i>
+                                <span>${data.phone}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Social Media -->
+                        <div class="flex space-x-4">
+                            <a href="${data.socialMedia.linkedin}" target="_blank" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                <i class="fab fa-linkedin text-2xl"></i>
+                            </a>
+                            <a href="${data.socialMedia.instagram}" target="_blank" class="text-pink-600 hover:text-pink-800 transition-colors duration-200">
+                                <i class="fab fa-instagram text-2xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderSpecialties(specialties) {
+            const container = document.getElementById('specialties-content');
+            
+            container.innerHTML = `
+                <div class="flex flex-wrap gap-2">
+                    ${specialties.map(specialty => `
+                        <span class="bg-purple-100 text-purple-800 px-3 py-2 rounded-full text-sm font-medium">
+                            ${specialty}
+                        </span>
+                    `).join('')}
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Bu alanlar üzerinde uzmanlaşmış deneyim ve bilgi birikimine sahibim.</p>
+                </div>
+            `;
+        }
+        
+        function renderPricingInfo(data) {
+            document.getElementById('avan-proje-ucreti').value = data.pricing.avanProjeUcreti;
+            document.getElementById('uygulama-proje-ucreti').value = data.pricing.uygulamaProjeUcreti;
+        }
+        
+        function renderSecuritySettings(data) {
+            // Update 2FA status
+            const toggle2FA = document.getElementById('2fa-toggle');
+            const status2FA = document.getElementById('2fa-status');
+            toggle2FA.checked = data.security.is2faActive;
+            status2FA.textContent = data.security.is2faActive ? 'Aktif' : 'Pasif';
+            status2FA.className = `text-sm font-medium ${data.security.is2faActive ? 'text-green-600' : 'text-red-600'}`;
+            
+            // Update email verification
+            const emailDisplay = document.getElementById('email-display');
+            const emailBtn = document.getElementById('email-verify-btn');
+            emailDisplay.textContent = data.email;
+            emailBtn.textContent = data.security.isEmailVerified ? 'Doğrulandı' : 'Doğrula';
+            emailBtn.className = data.security.isEmailVerified ? 
+                'px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm cursor-default' :
+                'px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200';
+            emailBtn.disabled = data.security.isEmailVerified;
+            
+            // Update phone verification
+            const phoneDisplay = document.getElementById('phone-display');
+            const phoneBtn = document.getElementById('phone-verify-btn');
+            phoneDisplay.textContent = data.phone;
+            phoneBtn.textContent = data.security.isPhoneVerified ? 'Doğrulandı' : 'Doğrula';
+            phoneBtn.className = data.security.isPhoneVerified ? 
+                'px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm cursor-default' :
+                'px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200';
+            phoneBtn.disabled = data.security.isPhoneVerified;
+        }
+        
+        function renderReviews(reviews) {
+            const container = document.getElementById('reviews-content');
+            
+            if (reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-star text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Henüz değerlendirme bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-6">
+                    ${reviews.map(review => {
+                        // Generate star rating for each review
+                        let starsHtml = '';
+                        for (let i = 0; i < 5; i++) {
+                            if (i < review.rating) {
+                                starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+                            } else {
+                                starsHtml += '<i class="far fa-star text-gray-300"></i>';
+                            }
+                        }
+                        
+                        return `
+                            <div class="border-b border-gray-200 pb-6 last:border-b-0">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h5 class="font-semibold text-gray-800">${review.reviewer}</h5>
+                                        <p class="text-sm text-gray-500">${review.project}</p>
+                                    </div>
+                                    <div class="text-sm text-gray-500">${review.date}</div>
+                                </div>
+                                <div class="flex space-x-1 mb-3">${starsHtml}</div>
+                                <p class="text-gray-600">${review.comment}</p>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        // Profile Action Functions
+        function changeProfilePhoto() {
+            // Simulate file selection
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    showNotification('Profil fotoğrafı başarıyla güncellendi!', 'success');
+                    // In real implementation, you would upload the file and update the image
+                }
+            };
+            input.click();
+        }
+        
+        function updatePricing() {
+            const avanProje = document.getElementById('avan-proje-ucreti').value;
+            const uygulamaProje = document.getElementById('uygulama-proje-ucreti').value;
+            
+            if (!avanProje || !uygulamaProje) {
+                showNotification('Lütfen tüm fiyat alanlarını doldurun.', 'error');
+                return;
+            }
+            
+            architectProfileData.pricing.avanProjeUcreti = parseInt(avanProje);
+            architectProfileData.pricing.uygulamaProjeUcreti = parseInt(uygulamaProje);
+            
+            showNotification('Fiyatlandırma bilgileriniz başarıyla güncellendi!', 'success');
+        }
+        
+        function toggle2FA() {
+            const toggle = document.getElementById('2fa-toggle');
+            architectProfileData.security.is2faActive = toggle.checked;
+            renderSecuritySettings(architectProfileData);
+            
+            const message = toggle.checked ? 
+                'İki faktörlü kimlik doğrulama etkinleştirildi.' : 
+                'İki faktörlü kimlik doğrulama devre dışı bırakıldı.';
+            showNotification(message, 'success');
+        }
+        
+        // Profile Modal Functions
+        function openEditProfileModal() {
+            // Populate form with current data
+            document.getElementById('edit-name').value = architectProfileData.name;
+            document.getElementById('edit-surname').value = architectProfileData.surname;
+            document.getElementById('edit-email').value = architectProfileData.email;
+            document.getElementById('edit-phone').value = architectProfileData.phone;
+            document.getElementById('edit-title').value = architectProfileData.title;
+            document.getElementById('edit-bio').value = architectProfileData.bio;
+            document.getElementById('edit-linkedin').value = architectProfileData.socialMedia.linkedin;
+            document.getElementById('edit-instagram').value = architectProfileData.socialMedia.instagram;
+            
+            // Clear all checkboxes first
+            document.querySelectorAll('#edit-profile-modal input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            // Set specialty checkboxes
+            architectProfileData.specialties.forEach(specialty => {
+                const checkbox = document.querySelector(`input[value="${specialty}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            showModal('edit-profile-modal');
+        }
+        
+        function updateProfile(event) {
+            event.preventDefault();
+            
+            // Update profile data
+            architectProfileData.name = document.getElementById('edit-name').value;
+            architectProfileData.surname = document.getElementById('edit-surname').value;
+            architectProfileData.email = document.getElementById('edit-email').value;
+            architectProfileData.phone = document.getElementById('edit-phone').value;
+            architectProfileData.title = document.getElementById('edit-title').value;
+            architectProfileData.bio = document.getElementById('edit-bio').value;
+            architectProfileData.socialMedia.linkedin = document.getElementById('edit-linkedin').value;
+            architectProfileData.socialMedia.instagram = document.getElementById('edit-instagram').value;
+            
+            // Update specialties
+            const selectedSpecialties = [];
+            document.querySelectorAll('#edit-profile-modal input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedSpecialties.push(checkbox.value);
+            });
+            architectProfileData.specialties = selectedSpecialties;
+            
+            // Re-render profile sections
+           
+            renderSpecialties(architectProfileData.specialties);
+            renderSecuritySettings(architectProfileData);
+            
+            closeModal('edit-profile-modal');
+            showNotification('Profil bilgileriniz başarıyla güncellendi!', 'success');
+        }
+        
+        // Security Functions
+        function openChangePasswordModal() {
+            showModal('change-password-modal');
+        }
+        
+        function changePassword(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                showNotification('Yeni şifreler eşleşmiyor.', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showNotification('Yeni şifre en az 8 karakter olmalıdır.', 'error');
+                return;
+            }
+            
+            // Simulate password change
+            showNotification('Şifreniz başarıyla değiştirildi!', 'success');
+            closeModal('change-password-modal');
+            event.target.reset();
+        }
+        
+        function openVerifyEmailModal() {
+            if (architectProfileData.security.isEmailVerified) return;
+            
+            document.getElementById('email-to-verify').textContent = architectProfileData.email;
+            document.getElementById('email-code-input-section').classList.add('hidden');
+            document.getElementById('verify-email-btn').classList.add('hidden');
+            document.getElementById('send-email-code-btn').classList.remove('hidden');
+            showModal('verify-email-modal');
+        }
+        
+        function sendEmailVerificationCode() {
+            document.getElementById('send-email-code-btn').classList.add('hidden');
+            document.getElementById('email-code-input-section').classList.remove('hidden');
+            document.getElementById('verify-email-btn').classList.remove('hidden');
+            showNotification('Doğrulama kodu e-posta adresinize gönderildi.', 'info');
+        }
+        
+        function verifyEmailCode() {
+            const code = document.getElementById('email-verification-code').value;
+            
+            if (code.length !== 6) {
+                showNotification('Doğrulama kodu 6 haneli olmalıdır.', 'error');
+                return;
+            }
+            
+            // Simulate verification
+            architectProfileData.security.isEmailVerified = true;
+            renderSecuritySettings(architectProfileData);
+            closeModal('verify-email-modal');
+            showNotification('E-posta adresiniz başarıyla doğrulandı!', 'success');
+        }
+        
+        function openVerifyPhoneModal() {
+            if (architectProfileData.security.isPhoneVerified) return;
+            
+            document.getElementById('phone-to-verify').textContent = architectProfileData.phone;
+            document.getElementById('phone-code-input-section').classList.add('hidden');
+            document.getElementById('verify-phone-btn').classList.add('hidden');
+            document.getElementById('send-phone-code-btn').classList.remove('hidden');
+            showModal('verify-phone-modal');
+        }
+        
+        function sendPhoneVerificationCode() {
+            document.getElementById('send-phone-code-btn').classList.add('hidden');
+            document.getElementById('phone-code-input-section').classList.remove('hidden');
+            document.getElementById('verify-phone-btn').classList.remove('hidden');
+            showNotification('Doğrulama kodu telefonunuza SMS ile gönderildi.', 'info');
+        }
+        
+        function verifyPhoneCode() {
+            const code = document.getElementById('phone-verification-code').value;
+            
+            if (code.length !== 6) {
+                showNotification('Doğrulama kodu 6 haneli olmalıdır.', 'error');
+                return;
+            }
+            
+            // Simulate verification
+            architectProfileData.security.isPhoneVerified = true;
+            renderSecuritySettings(architectProfileData);
+            closeModal('verify-phone-modal');
+            showNotification('Telefon numaranız başarıyla doğrulandı!', 'success');
+        }
+        
+        // Offers Functions
+        function initializeOffers() {
+            renderContractorOffers(contractorOffersData);
+            renderUserOffers(userOffersData);
+        }
+        
+        function switchOfferCategory(category) {
+            const contractorTab = document.getElementById('contractor-offers-tab');
+            const userTab = document.getElementById('user-offers-tab');
+            const contractorSection = document.getElementById('contractor-offers-section');
+            const userSection = document.getElementById('user-offers-section');
+            
+            if (category === 'contractor') {
+                // Activate contractor tab
+                contractorTab.className = 'border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600';
+                userTab.className = 'border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300';
+                
+                // Show contractor section, hide user section
+                contractorSection.classList.remove('hidden');
+                userSection.classList.add('hidden');
+            } else if (category === 'user') {
+                // Activate user tab
+                userTab.className = 'border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600';
+                contractorTab.className = 'border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300';
+                
+                // Show user section, hide contractor section
+                userSection.classList.remove('hidden');
+                contractorSection.classList.add('hidden');
+            }
+        }
+        
+        function renderContractorOffers(offers) {
+            const container = document.getElementById('contractor-offers-list');
+            
+            if (offers.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Henüz müteahhitlerden gelen teklif bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = offers.map(offer => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 pr-4">${offer.title}</h4>
+                        <span class="${getStatusBadgeClass(offer.status)}">${offer.status}</span>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-building w-4 mr-2"></i>
+                            <span class="text-sm">${offer.senderName}</span>
+                        </div>
+                        
+                        ${offer.relatedListing ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt w-4 mr-2"></i>
+                                <span class="text-sm">${offer.relatedListing.title} - ${offer.relatedListing.location}</span>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-cogs w-4 mr-2"></i>
+                            <span class="text-sm">${offer.designType}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-clock w-4 mr-2"></i>
+                            <span class="text-sm">Teslim: ${offer.deliveryTime}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-lira-sign w-4 mr-2"></i>
+                            <span class="text-sm font-medium">${offer.budget}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="showOfferDetailModal(${offer.id}, 'contractor')" class="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
+                            Detayları Görüntüle
+                        </button>
+                        ${offer.status === 'Bekliyor' ? `
+                            <button onclick="quickApproveOffer(${offer.id}, 'contractor')" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors duration-200">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="quickRejectOffer(${offer.id}, 'contractor')" class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors duration-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderUserOffers(offers) {
+            const container = document.getElementById('user-offers-list');
+            
+            if (offers.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Henüz kullanıcılardan gelen teklif bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = offers.map(offer => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 pr-4">${offer.title}</h4>
+                        <span class="${getStatusBadgeClass(offer.status)}">${offer.status}</span>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-user w-4 mr-2"></i>
+                            <span class="text-sm">${offer.senderName}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-cogs w-4 mr-2"></i>
+                            <span class="text-sm">${offer.designType}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-lira-sign w-4 mr-2"></i>
+                            <span class="text-sm font-medium">${offer.budget}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-clock w-4 mr-2"></i>
+                            <span class="text-sm">Teslim: ${offer.deliveryTime}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="showOfferDetailModal(${offer.id}, 'user')" class="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
+                            Detayları Görüntüle
+                        </button>
+                        ${offer.status === 'Bekliyor' ? `
+                            <button onclick="quickApproveOffer(${offer.id}, 'user')" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors duration-200">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="quickRejectOffer(${offer.id}, 'user')" class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors duration-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'Bekliyor':
+                    return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Onaylandı':
+                    return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Reddedildi':
+                    return 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium';
+                default:
+                    return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium';
+            }
+        }
+        
+        function showOfferDetailModal(offerId, offerType) {
+            const offers = offerType === 'contractor' ? contractorOffersData : userOffersData;
+            const offer = offers.find(o => o.id === offerId);
+            
+            if (!offer) return;
+            
+            // Store current offer context
+            currentOfferContext = { id: offerId, type: offerType };
+            
+            const container = document.getElementById('offer-detail-content');
+            const approveBtn = document.getElementById('modal-approve-btn');
+            const rejectBtn = document.getElementById('modal-reject-btn');
+            
+            // Hide action buttons if offer is not pending
+            if (offer.status !== 'Bekliyor') {
+                approveBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+            } else {
+                approveBtn.style.display = 'block';
+                rejectBtn.style.display = 'block';
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${offer.title}</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="${getStatusBadgeClass(offer.status)}">${offer.status}</span>
+                            <span class="text-sm text-gray-500">• ${offer.createdDate}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gönderen</label>
+                            <p class="text-gray-900">${offer.senderName}</p>
+                        </div>
+                        
+                        ${offer.relatedListing ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">İlgili İlan</label>
+                                <p class="text-gray-900">${offer.relatedListing.title}</p>
+                                <p class="text-sm text-gray-600">${offer.relatedListing.location}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tasarım Tipi</label>
+                            <p class="text-gray-900">${offer.designType}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Bütçe</label>
+                            <p class="text-gray-900 font-medium">${offer.budget}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teslim Süresi</label>
+                            <p class="text-gray-900">${offer.deliveryTime}</p>
+                        </div>
+                        
+                        ${offer.contactInfo ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">İletişim</label>
+                                <p class="text-gray-900">${offer.contactInfo}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                        <p class="text-gray-700 leading-relaxed">${offer.description}</p>
+                    </div>
+                </div>
+            `;
+            
+            showModal('offer-detail-modal');
+        }
+        
+        function quickApproveOffer(offerId, offerType) {
+            currentOfferContext = { id: offerId, type: offerType };
+            openApproveConfirmModal();
+        }
+        
+        function quickRejectOffer(offerId, offerType) {
+            currentOfferContext = { id: offerId, type: offerType };
+            openRejectConfirmModal();
+        }
+        
+        function openApproveConfirmModal() {
+            closeModal('offer-detail-modal');
+            showModal('approve-confirm-modal');
+        }
+        
+        function openRejectConfirmModal() {
+            closeModal('offer-detail-modal');
+            showModal('reject-confirm-modal');
+        }
+        
+        function confirmApproveOffer() {
+            const { id, type } = currentOfferContext;
+            approveOffer(id, type);
+            closeModal('approve-confirm-modal');
+        }
+        
+        function confirmRejectOffer() {
+            const { id, type } = currentOfferContext;
+            rejectOffer(id, type);
+            closeModal('reject-confirm-modal');
+        }
+        
+        function approveOffer(offerId, offerType) {
+            const offers = offerType === 'contractor' ? contractorOffersData : userOffersData;
+            const offer = offers.find(o => o.id === offerId);
+            
+            if (offer) {
+                offer.status = 'Onaylandı';
+                
+                // Create new project from approved offer
+                const newProject = {
+                    id: Date.now(), // Simple ID generation
+                    title: offer.title,
+                    clientName: offer.senderName,
+                    relatedListing: offer.relatedListing || null,
+                    status: "Tasarım Aşamasında",
+                    progress: 10,
+                    uploadedFiles: [],
+                    isPaymentReleased: false,
+                    startDate: new Date().toLocaleDateString('tr-TR'),
+                    estimatedCompletion: new Date(Date.now() + (parseInt(offer.deliveryTime) * 24 * 60 * 60 * 1000)).toLocaleDateString('tr-TR')
+                };
+                
+                // Add to ongoing projects
+                ongoingProjectsData.unshift(newProject);
+                
+                // Re-render the appropriate offers list
+                if (offerType === 'contractor') {
+                    renderContractorOffers(contractorOffersData);
+                } else {
+                    renderUserOffers(userOffersData);
+                }
+                
+                // Eğer projeler sekmesi açıksa devam eden projeleri yeniden render et
+                const projectsSection = document.getElementById('projects-section');
+                const ongoingSection = document.getElementById('ongoing-projects-section');
+                if (projectsSection && !projectsSection.classList.contains('hidden') && 
+                    ongoingSection && ongoingSection.style.display !== 'none') {
+                    renderDashboardOngoingProjects();
+                }
+                
+                // Show success notification
+                showNotification('Teklif başarıyla onaylandı! Proje "Projelerim" sekmesine eklendi ve mimar ücretiniz e-cüzdanınıza yatırıldı.', 'success');
+            }
+        }
+        
+        function rejectOffer(offerId, offerType) {
+            const offers = offerType === 'contractor' ? contractorOffersData : userOffersData;
+            const offer = offers.find(o => o.id === offerId);
+            
+            if (offer) {
+                offer.status = 'Reddedildi';
+                
+                // Re-render the appropriate offers list
+                if (offerType === 'contractor') {
+                    renderContractorOffers(contractorOffersData);
+                } else {
+                    renderUserOffers(userOffersData);
+                }
+                
+                // Show notification
+                showNotification('Teklif reddedildi.', 'info');
+            }
+        }
+        
+        // Projects Functions (kullanıcının önerdiği standartta)
+        function initializeProjects() {
+            // Varsayılan olarak "Devam Eden Projelerim" sekmesini aktif et
+            switchProjectCategory('ongoing');
+        }
+        
+        // Temiz ve etkili sekme değiştirme fonksiyonu
+        function switchProjectCategory(category) {
+            // HTML element referansları
+            const ongoingTab = document.getElementById('ongoing-projects-tab');
+            const completedTab = document.getElementById('completed-projects-tab');
+            const ongoingContainer = document.getElementById('projects-section-ongoing');
+            const completedContainer = document.getElementById('completed-projects-section');
+            
+            // Element kontrolü
+            if (!ongoingTab || !completedTab || !ongoingContainer || !completedContainer) {
+                console.error('Project category elements not found');
+                return;
+            }
+            
+            // Tüm sekme butonlarından aktif stilini kaldır
+            ongoingTab.className = 'border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300';
+            completedTab.className = 'border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300';
+            
+            // Tüm konteynerları gizle
+            ongoingContainer.classList.add('hidden');
+            completedContainer.classList.add('hidden');
+            
+            if (category === 'ongoing') {
+                // Devam eden projeler sekmesini aktif et
+                ongoingTab.className = 'border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600';
+                
+                // Devam eden projeler konteynerını göster
+                ongoingContainer.classList.remove('hidden');
+                
+                // Devam eden projeleri render et
+                renderProjectsTabOngoingProjects(ongoingProjectsData);
+                
+            } else if (category === 'completed') {
+                // Biten projeler sekmesini aktif et
+                completedTab.className = 'border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600';
+                
+                // Biten projeler konteynerını göster
+                completedContainer.classList.remove('hidden');
+                
+                // Biten projeleri render et
+                renderCompletedProjects(completedProjectsData);
+            }
+        }
+        
+        // Devam eden projeleri render etme fonksiyonu (kullanıcının önerdiği standartta)
+        function renderProjectsTabOngoingProjects(projects) {
+            const container = document.getElementById('ongoing-projects-list');
+            
+            if (!container) {
+                return;
+            }
+            
+            // Önceki içeriği tamamen temizle
+            container.innerHTML = '';
+            
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-project-diagram text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Devam eden projeniz bulunmamaktadır.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = projects.map(project => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 pr-4">${project.title}</h4>
+                        <span class="${getProjectStatusBadgeClass(project.status)}">${project.status}</span>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-user-tie w-4 mr-2"></i>
+                            <span class="text-sm">${project.clientName}</span>
+                        </div>
+                        
+                        ${project.relatedListing ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt w-4 mr-2"></i>
+                                <span class="text-sm">${project.relatedListing.title} - ${project.relatedListing.location}</span>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar w-4 mr-2"></i>
+                            <span class="text-sm">Başlangıç: ${project.startDate}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar-check w-4 mr-2"></i>
+                            <span class="text-sm">Tahmini Bitiş: ${project.estimatedCompletion}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>İlerleme</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Area -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="text-sm font-medium text-gray-700">Dosyalar</h5>
+                            <button onclick="uploadFile(${project.id})" class="text-sm px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-upload mr-1"></i>
+                                Dosya Yükle
+                            </button>
+                        </div>
+                        
+                        ${project.uploadedFiles.length > 0 ? `
+                            <div class="space-y-2">
+                                ${project.uploadedFiles.map(file => `
+                                    <div class="flex items-center justify-between bg-white p-2 rounded border">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                            <span class="text-sm text-gray-700">${file.name}</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">${file.size}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p class="text-sm text-gray-500 text-center py-2">Henüz dosya yüklenmedi</p>
+                        `}
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="showProjectDetailModal(${project.id}, 'ongoing')" class="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
+                            Detayları Görüntüle
+                        </button>
+                        <button onclick="quickCompleteProject(${project.id})" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors duration-200">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Biten projeleri render etme fonksiyonu (kullanıcının önerdiği standartta)
+        function renderCompletedProjects(projects) {
+            const container = document.getElementById('completed-projects-list');
+            
+            if (!container) {
+                return;
+            }
+            
+            // Önceki içeriği tamamen temizle
+            container.innerHTML = '';
+            
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-check-circle text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Tamamlanan projeniz bulunmamaktadır.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = projects.map(project => `
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 pr-4">${project.title}</h4>
+                        <span class="${getProjectStatusBadgeClass(project.status)}">${project.status}</span>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-user-tie w-4 mr-2"></i>
+                            <span class="text-sm">${project.clientName}</span>
+                        </div>
+                        
+                        ${project.relatedListing ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt w-4 mr-2"></i>
+                                <span class="text-sm">${project.relatedListing.title} - ${project.relatedListing.location}</span>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar-check w-4 mr-2"></i>
+                            <span class="text-sm">Tamamlandı: ${project.completionDate}</span>
+                        </div>
+                        
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-lira-sign w-4 mr-2"></i>
+                            <span class="text-sm ${project.isPaymentReleased ? 'text-green-600' : 'text-orange-600'}">${project.isPaymentReleased ? 'Ücret Çekilebilir' : 'Ücret Beklemede'}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Application Project Right Notification -->
+                    ${project.earnedApplicationProjectRight && project.status === 'Tamamlandı' ? `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-star text-green-600 mr-2"></i>
+                                    <span class="text-sm font-medium text-green-800">Uygulama Projesi Çizmeye Hak Kazandın!</span>
+                                </div>
+                                <button onclick="quickApproveApplicationRight(${project.id})" class="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors duration-200">
+                                    Onayla
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="showProjectDetailModal(${project.id}, 'completed')" class="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
+                            Detayları Görüntüle
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getProjectStatusBadgeClass(status) {
+            switch (status) {
+                case 'Tasarım Aşamasında':
+                    return 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Onay Bekliyor':
+                    return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Revizyon':
+                    return 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Tamamlandı':
+                    return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+                case 'Uygulama Projesine Geçildi':
+                    return 'bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium';
+                default:
+                    return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium';
+            }
+        }
+        
+        function showProjectDetailModal(projectId, projectType) {
+            const projects = projectType === 'ongoing' ? ongoingProjectsData : completedProjectsData;
+            const project = projects.find(p => p.id === projectId);
+            
+            if (!project) return;
+            
+            // Store current project context
+            currentProjectContext = { id: projectId, type: projectType };
+            
+            const container = document.getElementById('project-detail-content');
+            const uploadDocsBtn = document.getElementById('upload-docs-btn');
+            const completeProjectBtn = document.getElementById('complete-project-btn');
+            
+            // Show/hide action buttons based on project type
+            if (projectType === 'ongoing') {
+                completeProjectBtn.style.display = 'block';
+                const municipalityProcess = belediyeSureciData.find(mp => mp.projectId === projectId);
+                const hasMissingDocs = municipalityProcess && municipalityProcess.stages.some(stage => stage.missingDocuments && stage.missingDocuments.length > 0);
+                uploadDocsBtn.style.display = hasMissingDocs ? 'block' : 'none';
+            } else {
+                completeProjectBtn.style.display = 'none';
+                uploadDocsBtn.style.display = 'none';
+            }
+            
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${project.title}</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="${getProjectStatusBadgeClass(project.status)}">${project.status}</span>
+                            ${projectType === 'ongoing' ? `<span class="text-sm text-gray-500">• İlerleme: ${project.progress}%</span>` : `<span class="text-sm text-gray-500">• ${project.completionDate}</span>`}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Müşteri</label>
+                            <p class="text-gray-900">${project.clientName}</p>
+                        </div>
+                        
+                        ${project.relatedListing ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">İlgili İlan</label>
+                                <p class="text-gray-900">${project.relatedListing.title}</p>
+                                <p class="text-sm text-gray-600">${project.relatedListing.location}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${projectType === 'ongoing' ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Başlangıç Tarihi</label>
+                                <p class="text-gray-900">${project.startDate}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tahmini Bitiş</label>
+                                <p class="text-gray-900">${project.estimatedCompletion}</p>
+                            </div>
+                        ` : `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ödeme Durumu</label>
+                                <p class="${project.isPaymentReleased ? 'text-green-600' : 'text-orange-600'} font-medium">${project.isPaymentReleased ? 'Çekilebilir' : 'Beklemede'}</p>
+                            </div>
+                        `}
+                    </div>
+                    
+                    <!-- Uploaded Files -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Yüklenen Dosyalar</label>
+                        ${project.uploadedFiles.length > 0 ? `
+                            <div class="space-y-2">
+                                ${project.uploadedFiles.map(file => `
+                                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded border">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                                            <span class="text-sm text-gray-700">${file.name}</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">${file.size}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p class="text-sm text-gray-500 bg-gray-50 p-3 rounded">Henüz dosya yüklenmedi</p>
+                        `}
+                    </div>
+                    
+                    ${renderMunicipalityProcess(projectId)}
+                </div>
+            `;
+            
+            showModal('project-detail-modal');
+        }
+        
+        function renderMunicipalityProcess(projectId) {
+            const municipalityProcess = belediyeSureciData.find(mp => mp.projectId === projectId);
+            
+            if (!municipalityProcess) {
+                return `
+                    <div>
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Belediye Süreci Takibi</h4>
+                        <p class="text-sm text-gray-500 bg-gray-50 p-3 rounded">Bu proje için belediye süreci takibi mevcut değil.</p>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div>
+                    <h4 class="text-md font-medium text-gray-800 mb-3">Belediye Süreci Takibi</h4>
+                    <div class="space-y-3">
+                        ${municipalityProcess.stages.map(stage => `
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0 mt-1">
+                                    ${stage.status === 'completed' ? 
+                                        '<i class="fas fa-check-circle text-green-500"></i>' :
+                                        stage.status === 'pending' ? 
+                                            '<i class="fas fa-clock text-yellow-500"></i>' :
+                                            '<i class="fas fa-circle text-gray-300"></i>'
+                                    }
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800">${stage.stage}</p>
+                                    ${stage.date ? `<p class="text-xs text-gray-500">${stage.date}</p>` : ''}
+                                    ${stage.missingDocuments && stage.missingDocuments.length > 0 ? `
+                                        <div class="mt-2 bg-red-50 border border-red-200 rounded p-2">
+                                            <p class="text-xs text-red-800 font-medium">Eksik Evraklar:</p>
+                                            <ul class="text-xs text-red-700 mt-1">
+                                                ${stage.missingDocuments.map(doc => `<li>• ${doc}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function uploadFile(projectId) {
+            // Simulate file upload
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.pdf,.doc,.docx,.jpg,.png';
+            input.onchange = function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    handleFileUpload(projectId, e.target.files);
+                }
+            };
+            input.click();
+        }
+        
+        function handleFileUpload(projectId, files) {
+            const project = ongoingProjectsData.find(p => p.id === projectId);
+            if (!project) return;
+            
+            // Simulate file processing
+            Array.from(files).forEach(file => {
+                const fileObj = {
+                    name: file.name,
+                    size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                };
+                project.uploadedFiles.push(fileObj);
+            });
+            
+            // Mevcut aktif sekmeyi yeniden render et
+            const ongoingSection = document.getElementById('ongoing-projects-section');
+            if (ongoingSection && ongoingSection.style.display !== 'none') {
+                renderProjectsTabOngoingProjects(ongoingProjectsData);
+            }
+            
+            showNotification('Dosyalar yüklendi ve kaydedildi. Müşteriniz/Müteahhidiniz bilgilendirildi.', 'success');
+        }
+        
+        function quickCompleteProject(projectId) {
+            currentProjectContext = { id: projectId, type: 'ongoing' };
+            openCompleteProjectModal();
+        }
+        
+        function openCompleteProjectModal() {
+            closeModal('project-detail-modal');
+            showModal('complete-project-modal');
+        }
+        
+        function confirmCompleteProject() {
+            const { id } = currentProjectContext;
+            completeProject(id);
+            closeModal('complete-project-modal');
+        }
+        
+        function completeProject(projectId) {
+            const projectIndex = ongoingProjectsData.findIndex(p => p.id === projectId);
+            if (projectIndex === -1) return;
+            
+            const project = ongoingProjectsData[projectIndex];
+            
+            // Move project to completed list
+            const completedProject = {
+                ...project,
+                completionDate: new Date().toLocaleDateString('tr-TR'),
+                status: 'Tamamlandı',
+                earnedApplicationProjectRight: Math.random() > 0.5, // Simulate earning right
+                isPaymentReleased: true
+            };
+            
+            completedProjectsData.unshift(completedProject);
+            ongoingProjectsData.splice(projectIndex, 1);
+            
+            // Mevcut aktif sekmeyi yeniden render et
+            const ongoingSection = document.getElementById('ongoing-projects-section');
+            const completedSection = document.getElementById('completed-projects-section');
+            
+            if (ongoingSection && ongoingSection.style.display !== 'none') {
+                renderProjectsTabOngoingProjects(ongoingProjectsData);
+            }
+            if (completedSection && completedSection.style.display !== 'none') {
+                renderCompletedProjects(completedProjectsData);
+            }
+            
+            showNotification('Proje başarıyla tamamlandı! Ücretiniz çekilebilir hale geldi.', 'success');
+        }
+        
+        function quickApproveApplicationRight(projectId) {
+            currentProjectContext = { id: projectId, type: 'completed' };
+            openApproveApplicationRightModal();
+        }
+        
+        function openApproveApplicationRightModal() {
+            showModal('approve-application-right-modal');
+        }
+        
+        function confirmApproveApplicationRight() {
+            const { id } = currentProjectContext;
+            approveApplicationRight(id);
+            closeModal('approve-application-right-modal');
+        }
+        
+        function approveApplicationRight(projectId) {
+            const project = completedProjectsData.find(p => p.id === projectId);
+            if (!project) return;
+            
+            project.earnedApplicationProjectRight = false; // Hide the notification
+            renderCompletedProjects(completedProjectsData);
+            
+            showNotification('Uygulama projesi çizme hakkınız onaylandı. Müşteriniz/Müteahhidiniz ile iletişime geçebilirsiniz.', 'success');
+        }
+        
+        function uploadMissingDocuments() {
+            // Simulate missing document upload
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.pdf,.doc,.docx,.jpg,.png';
+            input.onchange = function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    showNotification('Eksik evraklar başarıyla yüklendi ve belediyeye iletildi.', 'success');
+                    closeModal('project-detail-modal');
+                }
+            };
+            input.click();
+        }
+        
+        // Support Section Data and Functions
+        const faqData = [
+            {
+                id: 1,
+                question: "Para çekme işlemi nasıl yapılır?",
+                answer: "Para çekme işlemi için E-Cüzdan bölümünde 'Para Çek' butonuna tıklayın. IBAN bilgilerinizi girin ve çekmek istediğiniz tutarı belirtin. Minimum çekme tutarı ₺100'dür. İşlem 1-3 iş günü içinde hesabınıza geçer."
+            },
+            {
+                id: 2,
+                question: "Doküman yüklerken sorun yaşıyorum, ne yapmalıyım?",
+                answer: "Desteklenen dosya formatları: PDF, DOC, DOCX, JPG, PNG. Dosya boyutu maksimum 10MB olmalıdır. Eğer sorun devam ederse, tarayıcınızın önbelleğini temizleyin veya farklı bir tarayıcı deneyin. Hala çözemezseniz canlı destek ile iletişime geçin."
+            },
+            {
+                id: 3,
+                question: "Hesabımı nasıl dondurabilirim?",
+                answer: "Hesabınızı dondurmak için Destek bölümündeki 'Hesap Yönetimi' sekmesinden 'Hesabımı Dondur' butonuna tıklayın. Dondurulmuş hesaplar geçici olarak devre dışı kalır ve istediğiniz zaman tekrar aktifleştirebilirsiniz."
+            },
+            {
+                id: 4,
+                question: "Uygulama projesi hakkı nedir?",
+                answer: "Avan proje teslim ettikten sonra, müteahhit memnun kalırsa size uygulama projesi çizme hakkı verebilir. Bu hak ile daha detaylı ve yüksek ücretli projeler yapabilirsiniz. Hakkınızı kazandığınızda bildirim alırsınız."
+            },
+            {
+                id: 5,
+                question: "Platform komisyonu ne kadar?",
+                answer: "DönüşümAY platformu, tamamlanan projelerden %8 komisyon almaktadır. Bu ücret, proje ödemesi yapıldığında otomatik olarak bakiyenizden düşülür. Komisyon oranları hakkında detaylı bilgi için sözleşme şartlarınızı inceleyebilirsiniz."
+            }
+        ];
+        
+        let chatHistory = [];
+        let currentChatCategory = '';
+        
+        function initializeSupport() {
+            renderFaqs(faqData);
+        }
+        
+        function renderFaqs(faqs) {
+            const container = document.getElementById('faq-content');
+            if (!container) return;
+            
+            container.innerHTML = faqs.map(faq => `
+                <div class="border border-gray-200 rounded-lg mb-3">
+                    <button onclick="toggleFaq(${faq.id})" class="w-full px-4 py-3 text-left bg-gray-50 hover:bg-gray-100 transition-colors duration-200 rounded-t-lg flex justify-between items-center">
+                        <span class="font-medium text-gray-800">${faq.question}</span>
+                        <i id="faq-icon-${faq.id}" class="fas fa-chevron-down text-gray-500 transform transition-transform duration-200"></i>
+                    </button>
+                    <div id="faq-content-${faq.id}" class="hidden px-4 py-3 text-gray-600 text-sm leading-relaxed border-t border-gray-200">
+                        ${faq.answer}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function toggleFaq(faqId) {
+            const content = document.getElementById(`faq-content-${faqId}`);
+            const icon = document.getElementById(`faq-icon-${faqId}`);
+            
+            if (!content || !icon) return;
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+        
+        function startChat() {
+            const selectedCategory = document.querySelector('input[name="support-category"]:checked');
+            if (!selectedCategory) {
+                showNotification('Lütfen bir kategori seçin.', 'warning');
+                return;
+            }
+            
+            currentChatCategory = selectedCategory.value;
+            chatHistory = [];
+            
+            // Add welcome message
+            chatHistory.push({
+                type: 'agent',
+                message: 'Merhaba! DönüşümAY destek ekibine hoş geldiniz. Size nasıl yardımcı olabilirim?',
+                timestamp: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+            });
+            
+            // Add category-specific response
+            const categoryResponse = simulateAgentResponse(currentChatCategory, '');
+            chatHistory.push({
+                type: 'agent',
+                message: categoryResponse,
+                timestamp: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+            });
+            
+            closeModal('pre-chat-modal');
+            document.getElementById('chat-start-container').classList.add('hidden');
+            document.getElementById('chat-box').classList.remove('hidden');
+            renderChatMessages();
+        }
+        
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages');
+            if (!container) return;
+            
+            container.innerHTML = chatHistory.map(message => `
+                <div class="flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.type === 'user' ? 'bg-purple-600 text-white' : 'bg-white border border-gray-200'}">
+                        <p class="text-sm">${message.message}</p>
+                        <p class="text-xs mt-1 ${message.type === 'user' ? 'text-purple-200' : 'text-gray-500'}">${message.timestamp}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input || !input.value.trim()) return;
+            
+            const userMessage = input.value.trim();
+            const timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            
+            // Add user message
+            chatHistory.push({
+                type: 'user',
+                message: userMessage,
+                timestamp: timestamp
+            });
+            
+            input.value = '';
+            renderChatMessages();
+            
+            // Simulate agent response after a delay
+            setTimeout(() => {
+                const agentResponse = simulateAgentResponse(currentChatCategory, userMessage);
+                chatHistory.push({
+                    type: 'agent',
+                    message: agentResponse,
+                    timestamp: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                });
+                renderChatMessages();
+            }, 1000 + Math.random() * 2000); // 1-3 seconds delay
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+        
+        function simulateAgentResponse(category, userMessage) {
+            const responses = {
+                payment: [
+                    "Para çekme/yatırma konusunda size yardımcı olacağım. Hangi işlemde sorun yaşıyorsunuz?",
+                    "Ödeme işleminizle ilgili detayları kontrol ediyorum. IBAN bilgileriniz doğru mu?",
+                    "Para çekme işleminiz için minimum ₺100 tutarında olması gerekiyor. İşlemler 1-3 iş günü sürmektedir."
+                ],
+                documents: [
+                    "Doküman yükleme konusunda yardımcı olabilirim. Hangi dosya formatında sorun yaşıyorsunuz?",
+                    "Dosyanızın boyutunu kontrol edin. Maksimum 10MB olmalıdır. PDF, DOC, DOCX, JPG ve PNG formatları desteklenmektedir.",
+                    "Tarayıcınızın önbelleğini temizlemeyi denediniz mi? Bu sorunu genellikle çözer."
+                ],
+                account: [
+                    "Hesap sorunlarınız için buradayım. Ne tür bir problem yaşıyorsunuz?",
+                    "Hesap güvenliğiniz bizim için önemli. Şifrenizi ne zaman son değiştirdiniz?",
+                    "İki faktörlü kimlik doğrulamayı aktifleştirmenizi öneriyorum. Profil ayarlarından etkinleştirebilirsiniz."
+                ],
+                projects: [
+                    "Proje ve tekliflerle ilgili nasıl yardımcı olabilirim?",
+                    "Projenizin hangi aşamasında sorun yaşıyorsunuz? Detay verebilir misiniz?",
+                    "Uygulama projesi hakkı kazanmanız için müteahhidin memnuniyeti önemlidir. Kaliteli iş çıkarmaya devam edin!"
+                ],
+                other: [
+                    "Başka nasıl yardımcı olabilirim? Sorununuzu detaylandırabilir misiniz?",
+                    "Anlıyorum, bu konuda size yardımcı olmaya çalışacağım.",
+                    "Eğer teknik bir sorunsa, sistem yöneticilerimizle iletişime geçeceğim."
+                ]
+            };
+            
+            // Simple keyword matching for more relevant responses
+            const lowerMessage = userMessage.toLowerCase();
+            if (lowerMessage.includes('para') || lowerMessage.includes('ödeme') || lowerMessage.includes('çek')) {
+                return responses.payment[Math.floor(Math.random() * responses.payment.length)];
+            } else if (lowerMessage.includes('dosya') || lowerMessage.includes('yükle') || lowerMessage.includes('doküman')) {
+                return responses.documents[Math.floor(Math.random() * responses.documents.length)];
+            } else if (lowerMessage.includes('hesap') || lowerMessage.includes('profil') || lowerMessage.includes('şifre')) {
+                return responses.account[Math.floor(Math.random() * responses.account.length)];
+            } else if (lowerMessage.includes('proje') || lowerMessage.includes('teklif')) {
+                return responses.projects[Math.floor(Math.random() * responses.projects.length)];
+            }
+            
+            // Default to category-specific responses
+            const categoryResponses = responses[category] || responses.other;
+            return categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
+        }
+        
+        function confirmFreezeAccount() {
+            closeModal('freeze-account-confirm-modal');
+            showNotification('Hesabınız başarıyla donduruldu. Tekrar aktifleştirmek için destek ile iletişime geçin.', 'success');
+            
+            // Simulate logout after 2 seconds
+            setTimeout(() => {
+                showNotification('Oturumunuz sonlandırılıyor...', 'info');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            }, 2000);
+        }
+        
+        function confirmDeleteAccount() {
+            closeModal('delete-account-confirm-modal');
+            showNotification('Hesabınız kalıcı olarak silindi. Tüm verileriniz kaldırılmıştır.', 'success');
+            
+            // Simulate logout after 2 seconds
+            setTimeout(() => {
+                showNotification('Ana sayfaya yönlendiriliyorsunuz...', 'info');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            }, 2000);
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            initializeSupport();
+            
+            // City filter change handler
+            document.getElementById('city-filter').addEventListener('change', updateDistrictOptions);
+            
+            // ESC key handler for modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modals = ['deposit-modal', 'withdraw-modal', 'edit-profile-modal', 'change-password-modal', 'verify-email-modal', 'verify-phone-modal', 'offer-detail-modal', 'approve-confirm-modal', 'reject-confirm-modal', 'project-detail-modal', 'complete-project-modal', 'approve-application-right-modal', 'pre-chat-modal', 'freeze-account-confirm-modal', 'delete-account-confirm-modal'];
+                    modals.forEach(modalId => {
+                        const modal = document.getElementById(modalId);
+                        if (!modal.classList.contains('hidden')) {
+                            closeModal(modalId);
+                        }
+                    });
+                }
+            });
+            
+            // Close mobile menu on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    closeMobileMenu();
+                }
+            });
+        });
+    </script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#5A00A8',
+                        'primary-light': '#8B00FF',
+                        'primary-dark': '#4B0082',
+                        'accent': '#28a745'
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+</body>
+</html> 

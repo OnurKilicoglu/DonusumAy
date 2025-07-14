@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Admin Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --accent-warning: #FF8C00;
+            --text-dark: #343a40;
+            --text-medium: #4A4A4A;
+            --text-light: #6c757d;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+
+        .notification {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification.removing {
+            animation: slideOutRight 0.3s ease-in;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div id="admin-container" class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-50 lg:static lg:w-64">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <img src="./LogoSade.png" alt="DönüşümAY Logo" class="w-8 h-10 rounded-lg">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">DönüşümAY</h1>
+                        <p class="text-xs text-gray-500">Admin Paneli</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav id="sidebar-nav" class="p-4 space-y-2">
+                <a href="#" onclick="showSection('dashboard-section')" class="sidebar-link active flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-home w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('user-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Kullanıcı Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('content-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-file-alt w-5"></i>
+                    <span>İçerik Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('support-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-headset w-5"></i>
+                    <span>Destek Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('financial-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Finansal Yönetim</span>
+                </a>
+                <a href="#" onclick="showSection('analytics-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Sistem Analitiği</span>
+                </a>
+                <a href="#" onclick="showSection('marketing-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-bullhorn w-5"></i>
+                    <span>Pazarlama</span>
+                </a>
+                <a href="#" onclick="showSection('settings-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Sistem Ayarları</span>
+                </a>
+                <a href="#" onclick="logout()" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span>Çıkış Yap</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="closeMobileMenu()"></div>
+        
+        <main class="flex-1 lg:ml-0">
+            <button id="mobile-menu-toggle" class="lg:hidden fixed top-4 left-4 z-30 bg-white p-2 rounded-lg shadow-md" onclick="openMobileMenu()" title="Menüyü Aç">
+                <i class="fas fa-bars text-gray-600"></i>
+            </button>
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="min-h-screen">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                        <p class="text-gray-600 mt-1">Sistem genel durumunu ve istatistikleri görüntüleyin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Total Users -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Kullanıcı</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-users">0</h3>
+                                    <p class="text-sm text-green-600 mt-2">
+                                        <span class="font-medium">↑ 12%</span>
+                                        <span class="text-gray-500">son 30 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-users text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Projects -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Aktif Projeler</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="active-projects">0</h3>
+                                    <p class="text-sm text-green-600 mt-2">
+                                        <span class="font-medium">↑ 8%</span>
+                                        <span class="text-gray-500">son 30 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-building text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support Tickets -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Açık Destek</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="open-tickets">0</h3>
+                                    <p class="text-sm text-yellow-600 mt-2">
+                                        <span class="font-medium">↑ 5%</span>
+                                        <span class="text-gray-500">son 7 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-ticket-alt text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Health -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Sistem Durumu</p>
+                                    <h3 class="text-2xl font-bold text-green-600 mt-2">Sağlıklı</h3>
+                                    <p class="text-sm text-gray-500 mt-2">
+                                        <span class="font-medium">99.9%</span>
+                                        <span>uptime</span>
+                                    </p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- User Growth Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Kullanıcı Büyümesi</h3>
+                            <div class="chart-container">
+                                <canvas id="userGrowthChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Project Distribution Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Proje Dağılımı</h3>
+                            <div class="chart-container">
+                                <canvas id="projectDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Son Aktiviteler</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4" id="recent-activity-list">
+                                <!-- Activity items will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- User Management Section -->
+            <div id="user-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Kullanıcı Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Tüm kullanıcıları görüntüleyin ve yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Filters and Search -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Tipi</label>
+                                <select id="user-type-filter" aria-label="Kullanıcı tipi filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="customer">Müşteri</option>
+                                    <option value="contractor">Müteahhit</option>
+                                    <option value="architect">Mimar</option>
+                                    <option value="notary">Noter</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                                <select id="user-status-filter" aria-label="Kullanıcı durumu filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="active">Aktif</option>
+                                    <option value="pending">Onay Bekleyen</option>
+                                    <option value="suspended">Askıya Alınmış</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kayıt Tarihi</label>
+                                <select id="registration-date-filter" aria-label="Kayıt tarihi filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="today">Bugün</option>
+                                    <option value="week">Bu Hafta</option>
+                                    <option value="month">Bu Ay</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Arama</label>
+                                <input type="text" id="user-search" placeholder="İsim, email veya ID ile ara..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User List -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tip</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Giriş</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="user-list">
+                                    <!-- User rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-700">Sayfa başına</span>
+                                    <select id="per-page" aria-label="Sayfa başına gösterilecek kayıt sayısı" class="mx-2 border border-gray-300 rounded-md">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="text-sm text-gray-700">kayıt</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="prev-page">Önceki</button>
+                                    <span class="text-sm text-gray-700" id="page-info">Sayfa 1 / 10</span>
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="next-page">Sonraki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Content Management Section -->
+            <div id="content-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">İçerik Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">İlanları ve diğer içerikleri yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Content Type Tabs -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                <button onclick="switchContentTab('listings')" class="content-tab active border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600">
+                                    İlanlar
+                                </button>
+                                <button onclick="switchContentTab('projects')" class="content-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Projeler
+                                </button>
+                                <button onclick="switchContentTab('announcements')" class="content-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Duyurular
+                                </button>
+                                <button onclick="switchContentTab('faqs')" class="content-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    SSS
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Content List -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <!-- Listings Tab Content -->
+                        <div id="listings-content" class="content-tab-panel">
+                            <div class="p-6 border-b border-gray-200">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div class="flex-1">
+                                        <input type="text" placeholder="İlan ara..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <select aria-label="İlan durumu filtresi" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                            <option value="">Tüm Durumlar</option>
+                                            <option value="active">Aktif</option>
+                                            <option value="pending">Onay Bekliyor</option>
+                                            <option value="rejected">Reddedildi</option>
+                                            <option value="expired">Süresi Doldu</option>
+                                        </select>
+                                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                            <i class="fas fa-filter mr-2"></i>Filtrele
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İlan ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlık</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sahibi</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="listings-list">
+                                        <!-- Listing rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Projects Tab Content -->
+                        <div id="projects-content" class="content-tab-panel hidden">
+                            <!-- Similar structure to listings but for projects -->
+                        </div>
+
+                        <!-- Announcements Tab Content -->
+                        <div id="announcements-content" class="content-tab-panel hidden">
+                            <div class="p-6">
+                                <button onclick="openNewAnnouncementModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-6">
+                                    <i class="fas fa-plus mr-2"></i>Yeni Duyuru
+                                </button>
+                                <div class="space-y-6" id="announcements-list">
+                                    <!-- Announcements will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQs Tab Content -->
+                        <div id="faqs-content" class="content-tab-panel hidden">
+                            <div class="p-6">
+                                <button onclick="openNewFAQModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-6">
+                                    <i class="fas fa-plus mr-2"></i>Yeni SSS
+                                </button>
+                                <div class="space-y-6" id="faqs-list">
+                                    <!-- FAQs will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-700">Sayfa başına</span>
+                                    <select aria-label="Sayfa başına gösterilecek kayıt sayısı" class="mx-2 border border-gray-300 rounded-md">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="text-sm text-gray-700">kayıt</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm">Önceki</button>
+                                    <span class="text-sm text-gray-700">Sayfa 1 / 10</span>
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm">Sonraki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Support Management Section -->
+            <div id="support-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Destek Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Tüm destek taleplerini görüntüleyin ve yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Filters and Search -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                                <select id="ticket-status-filter" aria-label="Destek durumu filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="open">Açık</option>
+                                    <option value="closed">Kapalı</option>
+                                    <option value="pending">Onay Bekliyor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                                <select id="ticket-category-filter" aria-label="Destek kategorisi filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="technical">Teknik Sorun</option>
+                                    <option value="billing">Fatura Sorunu</option>
+                                    <option value="account">Hesap Sorunu</option>
+                                    <option value="other">Diğer</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Arama</label>
+                                <input type="text" id="ticket-search" placeholder="ID, başlık veya açıklama ile ara..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ticket List -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlık</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="ticket-list">
+                                    <!-- Ticket rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-700">Sayfa başına</span>
+                                    <select id="ticket-per-page" aria-label="Sayfa başına gösterilecek kayıt sayısı" class="mx-2 border border-gray-300 rounded-md">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="text-sm text-gray-700">kayıt</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="ticket-prev-page">Önceki</button>
+                                    <span class="text-sm text-gray-700" id="ticket-page-info">Sayfa 1 / 10</span>
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="ticket-next-page">Sonraki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Financial Section -->
+            <div id="financial-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Finansal Yönetim</h1>
+                        <p class="text-gray-600 mt-1">Sistem finansal istatistiklerini ve raporlarını görüntüleyin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Revenue Overview -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Gelir Genel Bakış</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-purple-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Toplam Gelir</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-revenue">$0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 15%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Ortalama Gelir</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="average-revenue">$0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 10%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-green-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Son Gelir</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="last-revenue">$0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 20%</span>
+                                    <span class="text-gray-500">son 7 gün</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expenses -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Giderler</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-red-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Toplam Gider</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-expenses">$0</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 25%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Ortalama Gider</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="average-expenses">$0</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 30%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-yellow-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Son Gider</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="last-expense">$0</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 40%</span>
+                                    <span class="text-gray-500">son 7 gün</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Reports -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Finansal Raporlar</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-100 p-6 rounded-lg">
+                                <h4 class="text-md font-bold text-gray-800 mb-2">Genel Finansal Durum</h4>
+                                <p class="text-sm text-gray-600">Sistem genel finansal durumunu görüntüleyin.</p>
+                                <button class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                    <i class="fas fa-file-invoice mr-2"></i>Raporlar
+                                </button>
+                            </div>
+                            <div class="bg-gray-100 p-6 rounded-lg">
+                                <h4 class="text-md font-bold text-gray-800 mb-2">Gelir/Gider Detayları</h4>
+                                <p class="text-sm text-gray-600">Gelir ve giderlerin ayrıntılı analizini görüntüleyin.</p>
+                                <button class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                    <i class="fas fa-chart-line mr-2"></i>Raporlar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Sistem Analitiği</h1>
+                        <p class="text-gray-600 mt-1">Sistem davranışlarını ve kullanıcı istatistiklerini analiz edin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- User Behavior -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kullanıcı Davranışları</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-blue-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Toplam Kullanıcı</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-users-analytics">0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 10%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-purple-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Aktif Kullanıcı</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="active-users-analytics">0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 15%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-green-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Ortalama Oturum Süresi</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="avg-session-duration">0s</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 20%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-red-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Çıkış Oranı</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="churn-rate">0%</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 10%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Engagement -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">İçerik Engelleme</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-yellow-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Toplam İçerik</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-content">0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 12%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Aktif İlanlar</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="active-listings">0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 10%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-purple-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Ortalama İçerik Görüntüleme</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="avg-content-views">0</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 15%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Ortalama İçerik Süresi</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="avg-content-duration">0s</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">↑ 20%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Performance -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Sistem Performansı</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-green-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Uptime</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="uptime">99.9%</h3>
+                                <p class="text-sm text-green-600 mt-2">
+                                    <span class="font-medium">99.9%</span>
+                                    <span>uptime</span>
+                                </p>
+                            </div>
+                            <div class="bg-red-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Düşük Performans</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="low-performance">0</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 10%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-blue-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Hata Oranı</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="error-rate">0%</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 5%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 p-6 rounded-lg">
+                                <p class="text-sm text-gray-600">Yüksek Yük</p>
+                                <h3 class="text-2xl font-bold text-gray-900 mt-2" id="high-load">0</h3>
+                                <p class="text-sm text-red-600 mt-2">
+                                    <span class="font-medium">↑ 15%</span>
+                                    <span class="text-gray-500">son 30 gün</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Marketing Section -->
+            <div id="marketing-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Pazarlama Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Pazarlama kampanyalarını ve müşteri taleplerini yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Marketing Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Müşteri Edinme Maliyeti (CAC)</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="cac-value">₺250</h3>
+                                    <p class="text-sm text-green-600 mt-2">
+                                        <span class="font-medium">↓ 12%</span>
+                                        <span class="text-gray-500">son 30 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-user-plus text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Müşteri Yaşam Boyu Değeri (CLTV)</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="cltv-value">₺2,500</h3>
+                                    <p class="text-sm text-green-600 mt-2">
+                                        <span class="font-medium">↑ 8%</span>
+                                        <span class="text-gray-500">son 30 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Pazarlama Harcaması</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="marketing-spend">₺15,000</h3>
+                                    <p class="text-sm text-yellow-600 mt-2">
+                                        <span class="font-medium">↑ 5%</span>
+                                        <span class="text-gray-500">son 30 gün</span>
+                                    </p>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-coins text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">CAC Trendi</h3>
+                            <div class="chart-container">
+                                <canvas id="cacTrendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Talep Dağılımı</h3>
+                            <div class="chart-container">
+                                <canvas id="inquiryDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Management -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold text-gray-800">Aktif Kampanyalar</h3>
+                                <button onclick="openNewCampaignModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                    <i class="fas fa-plus mr-2"></i>Yeni Kampanya
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanya Adı</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bütçe</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlangıç</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitiş</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="campaign-list">
+                                    <!-- Campaign rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Customer Inquiries -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800">Müşteri Talepleri</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Talep ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Konu</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="inquiry-list">
+                                    <!-- Inquiry rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-700">Sayfa başına</span>
+                                    <select id="inquiry-per-page" aria-label="Sayfa başına gösterilecek kayıt sayısı" class="mx-2 border border-gray-300 rounded-md">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="text-sm text-gray-700">kayıt</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="inquiry-prev-page">Önceki</button>
+                                    <span class="text-sm text-gray-700" id="inquiry-page-info">Sayfa 1 / 10</span>
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="inquiry-next-page">Sonraki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Settings Section -->
+            <div id="settings-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Sistem Ayarları</h1>
+                        <p class="text-gray-600 mt-1">Sistem genel ayarlarını ve yapılandırmasını yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- General Settings -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Genel Ayarlar</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Site Adı</label>
+                                <input type="text" id="site-name" aria-label="Site adı" placeholder="Site adını girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">E-posta Adresi</label>
+                                <input type="email" id="site-email" aria-label="Site e-posta adresi" placeholder="E-posta adresini girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Telefon Numarası</label>
+                                <input type="tel" id="site-phone" aria-label="Site telefon numarası" placeholder="Telefon numarasını girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Adres</label>
+                                <textarea id="site-address" rows="3" aria-label="Site adresi" placeholder="Adresi girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Management Settings -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kullanıcı Yönetimi Ayarları</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Kayıt Onayı</label>
+                                <select id="user-registration-approval" aria-label="Kullanıcı kayıt onayı" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="auto">Otomatik Onay</option>
+                                    <option value="manual">Manuel Onay</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Maksimum Kullanıcı Sayısı</label>
+                                <input type="number" id="max-users" aria-label="Maksimum kullanıcı sayısı" placeholder="Maksimum kullanıcı sayısını girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Süresi Dolan İlanların Silinmesi</label>
+                                <select id="expired-listings-deletion" aria-label="Süresi dolan ilanların silinme süresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="7">7 Gün</option>
+                                    <option value="14">14 Gün</option>
+                                    <option value="30">30 Gün</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kullanıcıların Oturum Süresi</label>
+                                <select id="user-session-duration" aria-label="Kullanıcı oturum süresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="30">30 Dakika</option>
+                                    <option value="60">60 Dakika</option>
+                                    <option value="120">120 Dakika</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Logs -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Sistem Logları</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivite</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Adresi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detaylar</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="system-logs">
+                                    <!-- Log rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-700">Sayfa başına</span>
+                                    <select id="log-per-page" aria-label="Sayfa başına gösterilecek kayıt sayısı" class="mx-2 border border-gray-300 rounded-md">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="text-sm text-gray-700">kayıt</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="log-prev-page">Önceki</button>
+                                    <span class="text-sm text-gray-700" id="log-page-info">Sayfa 1 / 10</span>
+                                    <button class="px-3 py-1 border border-gray-300 rounded-md text-sm" id="log-next-page">Sonraki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="new-announcement-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Yeni Duyuru Oluştur</h3>
+            <form id="new-announcement-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Başlık</label>
+                                                    <input type="text" id="announcement-title" aria-label="Duyuru başlığı" placeholder="Duyuru başlığını girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">İçerik</label>
+                                                    <textarea id="announcement-content" rows="4" aria-label="Duyuru içeriği" placeholder="Duyuru içeriğini girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeNewAnnouncementModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="new-faq-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Yeni SSS Oluştur</h3>
+            <form id="new-faq-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Soru</label>
+                                                    <input type="text" id="faq-question" aria-label="SSS sorusu" placeholder="Soruyu girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cevap</label>
+                                                    <textarea id="faq-answer" rows="4" aria-label="SSS cevabı" placeholder="Cevabı girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeNewFAQModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pazarlama Yönetimi Modalı -->
+    <div id="new-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Yeni Reklam Kampanyası Oluştur</h3>
+            <form id="new-campaign-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kampanya Adı</label>
+                    <input type="text" id="campaign-name" aria-label="Kampanya adı" placeholder="Kampanya adını girin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Platform</label>
+                    <select id="campaign-platform" aria-label="Kampanya platformu" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="google">Google</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="twitter">Twitter</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bütçe</label>
+                    <input type="number" id="campaign-budget" aria-label="Kampanya bütçesi" placeholder="Bütçeyi girin (TL)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tarihi</label>
+                    <input type="date" id="campaign-start-date" aria-label="Kampanya başlangıç tarihi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
+                    <input type="date" id="campaign-end-date" aria-label="Kampanya bitiş tarihi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeNewCampaignModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Talep Detay/Yanıt Modalı -->
+    <div id="inquiry-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Talep Detayları</h3>
+                <button onclick="closeInquiryModal()" class="text-gray-400 hover:text-gray-600" title="Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="inquiry-details" class="mb-6">
+                <!-- Talep detayları JavaScript ile doldurulacak -->
+            </div>
+            <form id="inquiry-response-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Yanıt</label>
+                    <textarea id="inquiry-response" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Yanıtınızı yazın..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                    <select id="inquiry-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" title="Talep durumu">
+                        <option value="pending">Beklemede</option>
+                        <option value="in_progress">İşleme Alındı</option>
+                        <option value="resolved">Çözüldü</option>
+                        <option value="closed">Kapatıldı</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeInquiryModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Yanıtı Gönder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-dashboard.js"></script>
+</body>
+</html>

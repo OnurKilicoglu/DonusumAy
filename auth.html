@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            z-index: 50;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background-color: #10B981;
+            color: white;
+        }
+
+        .notification.error {
+            background-color: #EF4444;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <img src="./LogoSade.png" alt="DönüşümAY Logo" class="mx-auto h-16">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">DönüşümAY</h2>
+                <p class="mt-2 text-sm text-gray-600">Kentsel dönüşüm süreçlerini kolaylaştırıyoruz</p>
+            </div>
+
+            <!-- Giriş Formu -->
+            <form id="loginForm" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="loginEmail" class="sr-only">E-posta</label>
+                        <input id="loginEmail" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="E-posta">
+                    </div>
+                    <div>
+                        <label for="loginPassword" class="sr-only">Şifre</label>
+                        <input id="loginPassword" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="Şifre">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </span>
+                        Giriş Yap
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <button type="button" onclick="toggleForms()" class="text-sm text-primary hover:text-primary-dark">
+                        Hesabınız yok mu? Kayıt olun
+                    </button>
+                </div>
+            </form>
+
+            <!-- Kayıt Formu -->
+            <form id="registerForm" class="mt-8 space-y-6 hidden">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="registerName" class="sr-only">Ad Soyad</label>
+                        <input id="registerName" name="name" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="Ad Soyad">
+                    </div>
+                    <div>
+                        <label for="registerEmail" class="sr-only">E-posta</label>
+                        <input id="registerEmail" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="E-posta">
+                    </div>
+                    <div>
+                        <label for="registerPassword" class="sr-only">Şifre</label>
+                        <input id="registerPassword" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="Şifre">
+                    </div>
+                    <div>
+                        <label for="registerRole" class="sr-only">Rol</label>
+                        <select id="registerRole" name="role" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm">
+                            <option value="">Rol Seçin</option>
+                            <option value="customer">Müşteri</option>
+                            <option value="contractor">Müteahhit</option>
+                            <option value="architect">Mimar</option>
+                            <option value="notary">Noter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-user-plus"></i>
+                        </span>
+                        Kayıt Ol
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <button type="button" onclick="toggleForms()" class="text-sm text-primary hover:text-primary-dark">
+                        Zaten hesabınız var mı? Giriş yapın
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // URL parametrelerini kontrol et
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('register') === 'true') {
+            document.addEventListener('DOMContentLoaded', () => {
+                toggleForms();
+            });
+        }
+
+        // Bildirim gösterme fonksiyonu
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Form geçiş fonksiyonu
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            loginForm.classList.toggle('hidden');
+            registerForm.classList.toggle('hidden');
+        }
+
+        // Buton yükleme durumu
+        function setLoading(button, isLoading) {
+            if (isLoading) {
+                button.classList.add('loading');
+                button.disabled = true;
+            } else {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Simüle edilmiş kullanıcı verileri
+        const users = {
+            'customer@donusumay.com': {
+                password: '123456',
+                role: 'customer',
+                name: 'Ahmet Yılmaz',
+                dashboard: 'customer-dashboard.html'
+            },
+            'contractor@donusumay.com': {
+                password: '123456',
+                role: 'contractor',
+                name: 'Mehmet İnşaat Ltd. Şti.',
+                dashboard: 'contractor-dashboard.html'
+            },
+            'architect@donusumay.com': {
+                password: '123456',
+                role: 'architect',
+                name: 'Zeynep Mimar',
+                dashboard: 'architect-dashboard.html'
+            },
+            'notary@donusumay.com': {
+                password: '123456',
+                role: 'notary',
+                name: 'Ali Noter',
+                dashboard: 'notary-dashboard.html'
+            }
+        };
+
+        // Giriş formu işleme
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const button = e.target.querySelector('button[type="submit"]');
+            
+            setLoading(button, true);
+            
+            const user = users[email];
+            if (user && user.password === password) {
+                showNotification(`Hoş geldiniz, ${user.name}!`, 'success');
+                window.location.href = user.dashboard;
+            } else {
+                showNotification('Geçersiz e-posta veya şifre.', 'error');
+                setLoading(button, false);
+            }
+        });
+
+        // Kayıt formu işleme
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+            const button = e.target.querySelector('button[type="submit"]');
+            
+            setLoading(button, true);
+            
+            if (users[email]) {
+                showNotification('Bu e-posta adresi zaten kullanımda.', 'error');
+                setLoading(button, false);
+                return;
+            }
+            
+            users[email] = {
+                password: password,
+                role: role,
+                name: name,
+                dashboard: `${role}-dashboard.html`
+            };
+            
+            showNotification('Kayıt başarılı! Giriş yapabilirsiniz.', 'success');
+            setTimeout(() => {
+                toggleForms();
+                setLoading(button, false);
+            }, 1000);
+        });
+
+        // Örnek giriş bilgilerini sayfaya ekle
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const demoCredentials = document.createElement('div');
+            demoCredentials.className = 'mt-4 p-4 bg-gray-50 rounded-lg';
+            demoCredentials.innerHTML = `
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Örnek Giriş Bilgileri:</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Müşteri:</strong> customer@donusumay.com / 123456</p>
+                    <p><strong>Müteahhit:</strong> contractor@donusumay.com / 123456</p>
+                    <p><strong>Mimar:</strong> architect@donusumay.com / 123456</p>
+                    <p><strong>Noter:</strong> notary@donusumay.com / 123456</p>
+                </div>
+            `;
+            loginForm.appendChild(demoCredentials);
+        });
+    </script>
+</body>
+</html> 

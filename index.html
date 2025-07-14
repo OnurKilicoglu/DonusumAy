@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Kentsel Dönüşüm Platformu</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .bg-primary { background-color: var(--primary); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .bg-accent { background-color: var(--accent); }
+        .text-primary { color: var(--primary); }
+        .text-primary-light { color: var(--primary-light); }
+        .text-primary-dark { color: var(--primary-dark); }
+        .text-accent { color: var(--accent); }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #3C005A 0%, #5A0043 25%, #800060 50%, #800080 75%, #550080 100%);
+        }
+        
+        .filter-shadow {
+            box-shadow: 0 10px 25px rgba(128, 0, 128, 0.1);
+        }
+        
+        .hover-transform {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-transform:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(128, 0, 128, 0.15);
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#5A00A8',
+                        'primary-light': '#8B00FF',
+                        'primary-dark': '#4B0082',
+                        'accent': '#28a745',
+                        'bg-white': '#FFFFFF',
+                        'bg-light-gray': '#F8F8F8',
+                        'text-dark': '#343a40'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="relative flex items-center justify-end h-16 sm:h-20">
+                    
+                    <!-- Logo - Tam Sol -->
+                    <div class="absolute left-0 flex items-center">
+                        <a href="#" class="flex items-center hover-transform">
+                            <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg" style="width: 11rem;">
+                        </a>
+                    </div>
+                    
+                    <!-- Auth Buttons - Sağ -->
+                    <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                        <a href="auth.html" class="px-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-300 font-medium">
+                            Giriş Yap
+                        </a>
+                        <a href="auth.html?register=true" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium">
+                            Kayıt Ol
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-gradient text-white py-16 sm:py-20 lg:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
+                        Hayalinizdeki Dönüşüm Projesi<br>
+                        <span class="text-yellow-300">Sadece Bir Tık Uzağınızda!</span>
+                    </h1>
+                    <p class="text-lg sm:text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto leading-relaxed">
+                        Arsa/bina sahipleri, müteahhitler ve mimarlar için güvenli ve şeffaf kentsel dönüşüm platformu.
+                    </p>
+                </div>
+
+                <!-- Ana Filtreleme Çubuğu -->
+                <div class="max-w-6xl mx-auto">
+                    <div class="bg-white rounded-xl p-6 sm:p-8 filter-shadow">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+                            
+                            <!-- Proje Türü -->
+                            <div class="lg:col-span-2">
+                                <label for="projeTuruSelect" class="block text-sm font-medium text-gray-700 mb-2">Proje Türü Seçin</label>
+                                <select id="projeTuruSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <option value="">Tümü</option>
+                                    <option value="kentsel-donusum">Kentsel Dönüşüm</option>
+                                    <option value="arsa-degerlendirme">Arsa Değerlendirme</option>
+                                    <option value="bina-yenileme">Bina Yenileme/Güçlendirme</option>
+                                    <option value="kat-karsiligi">Kat Karşılığı Projeler</option>
+                                    <option value="gelir-paylasimi">Gelir Paylaşımı Projeleri</option>
+                                </select>
+                            </div>
+                            
+                            <!-- İl Seçimi -->
+                            <div>
+                                <label for="ilSelect" class="block text-sm font-medium text-gray-700 mb-2">İl Seçin</label>
+                                <select id="ilSelect" onchange="updateIlceler()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <option value="">İl Seçin</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                </select>
+                            </div>
+                            
+                            <!-- İlçe Seçimi -->
+                            <div>
+                                <label for="ilceSelect" class="block text-sm font-medium text-gray-700 mb-2">İlçe Seçin</label>
+                                <select id="ilceSelect" disabled class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                                    <option value="">Önce İl Seçin</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Arama Butonu -->
+                            <div class="flex items-end">
+                                <button onclick="searchProjects()" class="w-full bg-accent text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 font-medium flex items-center justify-center space-x-2 hover-transform">
+                                    <i class="fas fa-search"></i>
+                                    <span>Ara</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Gelişmiş Filtreler Butonu -->
+                        <div class="text-center">
+                            <button onclick="toggleAdvancedFilters()" class="text-primary hover:text-primary-dark transition-colors duration-300 font-medium flex items-center space-x-2 mx-auto">
+                                <i class="fas fa-sliders-h"></i>
+                                <span>Gelişmiş Filtreler</span>
+                                <i class="fas fa-chevron-down transition-transform duration-300" id="advancedFiltersIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gelişmiş Filtreler Bölümü -->
+        <section id="advanced-filters-section" class="hidden py-8 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-6xl mx-auto">
+                    <div class="bg-white rounded-xl p-6 sm:p-8 filter-shadow">
+                        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-6">Gelişmiş Filtreler</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            
+                            <!-- Arsa Alanı -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">Arsa Alanı (m²)</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="minArsaAlani" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <input type="number" id="maxArsaAlani" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                </div>
+                            </div>
+                            
+                            <!-- Beklenen Daire Sayısı -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">Beklenen Daire Sayısı</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="minDaireSayisi" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <input type="number" id="maxDaireSayisi" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                </div>
+                            </div>
+                            
+                            <!-- Nakit Beklentisi -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">Nakit Beklentisi (₺)</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="minNakitBeklentisi" placeholder="Min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <input type="number" id="maxNakitBeklentisi" placeholder="Max" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                </div>
+                            </div>
+                            
+                            <!-- Kat Karşılığı Oranı -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">Kat Karşılığı Oranı (%)</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="minKatKarsiligi" placeholder="Min" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                    <input type="number" id="maxKatKarsiligi" placeholder="Max" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700">
+                                </div>
+                            </div>
+                            
+                            <!-- Mevcut Yapı Durumu -->
+                            <div class="space-y-3 sm:col-span-2 lg:col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Mevcut Yapı Durumu</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="bosArsa" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        <span class="text-sm text-gray-700">Boş Arsa</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="mevcutBina" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        <span class="text-sm text-gray-700">Mevcut Bina</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="riskliYapi" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        <span class="text-sm text-gray-700">Riskli Yapı</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Filtre Butonları -->
+                        <div class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                            <button onclick="clearFilters()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium">
+                                Filtreleri Temizle
+                            </button>
+                            <button onclick="applyFilters()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium">
+                                Filtreleri Uygula
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- İlan Sonuçları Bölümü -->
+        <section id="listing-results-section" class="py-12 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
+                    
+                    <!-- Sonuç Başlığı -->
+                    <div class="mb-8">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Projeler</h2>
+                        <p id="results-count" class="text-gray-600">Toplam 6 proje bulundu</p>
+                    </div>
+                    
+                    <!-- İlan Kartları Grid -->
+                    <div id="listing-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                        <!-- İlan kartları JavaScript ile dinamik olarak yüklenecek -->
+                    </div>
+                    
+                    <!-- İlan Bulunamadı Mesajı -->
+                    <div id="no-results-message" class="hidden text-center py-12">
+                        <div class="text-gray-500">
+                            <i class="fas fa-search text-4xl mb-4"></i>
+                            <p class="text-lg font-medium">Filtrelerinize uygun ilan bulunamadı.</p>
+                            <p class="text-sm mt-2">Lütfen filtre kriterlerinizi değiştirerek tekrar deneyin.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Ana Footer İçeriği -->
+                <div class="py-12 lg:py-16">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                        
+                        <!-- Şirket Bilgileri -->
+                        <div class="lg:col-span-1">
+                            <div class="flex items-center space-x-3 mb-6">
+                                <span class="text-xl font-bold">DönüşümAY</span>
+                            </div>
+                            <p class="text-gray-300 mb-6 leading-relaxed">
+                                Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri buluşturan köprü.
+                            </p>
+                            
+                            <!-- Sosyal Medya -->
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Hızlı Linkler -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                            <ul class="space-y-3">
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl Çalışır?</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Blog</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Hizmetlerimiz -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                            <ul class="space-y-3">
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina Yenileme</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat Karşılığı Projeler</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Gelir Paylaşımı</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- İletişim ve Newsletter -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                            <div class="space-y-4 mb-6">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                    <div class="text-gray-300">
+                                        <p class="text-sm">Maslak Mahallesi,</p>
+                                        <p class="text-sm">Büyükdere Cad. No:123</p>
+                                        <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-phone text-primary"></i>
+                                    <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Newsletter -->
+                            <div>
+                                <h4 class="font-medium mb-3">Newsletter</h4>
+                                <div class="flex">
+                                    <input type="email" placeholder="E-posta adresiniz" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                    <button title="Newsletter'a Abone Ol" class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alt Footer -->
+                <div class="border-t border-gray-800 py-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                        <div class="text-sm text-gray-400">
+                            &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                        </div>
+                        <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                            <button onclick="openPrivacyModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik Politikası</button>
+                            <button onclick="openTermsModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım Şartları</button>
+                            <button onclick="openCookieModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Çerez Politikası</button>
+                            <button onclick="openKvkkModal()" class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Giriş Yap Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300">
+            <div class="p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Giriş Yap</h2>
+                    <button onclick="closeLoginModal()" aria-label="Modalı Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="space-y-4">
+                        <!-- E-posta -->
+                        <div>
+                            <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                            <input type="email" id="loginEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200" placeholder="ornek@email.com">
+                        </div>
+                        
+                        <!-- Şifre -->
+                        <div>
+                            <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+                            <input type="password" id="loginPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200" placeholder="Şifreniz">
+                        </div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="closeLoginModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
+                            İptal
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-all duration-200 font-medium">
+                            Giriş Yap
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Kayıt Ol Link -->
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">
+                        Hesabınız yok mu? 
+                        <button onclick="switchToRegister()" class="text-primary hover:text-primary-dark font-medium">Kayıt Ol</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kayıt Ol Modal -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300">
+            <div class="p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Kayıt Ol</h2>
+                    <button onclick="closeRegisterModal()" aria-label="Modalı Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Register Form -->
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="space-y-4">
+                        <!-- Ad Soyad -->
+                        <div>
+                            <label for="registerName" class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+                            <input type="text" id="registerName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200" placeholder="Adınız ve Soyadınız">
+                        </div>
+                        
+                        <!-- E-posta -->
+                        <div>
+                            <label for="registerEmail" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                            <input type="email" id="registerEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200" placeholder="ornek@email.com">
+                        </div>
+                        
+                        <!-- Şifre -->
+                        <div>
+                            <label for="registerPassword" class="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+                            <input type="password" id="registerPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200" placeholder="Güçlü bir şifre seçin">
+                        </div>
+                        
+                        <!-- Rol Seçimi -->
+                        <div>
+                            <label for="registerRole" class="block text-sm font-medium text-gray-700 mb-2">Rolünüz</label>
+                            <select id="registerRole" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200">
+                                <option value="">Rol Seçin</option>
+                                <option value="property-owner">Kullanıcı (Mülk Sahibi)</option>
+                                <option value="contractor">Müteahhit</option>
+                                <option value="architect">Mimar</option>
+                                <option value="notary">Noter</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="closeRegisterModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
+                            İptal
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-all duration-200 font-medium">
+                            Kayıt Ol
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Giriş Yap Link -->
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">
+                        Zaten hesabınız var mı? 
+                        <button onclick="switchToLogin()" class="text-primary hover:text-primary-dark font-medium">Giriş Yap</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tam Ekran Resim Modal -->
+    <div id="fullscreenModal" class="fixed inset-0 z-60 hidden bg-black bg-opacity-95 modal-overlay" onclick="closeFullscreen()">
+        <div class="min-h-screen flex items-center justify-center px-4" onclick="event.stopPropagation()">
+            <div class="relative max-w-screen-lg max-h-screen">
+                <img id="fullscreenImage" src="" alt="Tam Ekran Görsel" class="max-w-full max-h-full object-contain">
+                
+                <!-- Kapatma Butonu -->
+                <button onclick="closeFullscreen()" title="Kapat" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all duration-200 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- Navigation Butonları -->
+                <button onclick="changeFullscreenImage(-1)" title="Önceki Resim" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all duration-200">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button onclick="changeFullscreenImage(1)" title="Sonraki Resim" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all duration-200">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- Resim Bilgisi -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-full text-sm">
+                    <span id="fullscreenImageIndex">1</span> / <span id="fullscreenTotalImages">1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gizlilik Politikası Modal -->
+    <div id="privacyModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 modal-overlay" onclick="closeDocumentModal('privacyModal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                    <h2 class="text-xl font-bold text-gray-800">Gizlilik Politikası</h2>
+                    <button onclick="closeDocumentModal('privacyModal')" title="Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="prose max-w-none">
+                        <p class="text-sm text-gray-500 mb-4">Son güncelleme: 1 Ocak 2025</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">1. Veri Sorumlusu</h3>
+                        <p class="mb-4">DönüşümAY olarak, kişisel verilerinizin korunması konusunda hassasiyetle hareket etmekte ve 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") hükümleri uyarınca veri sorumlusu sıfatıyla hareket etmekteyiz.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">2. Toplanan Kişisel Veriler</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>İletişim bilgileri (ad, soyad, e-posta, telefon)</li>
+                            <li>Kimlik bilgileri (TC kimlik numarası, pasaport numarası)</li>
+                            <li>Adres bilgileri</li>
+                            <li>Mesleki bilgiler</li>
+                            <li>Platform kullanım verileri</li>
+                            <li>İP adresi ve çerez verileri</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">3. Kişisel Verilerin İşlenme Amaçları</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Üyelik ve hesap yönetimi</li>
+                            <li>Hizmet sunumu ve müşteri desteği</li>
+                            <li>İletişim ve bilgilendirme</li>
+                            <li>Güvenlik ve dolandırıcılık tespiti</li>
+                            <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+                            <li>İstatistiksel analiz ve raporlama</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">4. Kişisel Verilerin Paylaşımı</h3>
+                        <p class="mb-4">Kişisel verileriniz, yalnızca yukarıda belirtilen amaçlarla ve yasal gerekliliklere uygun olarak, gerekli güvenlik önlemleri alınarak üçüncü kişilerle paylaşılabilir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">5. Veri Güvenliği</h3>
+                        <p class="mb-4">Kişisel verilerinizin güvenliği için teknik ve idari tedbirler almakta, verilerin yetkisiz erişime karşı korunması için gerekli önlemleri uygulamaktayız.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">6. Haklarınız</h3>
+                        <p class="mb-4">KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                            <li>İşlenen verileriniz hakkında bilgi talep etme</li>
+                            <li>Verilerin düzeltilmesini isteme</li>
+                            <li>Verilerin silinmesini isteme</li>
+                            <li>İşleme itiraz etme</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">7. İletişim</h3>
+                        <p class="mb-4">Gizlilik politikamız hakkında sorularınız için <strong>info@donusumay.com</strong> adresinden bizimle iletişime geçebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kullanım Şartları Modal -->
+    <div id="termsModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 modal-overlay" onclick="closeDocumentModal('termsModal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                    <h2 class="text-xl font-bold text-gray-800">Kullanım Şartları</h2>
+                    <button onclick="closeDocumentModal('termsModal')" title="Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="prose max-w-none">
+                        <p class="text-sm text-gray-500 mb-4">Son güncelleme: 1 Ocak 2025</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">1. Genel Hükümler</h3>
+                        <p class="mb-4">Bu kullanım şartları, DönüşümAY platformunu kullanan tüm kullanıcılar için geçerlidir. Platformu kullanarak bu şartları kabul etmiş sayılırsınız.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">2. Platform Tanımı</h3>
+                        <p class="mb-4">DönüşümAY, kentsel dönüşüm projelerinde arsa/bina sahipleri ile müteahhitler, mimarlar ve diğer profesyonelleri buluşturan dijital bir platformdur.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">3. Kullanıcı Yükümlülükleri</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Doğru ve güncel bilgiler sağlamak</li>
+                            <li>Hesap güvenliğini korumak</li>
+                            <li>Yasalara ve etik kurallara uygun hareket etmek</li>
+                            <li>Diğer kullanıcılara saygılı davranmak</li>
+                            <li>Platform kurallarına uymak</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">4. Yasaklanan Faaliyetler</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Yanıltıcı veya yanlış bilgi paylaşımı</li>
+                            <li>Spam veya istenmeyen içerik gönderimi</li>
+                            <li>Başkalarının hesaplarını kullanma</li>
+                            <li>Fikri mülkiyet haklarını ihlal etme</li>
+                            <li>Platform güvenliğini tehdit etme</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">5. Hizmet Kapsamı</h3>
+                        <p class="mb-4">Platform, bilgi paylaşımı ve eşleştirme hizmeti sunar. Gerçekleşen anlaşmaların hukuki sorumluluğu taraflara aittir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">6. Sorumluluk Sınırlamaları</h3>
+                        <p class="mb-4">DönüşümAY, kullanıcılar arasındaki anlaşmalardan, üçüncü kişi eylemlerinden ve platform dışı faaliyetlerden sorumlu değildir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">7. Hesap Sonlandırma</h3>
+                        <p class="mb-4">Kullanım şartlarını ihlal eden hesaplar askıya alınabilir veya silinebilir. Kullanıcılar hesaplarını istediği zaman kapatabilir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">8. Değişiklikler</h3>
+                        <p class="mb-4">Bu şartlar önceden haber verilerek değiştirilebilir. Güncel şartlar platform üzerinde yayınlanacaktır.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">9. Uygulanacak Hukuk</h3>
+                        <p class="mb-4">Bu sözleşme Türk Hukuku'na tabidir. Uyuşmazlıklar İstanbul mahkemelerinde çözülecektir.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Çerez Politikası Modal -->
+    <div id="cookieModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 modal-overlay" onclick="closeDocumentModal('cookieModal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                    <h2 class="text-xl font-bold text-gray-800">Çerez Politikası</h2>
+                    <button onclick="closeDocumentModal('cookieModal')" title="Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="prose max-w-none">
+                        <p class="text-sm text-gray-500 mb-4">Son güncelleme: 1 Ocak 2025</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">1. Çerez Nedir?</h3>
+                        <p class="mb-4">Çerezler, web sitesini ziyaret ettiğinizde cihazınızda saklanan küçük metin dosyalarıdır. Bu dosyalar, site deneyiminizi iyileştirmek için kullanılır.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">2. Kullandığımız Çerez Türleri</h3>
+                        
+                        <h4 class="font-medium mb-2">Zorunlu Çerezler</h4>
+                        <p class="mb-3">Web sitesinin temel işlevlerini sağlamak için gerekli çerezlerdir.</p>
+                        
+                        <h4 class="font-medium mb-2">Performans Çerezleri</h4>
+                        <p class="mb-3">Site performansını analiz etmek ve iyileştirmek için kullanılır.</p>
+                        
+                        <h4 class="font-medium mb-2">İşlevsellik Çerezleri</h4>
+                        <p class="mb-3">Kişiselleştirilmiş deneyim sunmak için tercihlerinizi hatırlar.</p>
+                        
+                        <h4 class="font-medium mb-2">Pazarlama Çerezleri</h4>
+                        <p class="mb-4">İlgi alanlarınıza uygun içerik ve reklamlar sunmak için kullanılır.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">3. Çerez Yönetimi</h3>
+                        <p class="mb-4">Tarayıcı ayarlarından çerezleri yönetebilir, kabul etmeyebilir veya silebilirsiniz. Ancak bu durumda bazı site özellikleri çalışmayabilir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">4. Üçüncü Taraf Çerezleri</h3>
+                        <p class="mb-4">Google Analytics, sosyal medya eklentileri gibi üçüncü taraf hizmetleri de çerez kullanabilir.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">5. İletişim</h3>
+                        <p class="mb-4">Çerez politikamız hakkında sorularınız için <strong>info@donusumay.com</strong> adresinden bizimle iletişime geçebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KVKK Aydınlatma Metni Modal -->
+    <div id="kvkkModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 modal-overlay" onclick="closeDocumentModal('kvkkModal')">
+        <div class="min-h-screen px-4 py-8 text-center" onclick="event.stopPropagation()">
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                    <h2 class="text-xl font-bold text-gray-800">KVKK Aydınlatma Metni</h2>
+                    <button onclick="closeDocumentModal('kvkkModal')" title="Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="prose max-w-none">
+                        <p class="text-sm text-gray-500 mb-4">6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hazırlanmıştır.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">1. Veri Sorumlusu Kimliği</h3>
+                        <p class="mb-4"><strong>DönüşümAY</strong><br>
+                        Adres: Maslak Mahallesi, Büyükdere Cad. No:123, 34485 Sarıyer/İstanbul<br>
+                        E-posta: info@donusumay.com</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">2. Kişisel Verilerin Hangi Amaçla İşleneceği</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Üyelik işlemlerinin gerçekleştirilmesi</li>
+                            <li>Hizmet sunumunun sağlanması</li>
+                            <li>Müşteri memnuniyetinin artırılması</li>
+                            <li>İletişim faaliyetlerinin yürütülmesi</li>
+                            <li>Güvenlik önlemlerinin uygulanması</li>
+                            <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">3. İşlenen Kişisel Veri Kategorileri</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Kimlik bilgileri (ad, soyad, TC kimlik numarası)</li>
+                            <li>İletişim bilgileri (telefon, e-posta, adres)</li>
+                            <li>Mesleki bilgiler</li>
+                            <li>İşlem güvenliği bilgileri</li>
+                            <li>Risk yönetimi bilgileri</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">4. Kişisel Verilerin Aktarılabileceği Üçüncü Kişiler</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Yasal yükümlülük gereği kamu kurum ve kuruluşları</li>
+                            <li>Hizmet sağlayıcı iş ortakları</li>
+                            <li>Bilgi işlem ve veri saklama hizmeti alınan şirketler</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">5. Kişisel Veri Toplamanın Yöntemi ve Hukuki Sebebi</h3>
+                        <p class="mb-4">Kişisel verileriniz, dijital ortamda, sözleşmenin kurulması ve ifası, hukuki yükümlülüğün yerine getirilmesi ve meşru menfaat işleme şartları kapsamında toplanmaktadır.</p>
+                        
+                        <h3 class="text-lg font-semibold mb-3">6. Kişisel Veri Sahibinin KVKK'nın 11. Maddesinde Sayılan Hakları</h3>
+                        <ul class="list-disc list-inside mb-4 space-y-2">
+                            <li>Kişisel verilerinin işlenip işlenmediğini öğrenme</li>
+                            <li>İşlenen kişisel verileri hakkında bilgi talep etme</li>
+                            <li>Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+                            <li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme</li>
+                            <li>Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme</li>
+                            <li>Kişisel verilerin silinmesini veya yok edilmesini isteme</li>
+                            <li>Düzeltme, silme veya yok edilme işlemlerinin aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
+                            <li>İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin aleyhine bir sonucun ortaya çıkmasına itiraz etme</li>
+                            <li>Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme</li>
+                        </ul>
+                        
+                        <h3 class="text-lg font-semibold mb-3">7. Başvuru Yöntemi</h3>
+                        <p class="mb-4">Yukarıda belirtilen haklarınızı kullanmak için <strong>info@donusumay.com</strong> e-posta adresine veya şirket adresimize yazılı olarak başvurabilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proje Detay Modal -->
+    <div id="projectDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 my-8 transform transition-all duration-300 max-h-screen overflow-y-auto">
+            <div class="sticky top-0 bg-white rounded-t-xl border-b border-gray-200 p-4 flex items-center justify-between z-10">
+                <h2 id="modalProjectTitle" class="text-xl font-bold text-gray-800">Proje Detayları</h2>
+                <button onclick="closeModal('projectDetailModal')" aria-label="Modalı Kapat" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Proje Görselleri Gallery -->
+                <div class="mb-6">
+                    <!-- Ana Resim Gösterimi -->
+                    <div class="relative mb-4">
+                        <img id="modalMainImage" src="" alt="Proje Görseli" class="w-full h-64 sm:h-80 object-cover rounded-lg">
+                        
+                        <!-- Navigation Butonları -->
+                        <button id="prevImageBtn" onclick="changeImage(-1)" title="Önceki Resim" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="nextImageBtn" onclick="changeImage(1)" title="Sonraki Resim" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        
+                        <!-- Resim Sayısı Göstergesi -->
+                        <div class="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm">
+                            <span id="currentImageIndex">1</span> / <span id="totalImages">1</span>
+                        </div>
+                        
+                        <!-- Tam Ekran Butonu -->
+                        <button onclick="openFullscreen()" title="Tam Ekran Görüntüle" class="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Thumbnail Galerisi -->
+                    <div class="flex space-x-2 overflow-x-auto pb-2" id="thumbnailContainer">
+                        <!-- Thumbnails JavaScript ile doldurulacak -->
+                    </div>
+                    
+                    <!-- Dots Indicator -->
+                    <div class="flex justify-center space-x-2 mt-3" id="dotsContainer">
+                        <!-- Dots JavaScript ile doldurulacak -->
+                    </div>
+                </div>
+                
+                <!-- Proje Bilgileri Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Sol Kolon: Genel Bilgiler -->
+                    <div class="space-y-6">
+                        <!-- Temel Bilgiler -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-info-circle text-primary mr-2"></i>
+                                Temel Bilgiler
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Proje Türü:</span>
+                                    <span id="modalProjectType" class="font-medium text-gray-800"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Konum:</span>
+                                    <span id="modalLocation" class="font-medium text-gray-800"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Arsa Alanı:</span>
+                                    <span id="modalLandArea" class="font-medium text-gray-800"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Beklenen Daire Sayısı:</span>
+                                    <span id="modalExpectedFlats" class="font-medium text-gray-800"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Yapı Durumu:</span>
+                                    <span id="modalBuildingStatus" class="font-medium text-gray-800"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Finansal Bilgiler -->
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
+                                Finansal Detaylar
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Nakit Beklentisi:</span>
+                                    <span id="modalCashExpectation" class="font-medium text-green-600 text-lg"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Kat Karşılığı Oranı:</span>
+                                    <span id="modalFlatShareRatio" class="font-medium text-green-600 text-lg"></span>
+                                </div>
+                                <div class="bg-white rounded-md p-3">
+                                    <p class="text-sm text-gray-600 mb-2">Tahmini Daire Değeri:</p>
+                                    <p id="modalEstimatedValue" class="text-lg font-bold text-primary"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Proje Açıklaması -->
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                                Proje Açıklaması
+                            </h3>
+                            <p id="modalDescription" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Sağ Kolon: İletişim ve Ek Bilgiler -->
+                    <div class="space-y-6">
+                        <!-- Proje Timeline -->
+                        <div class="bg-purple-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
+                                Proje Aşamaları
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm">Proje Planlaması Tamamlandı</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm">İmar İzinleri Alındı</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                    <span class="text-sm">Yatırımcı Arayışı Devam Ediyor</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                    <span class="text-sm text-gray-500">İnşaat Başlangıcı</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Konum Haritası -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-600 mr-2"></i>
+                                Konum
+                            </h3>
+                            <div class="bg-gray-200 rounded-lg h-48 flex items-center justify-center">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-map text-3xl mb-2"></i>
+                                    <p>Harita Entegrasyonu</p>
+                                    <p class="text-sm">Yakında eklenecek</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Teklif Formu -->
+                        <div class="bg-primary-light bg-opacity-10 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-handshake text-primary mr-2"></i>
+                                Teklif Ver
+                            </h3>
+                            <form id="proposalForm" onsubmit="handleProposalForm(event)">
+                                <div class="space-y-3">
+                                    <input type="text" name="name" placeholder="Adınız Soyadınız" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <input type="email" name="email" placeholder="E-posta Adresiniz" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <input type="tel" name="phone" placeholder="Telefon Numaranız" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    
+                                    <select name="role" id="proposalRole" onchange="updateBudgetPlaceholder()" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" aria-label="Mesleğinizi Seçin">
+                                        <option value="">Mesleğinizi Seçin</option>
+                                        <option value="contractor">Müteahhit</option>
+                                        <option value="architect">Mimar</option>
+                                        
+                                    </select>
+                                    
+                                    <input type="text" name="company" placeholder="Şirket/Ofis Adı" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="number" name="experience" placeholder="Deneyim (yıl)" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <input type="number" id="budgetInput" name="budget" placeholder="Teklif Tutarı (₺)" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    </div>
+                                    
+                                    <textarea name="proposal" placeholder="Teklif detaylarınızı yazın..." rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"></textarea>
+                                    
+                                    <div class="flex items-center space-x-2">
+                                        <input type="checkbox" id="acceptTerms" name="terms" required class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        <label for="acceptTerms" class="text-sm text-gray-600">
+                                            <a href="#" class="text-primary hover:underline">Kullanım şartlarını</a> kabul ediyorum
+                                        </label>
+                                    </div>
+                                    
+                                    <button type="submit" class="w-full bg-accent text-white py-3 px-4 rounded-md hover:bg-green-600 transition-all duration-300 font-medium">
+                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        Teklifi Gönder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Önemli Notlar -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h4 class="font-medium text-yellow-800 mb-2 flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Önemli Bilgiler
+                            </h4>
+                            <ul class="text-sm text-yellow-700 space-y-1">
+                                <li>• Tüm bilgiler tahmini olup değişiklik gösterebilir</li>
+                                <li>• Detaylı görüşme için iletişime geçiniz</li>
+                                <li>• Proje onay süreci devam etmektedir</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alt Butonlar -->
+                <div class="mt-8 flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                    <button onclick="addToFavorites()" class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fas fa-heart mr-2"></i>
+                        Favorilere Ekle
+                    </button>
+                    <button onclick="shareProject()" class="flex-1 bg-blue-100 text-blue-700 py-3 px-4 rounded-lg hover:bg-blue-200 transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fas fa-share-alt mr-2"></i>
+                        Paylaş
+                    </button>
+                    <button onclick="closeModal('projectDetailModal')" class="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bildirim Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Bildirimler buraya eklenecek -->
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Simüle edilmiş ilan verileri
+        const allListings = [
+            {
+                id: 1,
+                title: "Kadıköy Kentsel Dönüşüm Projesi",
+                location: "Kadıköy, İstanbul",
+                description: "Merkezi konumda, ulaşım avantajları yüksek kentsel dönüşüm projesi. Modern yaşam alanları ve ticari alan imkanı.",
+                projectType: "kentsel-donusum",
+                city: "istanbul",
+                district: "kadikoy",
+                landArea: 1500,
+                expectedFlats: 24,
+                cashExpectation: 2500000,
+                flatShareRatio: 65,
+                buildingStatus: "mevcut-bina",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Kadıköy+Ana+Görsel",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Kadıköy+Plan",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Kadıköy+3D+Görsel",
+                    "https://placehold.co/800x600/6A1B9A/FFFFFF?text=Kadıköy+Çevre"
+                ]
+            },
+            {
+                id: 2,
+                title: "Çankaya Arsa Değerlendirme",
+                location: "Çankaya, Ankara",
+                description: "Yüksek değerli bölgede arsa değerlendirme fırsatı. Güvenli yatırım ve yüksek getiri potansiyeli.",
+                projectType: "arsa-degerlendirme",
+                city: "ankara",
+                district: "cankaya",
+                landArea: 800,
+                expectedFlats: 12,
+                cashExpectation: 1200000,
+                flatShareRatio: 50,
+                buildingStatus: "bos-arsa",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Çankaya+Arsa",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Çankaya+Harita",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Çankaya+İmar+Planı"
+                ]
+            },
+            {
+                id: 3,
+                title: "Bornova Bina Güçlendirme Projesi",
+                location: "Bornova, İzmir",
+                description: "Mevcut binanın güçlendirilmesi ve modern yaşam standartlarına kavuşturulması projesi.",
+                projectType: "bina-yenileme",
+                city: "izmir",
+                district: "bornova",
+                landArea: 600,
+                expectedFlats: 8,
+                cashExpectation: 800000,
+                flatShareRatio: 45,
+                buildingStatus: "riskli-yapi",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Bornova+Mevcut",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Bornova+Güçlendirme",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Bornova+Yeni+Hali",
+                    "https://placehold.co/800x600/6A1B9A/FFFFFF?text=Bornova+Detay"
+                ]
+            },
+            {
+                id: 4,
+                title: "Beşiktaş Kat Karşılığı Projesi",
+                location: "Beşiktaş, İstanbul",
+                description: "Prestijli bölgede kat karşılığı inşaat projesi. Yüksek kalite ve premium lokasyon avantajı.",
+                projectType: "kat-karsiligi",
+                city: "istanbul",
+                district: "besiktas",
+                landArea: 1200,
+                expectedFlats: 18,
+                cashExpectation: 3200000,
+                flatShareRatio: 70,
+                buildingStatus: "mevcut-bina",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Beşiktaş+Proje",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Beşiktaş+Kat+Planı",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Beşiktaş+Cephe",
+                    "https://placehold.co/800x600/6A1B9A/FFFFFF?text=Beşiktaş+İç+Mekan",
+                    "https://placehold.co/800x600/9C27B0/FFFFFF?text=Beşiktaş+Bahçe"
+                ]
+            },
+            {
+                id: 5,
+                title: "Altındağ Gelir Paylaşımı Projesi",
+                location: "Altındağ, Ankara",
+                description: "Gelir paylaşımı modeli ile risksiz yatırım fırsatı. Uzun vadeli getiri garantisi.",
+                projectType: "gelir-paylasimi",
+                city: "ankara",
+                district: "altindag",
+                landArea: 2000,
+                expectedFlats: 32,
+                cashExpectation: 1800000,
+                flatShareRatio: 40,
+                buildingStatus: "bos-arsa",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Altındağ+Gelir",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Altındağ+Vaziyet",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Altındağ+Model"
+                ]
+            },
+            {
+                id: 6,
+                title: "Karşıyaka Kentsel Dönüşüm",
+                location: "Karşıyaka, İzmir",
+                description: "Modern yaşam kompleksi projesi. Sosyal tesisler ve yeşil alanlarla donatılmış yaşam alanı.",
+                projectType: "kentsel-donusum",
+                city: "izmir",
+                district: "karsiyaka",
+                landArea: 1800,
+                expectedFlats: 28,
+                cashExpectation: 2100000,
+                flatShareRatio: 60,
+                buildingStatus: "mevcut-bina",
+                images: [
+                    "https://placehold.co/800x600/5A00A8/FFFFFF?text=Karşıyaka+Dönüşüm",
+                    "https://placehold.co/800x600/8B00FF/FFFFFF?text=Karşıyaka+Sosyal",
+                    "https://placehold.co/800x600/4B0082/FFFFFF?text=Karşıyaka+Yeşil",
+                    "https://placehold.co/800x600/6A1B9A/FFFFFF?text=Karşıyaka+Modern"
+                ]
+            }
+        ];
+
+        // Image Gallery için global değişkenler
+        let currentImageIndex = 0;
+        let currentProjectImages = [];
+        let isFullscreenMode = false;
+
+        // Şehir ve ilçe verileri
+        const citiesData = [
+            {
+                id: 1,
+                name: "İstanbul",
+                value: "istanbul",
+                districts: [
+                    { name: "Kadıköy", value: "kadikoy" },
+                    { name: "Beşiktaş", value: "besiktas" },
+                    { name: "Şişli", value: "sisli" },
+                    { name: "Üsküdar", value: "uskudar" },
+                    { name: "Fatih", value: "fatih" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Ankara",
+                value: "ankara",
+                districts: [
+                    { name: "Çankaya", value: "cankaya" },
+                    { name: "Altındağ", value: "altindag" },
+                    { name: "Keçiören", value: "kecioren" },
+                    { name: "Yenimahalle", value: "yenimahalle" },
+                    { name: "Mamak", value: "mamak" }
+                ]
+            },
+            {
+                id: 3,
+                name: "İzmir",
+                value: "izmir",
+                districts: [
+                    { name: "Bornova", value: "bornova" },
+                    { name: "Karşıyaka", value: "karsiyaka" },
+                    { name: "Konak", value: "konak" },
+                    { name: "Buca", value: "buca" },
+                    { name: "Balçova", value: "balcova" }
+                ]
+            }
+        ];
+
+        // Filtrelenmiş ilanlar
+        let filteredListings = [...allListings];
+
+        // Modal yönetimi
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+                
+                // Form sıfırlama
+                const form = modal.querySelector('form');
+                if (form) {
+                    form.reset();
+                }
+            }
+        }
+        
+        // Modal açma fonksiyonları (geriye uyumluluk için)
+        function openLoginModal() {
+            showModal('loginModal');
+        }
+        
+        function openRegisterModal() {
+            showModal('registerModal');
+        }
+        
+        // Modal kapama fonksiyonları (geriye uyumluluk için)
+        function closeLoginModal() {
+            closeModal('loginModal');
+        }
+        
+        function closeRegisterModal() {
+            closeModal('registerModal');
+        }
+        
+        // Modal geçiş fonksiyonları
+        function switchToRegister() {
+            closeLoginModal();
+            setTimeout(() => {
+                openRegisterModal();
+            }, 150);
+        }
+        
+        function switchToLogin() {
+            closeRegisterModal();
+            setTimeout(() => {
+                openLoginModal();
+            }, 150);
+        }
+        
+        // Form gönderim fonksiyonları
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Basit validasyon
+            if (!email || !password) {
+                showNotification('Lütfen tüm alanları doldurun.', 'error');
+                return;
+            }
+            
+            // Simüle edilmiş kullanıcı verileri
+            const users = {
+                'customer@donusumay.com': {
+                    password: '123456',
+                    role: 'customer',
+                    name: 'Ahmet Yılmaz',
+                    dashboard: 'customer-dashboard.html'
+                },
+                'contractor@donusumay.com': {
+                    password: '123456',
+                    role: 'contractor',
+                    name: 'Mehmet İnşaat Ltd. Şti.',
+                    dashboard: 'contractor-dashboard.html'
+                },
+                'architect@donusumay.com': {
+                    password: '123456',
+                    role: 'architect',
+                    name: 'Zeynep Mimar',
+                    dashboard: 'architect-dashboard.html'
+                },
+                'notary@donusumay.com': {
+                    password: '123456',
+                    role: 'notary',
+                    name: 'Ali Noter',
+                    dashboard: 'notary-dashboard.html'
+                }
+            };
+            
+            const user = users[email];
+            
+            if (user && user.password === password) {
+                // Başarılı giriş
+                showNotification(`Hoş geldiniz, ${user.name}!`, 'success');
+                
+                // Role göre yönlendirme
+                setTimeout(() => {
+                    window.location.href = user.dashboard;
+                }, 1000);
+                
+                closeModal('loginModal');
+            } else {
+                showNotification('Geçersiz e-posta veya şifre.', 'error');
+            }
+        }
+        
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+            
+            // Basit validasyon
+            if (!name || !email || !password || !role) {
+                showNotification('Lütfen tüm alanları doldurun.', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Şifreniz en az 6 karakter olmalıdır.', 'error');
+                return;
+            }
+            
+            // Başarılı kayıt simülasyonu
+            closeModal('registerModal');
+            showNotification('Başarıyla kayıt oldunuz!', 'success');
+        }
+        
+        // Bildirim sistemi
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            
+            const typeStyles = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                info: 'bg-blue-500 text-white',
+                warning: 'bg-yellow-500 text-black'
+            };
+            
+            notification.className = `px-4 py-3 rounded-lg shadow-lg ${typeStyles[type]} transform transition-all duration-300 translate-x-full opacity-0`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-sm opacity-70 hover:opacity-100">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Animasyon
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full', 'opacity-0');
+            }, 100);
+            
+            // Otomatik kaldırma
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        // Şehir filtresini doldur
+        function populateCityFilter() {
+            const citySelect = document.getElementById('ilSelect');
+            citySelect.innerHTML = '<option value="">İl Seçin</option>';
+            
+            citiesData.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.value;
+                option.textContent = city.name;
+                citySelect.appendChild(option);
+            });
+        }
+        
+        // İlçe güncelleme fonksiyonu
+        function updateIlceler() {
+            const ilSelect = document.getElementById('ilSelect');
+            const ilceSelect = document.getElementById('ilceSelect');
+            
+            // İlçe seçimini sıfırla
+            ilceSelect.innerHTML = '<option value="">İlçe Seçin</option>';
+            
+            if (ilSelect.value) {
+                ilceSelect.disabled = false;
+                
+                // Seçilen şehre ait ilçeleri bul
+                const selectedCity = citiesData.find(city => city.value === ilSelect.value);
+                if (selectedCity && selectedCity.districts) {
+                    selectedCity.districts.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.value;
+                        option.textContent = district.name;
+                        ilceSelect.appendChild(option);
+                    });
+                }
+            } else {
+                ilceSelect.disabled = true;
+                ilceSelect.innerHTML = '<option value="">Önce İl Seçin</option>';
+            }
+        }
+        
+        // Arama fonksiyonu
+        function searchProjects() {
+            applyFilters();
+        }
+        
+        // Gelişmiş filtreler toggle
+        function toggleAdvancedFilters() {
+            const advancedSection = document.getElementById('advanced-filters-section');
+            const icon = document.getElementById('advancedFiltersIcon');
+            const button = icon.parentElement;
+            
+            if (advancedSection.classList.contains('hidden')) {
+                advancedSection.classList.remove('hidden');
+                advancedSection.classList.add('show');
+                icon.classList.add('rotate-180');
+                button.querySelector('span').textContent = 'Gelişmiş Filtreleri Gizle';
+            } else {
+                advancedSection.classList.add('hidden');
+                advancedSection.classList.remove('show');
+                icon.classList.remove('rotate-180');
+                button.querySelector('span').textContent = 'Gelişmiş Filtreler';
+            }
+        }
+        
+        // Filtreleri temizle
+        function clearFilters() {
+            // Ana filtreler
+            document.getElementById('projeTuruSelect').value = '';
+            document.getElementById('ilSelect').value = '';
+            document.getElementById('ilceSelect').value = '';
+            updateIlceler();
+            
+            // Gelişmiş filtreler
+            document.getElementById('minArsaAlani').value = '';
+            document.getElementById('maxArsaAlani').value = '';
+            document.getElementById('minDaireSayisi').value = '';
+            document.getElementById('maxDaireSayisi').value = '';
+            document.getElementById('minNakitBeklentisi').value = '';
+            document.getElementById('maxNakitBeklentisi').value = '';
+            document.getElementById('minKatKarsiligi').value = '';
+            document.getElementById('maxKatKarsiligi').value = '';
+            document.getElementById('bosArsa').checked = false;
+            document.getElementById('mevcutBina').checked = false;
+            document.getElementById('riskliYapi').checked = false;
+            
+            // Tüm ilanları göster
+            filteredListings = [...allListings];
+            renderListings(allListings);
+        }
+        
+        // Filtreleri uygula
+        function applyFilters() {
+            let filtered = [...allListings];
+            
+            // Ana filtreler
+            const projeTuru = document.getElementById('projeTuruSelect').value;
+            const il = document.getElementById('ilSelect').value;
+            const ilce = document.getElementById('ilceSelect').value;
+            
+            if (projeTuru) {
+                filtered = filtered.filter(listing => listing.projectType === projeTuru);
+            }
+            
+            if (il) {
+                filtered = filtered.filter(listing => listing.city === il);
+            }
+            
+            if (ilce) {
+                filtered = filtered.filter(listing => listing.district === ilce);
+            }
+            
+            // Gelişmiş filtreler
+            const minArsaAlani = parseFloat(document.getElementById('minArsaAlani').value);
+            const maxArsaAlani = parseFloat(document.getElementById('maxArsaAlani').value);
+            const minDaireSayisi = parseFloat(document.getElementById('minDaireSayisi').value);
+            const maxDaireSayisi = parseFloat(document.getElementById('maxDaireSayisi').value);
+            const minNakitBeklentisi = parseFloat(document.getElementById('minNakitBeklentisi').value);
+            const maxNakitBeklentisi = parseFloat(document.getElementById('maxNakitBeklentisi').value);
+            const minKatKarsiligi = parseFloat(document.getElementById('minKatKarsiligi').value);
+            const maxKatKarsiligi = parseFloat(document.getElementById('maxKatKarsiligi').value);
+            
+            if (!isNaN(minArsaAlani)) {
+                filtered = filtered.filter(listing => listing.landArea >= minArsaAlani);
+            }
+            if (!isNaN(maxArsaAlani)) {
+                filtered = filtered.filter(listing => listing.landArea <= maxArsaAlani);
+            }
+            if (!isNaN(minDaireSayisi)) {
+                filtered = filtered.filter(listing => listing.expectedFlats >= minDaireSayisi);
+            }
+            if (!isNaN(maxDaireSayisi)) {
+                filtered = filtered.filter(listing => listing.expectedFlats <= maxDaireSayisi);
+            }
+            if (!isNaN(minNakitBeklentisi)) {
+                filtered = filtered.filter(listing => listing.cashExpectation >= minNakitBeklentisi);
+            }
+            if (!isNaN(maxNakitBeklentisi)) {
+                filtered = filtered.filter(listing => listing.cashExpectation <= maxNakitBeklentisi);
+            }
+            if (!isNaN(minKatKarsiligi)) {
+                filtered = filtered.filter(listing => listing.flatShareRatio >= minKatKarsiligi);
+            }
+            if (!isNaN(maxKatKarsiligi)) {
+                filtered = filtered.filter(listing => listing.flatShareRatio <= maxKatKarsiligi);
+            }
+            
+            // Yapı durumu filtreleri
+            const bosArsa = document.getElementById('bosArsa').checked;
+            const mevcutBina = document.getElementById('mevcutBina').checked;
+            const riskliYapi = document.getElementById('riskliYapi').checked;
+            
+            if (bosArsa || mevcutBina || riskliYapi) {
+                filtered = filtered.filter(listing => {
+                    if (bosArsa && listing.buildingStatus === 'bos-arsa') return true;
+                    if (mevcutBina && listing.buildingStatus === 'mevcut-bina') return true;
+                    if (riskliYapi && listing.buildingStatus === 'riskli-yapi') return true;
+                    return false;
+                });
+            }
+            
+            filteredListings = filtered;
+            renderListings(filtered);
+        }
+        
+        // İlanları render et
+        function renderListings(listingsToRender = filteredListings) {
+            const grid = document.getElementById('listing-grid');
+            const noResultsMessage = document.getElementById('no-results-message');
+            const resultsCount = document.getElementById('results-count');
+            
+            if (listingsToRender.length === 0) {
+                grid.innerHTML = '';
+                noResultsMessage.classList.remove('hidden');
+                resultsCount.textContent = 'Hiç proje bulunamadı';
+                return;
+            }
+            
+            noResultsMessage.classList.add('hidden');
+            resultsCount.textContent = `Toplam ${listingsToRender.length} proje bulundu`;
+            
+            grid.innerHTML = listingsToRender.map(listing => `
+                <div class="listing-card bg-white rounded-xl shadow-lg overflow-hidden hover-transform">
+                    <div class="relative">
+                        <img src="${listing.images[0]}" alt="${listing.title}" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4">
+                            <span class="px-3 py-1 bg-primary text-white text-xs font-medium rounded-full">
+                                ${getProjectTypeText(listing.projectType)}
+                            </span>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-2 py-1 bg-black bg-opacity-70 text-white text-xs font-medium rounded flex items-center">
+                                <i class="fas fa-images mr-1"></i>
+                                ${listing.images.length}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${listing.title}</h3>
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <i class="fas fa-map-marker-alt text-primary mr-2"></i>
+                            <span class="text-sm">${listing.location}</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">${listing.description}</p>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-xs text-gray-500">Arsa Alanı:</span>
+                                <span class="text-xs font-medium">${listing.landArea.toLocaleString()} m²</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs text-gray-500">Daire Sayısı:</span>
+                                <span class="text-xs font-medium">${listing.expectedFlats} adet</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs text-gray-500">Nakit Beklentisi:</span>
+                                <span class="text-xs font-medium">${listing.cashExpectation.toLocaleString()} ₺</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs text-gray-500">Kat Karşılığı:</span>
+                                <span class="text-xs font-medium">%${listing.flatShareRatio}</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="viewDetails(${listing.id})" class="w-full bg-accent text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-all duration-300 font-medium">
+                            Detayları Görüntüle
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Proje tipi metni
+        function getProjectTypeText(type) {
+            const types = {
+                'kentsel-donusum': 'Kentsel Dönüşüm',
+                'arsa-degerlendirme': 'Arsa Değerlendirme',
+                'bina-yenileme': 'Bina Yenileme',
+                'kat-karsiligi': 'Kat Karşılığı',
+                'gelir-paylasimi': 'Gelir Paylaşımı'
+            };
+            return types[type] || type;
+        }
+        
+        // İlan detayları
+        function viewDetails(listingId) {
+            const listing = allListings.find(item => item.id === listingId);
+            if (!listing) {
+                showNotification('Proje bulunamadı!', 'error');
+                return;
+            }
+            
+            // Current project images'i güncelle
+            currentProjectImages = listing.images;
+            currentImageIndex = 0;
+            
+            // Modal içeriğini doldur
+            document.getElementById('modalProjectTitle').textContent = listing.title;
+            document.getElementById('modalProjectType').textContent = getProjectTypeText(listing.projectType);
+            document.getElementById('modalLocation').textContent = listing.location;
+            document.getElementById('modalLandArea').textContent = `${listing.landArea.toLocaleString()} m²`;
+            document.getElementById('modalExpectedFlats').textContent = `${listing.expectedFlats} adet`;
+            document.getElementById('modalBuildingStatus').textContent = getBuildingStatusText(listing.buildingStatus);
+            document.getElementById('modalCashExpectation').textContent = `${listing.cashExpectation.toLocaleString()} ₺`;
+            document.getElementById('modalFlatShareRatio').textContent = `%${listing.flatShareRatio}`;
+            document.getElementById('modalDescription').textContent = listing.description;
+            
+            // Tahmini daire değeri hesapla
+            const estimatedValue = Math.round(listing.cashExpectation / listing.expectedFlats);
+            document.getElementById('modalEstimatedValue').textContent = `${estimatedValue.toLocaleString()} ₺ / daire`;
+            
+            // Image gallery'yi başlat
+            initializeImageGallery();
+            
+            // Modalı göster
+            showModal('projectDetailModal');
+        }
+        
+        // Image Gallery Fonksiyonları
+        function initializeImageGallery() {
+            if (!currentProjectImages || currentProjectImages.length === 0) return;
+            
+            updateMainImage();
+            updateThumbnails();
+            updateDots();
+            updateImageCounter();
+            updateNavigationButtons();
+        }
+        
+        function updateMainImage() {
+            const mainImage = document.getElementById('modalMainImage');
+            if (mainImage && currentProjectImages[currentImageIndex]) {
+                mainImage.src = currentProjectImages[currentImageIndex];
+                mainImage.alt = `Proje Görseli ${currentImageIndex + 1}`;
+            }
+        }
+        
+        function updateThumbnails() {
+            const container = document.getElementById('thumbnailContainer');
+            if (!container) return;
+            
+            container.innerHTML = currentProjectImages.map((image, index) => `
+                <div class="flex-shrink-0">
+                    <img src="${image}" 
+                         alt="Thumbnail ${index + 1}"
+                         onclick="setCurrentImage(${index})"
+                         class="w-16 h-16 object-cover rounded-md cursor-pointer border-2 transition-all duration-200 ${
+                             index === currentImageIndex ? 'border-primary' : 'border-gray-200 hover:border-gray-400'
+                         }">
+                </div>
+            `).join('');
+        }
+        
+        function updateDots() {
+            const container = document.getElementById('dotsContainer');
+            if (!container) return;
+            
+            container.innerHTML = currentProjectImages.map((_, index) => `
+                <button onclick="setCurrentImage(${index})" 
+                        class="w-3 h-3 rounded-full transition-all duration-200 ${
+                            index === currentImageIndex ? 'bg-primary' : 'bg-gray-300 hover:bg-gray-400'
+                        }">
+                </button>
+            `).join('');
+        }
+        
+        function updateImageCounter() {
+            const currentElement = document.getElementById('currentImageIndex');
+            const totalElement = document.getElementById('totalImages');
+            
+            if (currentElement) currentElement.textContent = currentImageIndex + 1;
+            if (totalElement) totalElement.textContent = currentProjectImages.length;
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevImageBtn');
+            const nextBtn = document.getElementById('nextImageBtn');
+            
+            if (prevBtn) {
+                prevBtn.style.display = currentProjectImages.length <= 1 ? 'none' : 'block';
+            }
+            if (nextBtn) {
+                nextBtn.style.display = currentProjectImages.length <= 1 ? 'none' : 'block';
+            }
+        }
+        
+        function setCurrentImage(index) {
+            if (index >= 0 && index < currentProjectImages.length) {
+                currentImageIndex = index;
+                updateMainImage();
+                updateThumbnails();
+                updateDots();
+                updateImageCounter();
+            }
+        }
+        
+        function changeImage(direction) {
+            if (!currentProjectImages || currentProjectImages.length <= 1) return;
+            
+            currentImageIndex += direction;
+            
+            if (currentImageIndex >= currentProjectImages.length) {
+                currentImageIndex = 0;
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = currentProjectImages.length - 1;
+            }
+            
+            setCurrentImage(currentImageIndex);
+        }
+        
+        // Tam Ekran Fonksiyonları
+        function openFullscreen() {
+            if (!currentProjectImages || currentProjectImages.length === 0) return;
+            
+            isFullscreenMode = true;
+            const fullscreenModal = document.getElementById('fullscreenModal');
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const fullscreenCurrentIndex = document.getElementById('fullscreenImageIndex');
+            const fullscreenTotalImages = document.getElementById('fullscreenTotalImages');
+            
+            if (fullscreenImage) {
+                fullscreenImage.src = currentProjectImages[currentImageIndex];
+                fullscreenImage.alt = `Tam Ekran Görsel ${currentImageIndex + 1}`;
+            }
+            
+            if (fullscreenCurrentIndex) fullscreenCurrentIndex.textContent = currentImageIndex + 1;
+            if (fullscreenTotalImages) fullscreenTotalImages.textContent = currentProjectImages.length;
+            
+            if (fullscreenModal) {
+                fullscreenModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeFullscreen() {
+            isFullscreenMode = false;
+            const fullscreenModal = document.getElementById('fullscreenModal');
+            
+            if (fullscreenModal) {
+                fullscreenModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function changeFullscreenImage(direction) {
+            if (!currentProjectImages || currentProjectImages.length <= 1) return;
+            
+            currentImageIndex += direction;
+            
+            if (currentImageIndex >= currentProjectImages.length) {
+                currentImageIndex = 0;
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = currentProjectImages.length - 1;
+            }
+            
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const fullscreenCurrentIndex = document.getElementById('fullscreenImageIndex');
+            
+            if (fullscreenImage) {
+                fullscreenImage.src = currentProjectImages[currentImageIndex];
+                fullscreenImage.alt = `Tam Ekran Görsel ${currentImageIndex + 1}`;
+            }
+            
+            if (fullscreenCurrentIndex) fullscreenCurrentIndex.textContent = currentImageIndex + 1;
+            
+            // Ana modal'daki görüntüyü de güncelle
+            updateMainImage();
+            updateThumbnails();
+            updateDots();
+            updateImageCounter();
+        }
+        
+        // Yasal Belge Modal Fonksiyonları
+        function openPrivacyModal() {
+            showModal('privacyModal');
+        }
+        
+        function openTermsModal() {
+            showModal('termsModal');
+        }
+        
+        function openCookieModal() {
+            showModal('cookieModal');
+        }
+        
+        function openKvkkModal() {
+            showModal('kvkkModal');
+        }
+        
+        function closeDocumentModal(modalId) {
+            closeModal(modalId);
+        }
+        
+        // Yapı durumu metni
+        function getBuildingStatusText(status) {
+            const statusTexts = {
+                'bos-arsa': 'Boş Arsa',
+                'mevcut-bina': 'Mevcut Bina',
+                'riskli-yapi': 'Riskli Yapı'
+            };
+            return statusTexts[status] || status;
+        }
+        
+        // Bütçe placeholder güncelleme
+        function updateBudgetPlaceholder() {
+            const roleSelect = document.getElementById('proposalRole');
+            const budgetInput = document.getElementById('budgetInput');
+            
+            if (!roleSelect || !budgetInput) return;
+            
+            const selectedRole = roleSelect.value;
+            
+            switch(selectedRole) {
+                case 'architect':
+                    budgetInput.placeholder = 'Tasarım Taslak Ücreti (₺)';
+                    break;
+                case 'contractor':
+                    budgetInput.placeholder = 'Daire başı talep edilen ücret (₺)';
+                    break;
+                case 'engineer':
+                    budgetInput.placeholder = 'Mühendislik Hizmet Ücreti (₺)';
+                    break;
+                case 'company':
+                    budgetInput.placeholder = 'Toplam Proje Bütçesi (₺)';
+                    break;
+                default:
+                    budgetInput.placeholder = 'Teklif Tutarı (₺)';
+                    break;
+            }
+        }
+        
+        // Teklif formu gönderim
+        function handleProposalForm(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const phone = formData.get('phone');
+            const role = formData.get('role');
+            const company = formData.get('company');
+            const experience = formData.get('experience');
+            const budget = formData.get('budget');
+            const proposal = formData.get('proposal');
+            const terms = formData.get('terms');
+            
+            // Zorunlu alan kontrolü
+            if (!name || !email || !phone || !role || !proposal) {
+                showNotification('Lütfen tüm zorunlu alanları doldurun.', 'error');
+                return;
+            }
+            
+            if (!terms) {
+                showNotification('Kullanım şartlarını kabul etmeniz gerekmektedir.', 'error');
+                return;
+            }
+            
+            // Teklif detaylarını göster (console'da)
+            console.log('Teklif Detayları:', {
+                name, email, phone, role, company, 
+                experience: experience || 'Belirtilmedi',
+                budget: budget ? `${budget} ₺` : 'Belirtilmedi',
+                proposal
+            });
+            
+            // Simüle edilmiş teklif gönderimi
+            showNotification('Teklifiniz başarıyla gönderildi! Proje sahibi en kısa sürede değerlendirip dönüş yapacaktır.', 'success');
+            event.target.reset();
+            
+            // Opsiyonel: Modal kapanması
+            setTimeout(() => {
+                closeModal('projectDetailModal');
+            }, 3000);
+        }
+        
+        // Favorilere ekleme
+        function addToFavorites() {
+            showNotification('Proje favorilerinize eklendi!', 'success');
+        }
+        
+        // Proje paylaşma
+        function shareProject() {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.getElementById('modalProjectTitle').textContent,
+                    text: 'Bu kentsel dönüşüm projesini inceleyin!',
+                    url: window.location.href
+                }).then(() => {
+                    showNotification('Proje başarıyla paylaşıldı!', 'success');
+                }).catch(() => {
+                    fallbackShare();
+                });
+            } else {
+                fallbackShare();
+            }
+        }
+        
+        // Paylaşım fallback
+        function fallbackShare() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Proje linki panoya kopyalandı!', 'success');
+                }).catch(() => {
+                    showNotification('Paylaşım özelliği desteklenmiyor.', 'info');
+                });
+            } else {
+                showNotification('Paylaşım özelliği desteklenmiyor.', 'info');
+            }
+        }
+        
+        // Modal overlay tıklama event'leri
+        document.getElementById('loginModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLoginModal();
+            }
+        });
+        
+        document.getElementById('registerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRegisterModal();
+            }
+        });
+        
+        document.getElementById('projectDetailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal('projectDetailModal');
+            }
+        });
+        
+        document.getElementById('fullscreenModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFullscreen();
+            }
+        });
+        
+        // Yasal belge modal'ları için overlay click event'leri
+        document.getElementById('privacyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal('privacyModal');
+            }
+        });
+        
+        document.getElementById('termsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal('termsModal');
+            }
+        });
+        
+        document.getElementById('cookieModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal('cookieModal');
+            }
+        });
+        
+        document.getElementById('kvkkModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal('kvkkModal');
+            }
+        });
+        
+        // Klavye kontrolleri
+        document.addEventListener('keydown', function(e) {
+            const loginModal = document.getElementById('loginModal');
+            const registerModal = document.getElementById('registerModal');
+            const projectDetailModal = document.getElementById('projectDetailModal');
+            const fullscreenModal = document.getElementById('fullscreenModal');
+            const privacyModal = document.getElementById('privacyModal');
+            const termsModal = document.getElementById('termsModal');
+            const cookieModal = document.getElementById('cookieModal');
+            const kvkkModal = document.getElementById('kvkkModal');
+            
+            // ESC tuşu ile modal kapama
+            if (e.key === 'Escape') {
+                if (!fullscreenModal.classList.contains('hidden')) {
+                    closeFullscreen();
+                } else if (!privacyModal.classList.contains('hidden')) {
+                    closeDocumentModal('privacyModal');
+                } else if (!termsModal.classList.contains('hidden')) {
+                    closeDocumentModal('termsModal');
+                } else if (!cookieModal.classList.contains('hidden')) {
+                    closeDocumentModal('cookieModal');
+                } else if (!kvkkModal.classList.contains('hidden')) {
+                    closeDocumentModal('kvkkModal');
+                } else if (!loginModal.classList.contains('hidden')) {
+                    closeLoginModal();
+                } else if (!registerModal.classList.contains('hidden')) {
+                    closeRegisterModal();
+                } else if (!projectDetailModal.classList.contains('hidden')) {
+                    closeModal('projectDetailModal');
+                }
+            }
+            
+            // Ok tuşları ile resim navigation'ı (sadece modal açıkken)
+            if (!projectDetailModal.classList.contains('hidden') || !fullscreenModal.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (!fullscreenModal.classList.contains('hidden')) {
+                        changeFullscreenImage(-1);
+                    } else {
+                        changeImage(-1);
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (!fullscreenModal.classList.contains('hidden')) {
+                        changeFullscreenImage(1);
+                    } else {
+                        changeImage(1);
+                    }
+                }
+            }
+        });
+        
+        // Sayfa yüklendiğinde başlangıç işlemleri
+        document.addEventListener('DOMContentLoaded', function() {
+            populateCityFilter();
+            renderListings(allListings);
+        });
+    </script>
+</body>
+</html> 
