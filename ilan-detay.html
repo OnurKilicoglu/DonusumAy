@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
     
     <style>
         :root {
@@ -51,21 +52,17 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <img src="./BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="w-10 h-10 rounded-lg" style="width: 10rem;">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg" style="width: 11rem;">
                     <div class="ml-3">
+                       
                         <p class="text-sm text-gray-600">İlan Detayı</p>
                     </div>
                 </div>
-                <nav class="hidden md:flex space-x-8">
-                    <a href="./index.html" class="text-gray-700 hover:text-purple-600 transition-colors duration-200">Ana Sayfa</a>
-                    <a href="./ilanlar.html" class="text-gray-700 hover:text-purple-600 transition-colors duration-200">İlanlar</a>
-                    <a href="#" class="text-gray-700 hover:text-purple-600 transition-colors duration-200">Hakkımızda</a>
-                    <a href="#" class="text-gray-700 hover:text-purple-600 transition-colors duration-200">İletişim</a>
-                </nav>
+                
                 <div class="flex items-center space-x-4">
-                    <button class="hidden md:block text-gray-700 hover:text-purple-600 transition-colors duration-200">
+                    <a href="favorilerim.html" class="hidden md:block text-gray-700 hover:text-purple-600 transition-colors duration-200">
                         <i class="fas fa-heart"></i>
-                    </button>
+                    </a>
                     <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
                         İlan Ver
                     </button>
@@ -174,40 +171,12 @@
                             <p><i class="fas fa-hospital mr-2"></i> Hastane: 1.2km</p>
                         </div>
                     </div>
-                    <div class="bg-gray-200 h-64 rounded-lg flex items-center justify-center">
-                        <p class="text-gray-500">Harita Yükleniyor...</p>
-                    </div>
+                    <div id="map" class="h-64 rounded-lg"></div>
                 </div>
             </div>
 
             <!-- Sidebar -->
             <div class="lg:col-span-1">
-                <!-- Contact Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">İletişim</h3>
-                    <form onsubmit="submitContact(event)" class="space-y-4">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
-                            <input type="text" id="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                            <input type="tel" id="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
-                            <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Mesaj</label>
-                            <textarea id="message" rows="4" placeholder="Bu proje hakkında bilgi almak istiyorum..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                            Bilgi Talep Et
-                        </button>
-                    </form>
-                </div>
-
                 <!-- Property Stats -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Proje Bilgileri</h3>
@@ -239,40 +208,108 @@
                     </h3>
                     <form onsubmit="submitOffer(event)" class="space-y-4">
                         <div>
-                            <label for="offer-name" class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
-                            <input type="text" id="offer-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <label for="offer-tax-number" class="block text-sm font-medium text-gray-700 mb-2">Vergi Numarası</label>
+                            <input type="text" 
+                                id="offer-tax-number" 
+                                required 
+                                pattern="\d{10}" 
+                                maxlength="10" 
+                                placeholder="10 haneli vergi numaranızı giriniz" 
+                                title="Lütfen 10 haneli vergi numaranızı giriniz"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
+                        
                         <div>
-                            <label for="offer-email" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
-                            <input type="email" id="offer-email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label for="offer-phone" class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                            <input type="tel" id="offer-phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label for="offer-role" class="block text-sm font-medium text-gray-700 mb-2">Mesleğiniz</label>
-                            <select id="offer-role" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option value="">Mesleğinizi Seçin</option>
-                                <option value="contractor">Müteahhit</option>
-                                <option value="architect">Mimar</option>
-                                <option value="investor">Yatırımcı</option>
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mesleğiniz</label>
+                            <div class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">Müteahhit</div>
+                            <input type="hidden" id="offer-role" value="contractor">
                         </div>
                         <div>
                             <label for="offer-company" class="block text-sm font-medium text-gray-700 mb-2">Şirket/Ofis Adı</label>
-                            <input type="text" id="offer-company" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <input type="text" id="offer-company" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label for="offer-experience" class="block text-sm font-medium text-gray-700 mb-2">Deneyim (yıl)</label>
-                                <input type="number" id="offer-experience" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <input type="number" id="offer-experience" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="offer-budget" class="block text-sm font-medium text-gray-700 mb-2">Teklif (₺)</label>
-                                <input type="number" id="offer-budget" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <label for="offer-apartment-type" class="block text-sm font-medium text-gray-700 mb-2">Teklif Edilen Daire Tipi</label>
+                                <select id="offer-apartment-type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Seçiniz</option>
+                                    <option value="1+1">1+1</option>
+                                    <option value="2+1">2+1</option>
+                                    <option value="3+1">3+1</option>
+                                    <option value="4+1">4+1</option>
+                                </select>
                             </div>
                         </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="offer-floor-count" class="block text-sm font-medium text-gray-700 mb-2">Kat Sayısı</label>
+                                <input type="number" id="offer-floor-count" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="offer-net-area" class="block text-sm font-medium text-gray-700 mb-2">Daire Net Alanı (m²)</label>
+                                <input type="number" id="offer-net-area" min="0" step="0.1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="offer-gross-area" class="block text-sm font-medium text-gray-700 mb-2">Daire Brüt Alanı (m²)</label>
+                                <input type="number" id="offer-gross-area" min="0" step="0.1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="offer-balcony-count" class="block text-sm font-medium text-gray-700 mb-2">Balkon Sayısı</label>
+                                <input type="number" id="offer-balcony-count" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="offer-bathroom-count" class="block text-sm font-medium text-gray-700 mb-2">Banyo Sayısı</label>
+                                <input type="number" id="offer-bathroom-count" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="offer-wc-count" class="block text-sm font-medium text-gray-700 mb-2">WC Sayısı</label>
+                                <input type="number" id="offer-wc-count" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="offer-cash-per-apartment" class="block text-sm font-medium text-gray-700 mb-2">Daire Başı Nakit Talep (₺)</label>
+                            <input type="text" id="offer-cash-per-apartment" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" oninput="formatCurrency(this)">
+                        </div>
+                        <!-- Tasarım Dosyaları Bölümü -->
+                        <div class="border-t pt-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Tasarım Dosyaları</h4>
+                            <!-- Dosya Yükleme Alanı -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
+                                    <p class="text-xs text-gray-600 mb-2">Varsa önceden hazırladığınız tasarım dosyalarını yükleyiniz</p>
+                                    <input type="file" id="design-files-upload-detail" multiple accept=".pdf,.dwg,.jpg,.jpeg,.png" class="hidden" onchange="handleDesignFilesUploadDetail(event)" title="Tasarım dosyaları yükle">
+                                    <button type="button" onclick="document.getElementById('design-files-upload-detail').click()" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition-colors text-xs">
+                                        <i class="fas fa-upload mr-1"></i>Dosya Seç
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-1">PDF, DWG, JPG, PNG</p>
+                                </div>
+                                <div id="uploaded-design-files-detail" class="mt-3 space-y-1 hidden">
+                                    <!-- Yüklenen dosyalar burada görünür -->
+                                </div>
+                            </div>
+
+                            <!-- Tasarım Projesi İlanı Ver Butonu -->
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+                                <div class="text-center">
+                                    <h5 class="text-xs font-medium text-purple-800 mb-1">Tasarım dosyanız yok mu?</h5>
+                                    <p class="text-xs text-purple-600 mb-2">Mimarların bu proje için tasarım çizmesi için ilan verebilirsiniz.</p>
+                                    <button type="button" onclick="openDesignProjectListingModalDetail()" class="bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition-colors text-xs">
+                                        <i class="fas fa-plus mr-1"></i>Tasarım Projesi İlanı Yayınla
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <label for="offer-details" class="block text-sm font-medium text-gray-700 mb-2">Teklif Detayları</label>
                             <textarea id="offer-details" rows="4" placeholder="Teklif detaylarınızı ve çözüm önerilerinizi yazın..." required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
@@ -291,67 +328,201 @@
                     </form>
                 </div>
 
-                <!-- Share -->
+                <!-- Share and Favorite -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Paylaş</h3>
-                    <div class="flex space-x-3">
-                        <button onclick="shareOn('facebook')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors duration-200">
-                            <i class="fab fa-facebook-f mr-1"></i> Facebook
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Paylaş & Kaydet</h3>
+                    <div class="space-y-4">
+                        <!-- Favorite Button -->
+                        <button onclick="toggleFavorite()" id="favorite-btn" class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-heart mr-2"></i>
+                            <span id="favorite-text">Favorilere Ekle</span>
                         </button>
-                        <button onclick="shareOn('twitter')" class="flex-1 bg-blue-400 text-white py-2 rounded-lg text-sm hover:bg-blue-500 transition-colors duration-200">
-                            <i class="fab fa-twitter mr-1"></i> Twitter
-                        </button>
-                        <button onclick="shareOn('whatsapp')" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200">
-                            <i class="fab fa-whatsapp mr-1"></i> WhatsApp
-                        </button>
+                        <!-- Share Buttons -->
+                        <div class="flex space-x-3">
+                            <button onclick="shareOn('facebook')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors duration-200">
+                                <i class="fab fa-facebook-f mr-1"></i> Facebook
+                            </button>
+                            <button onclick="shareOn('twitter')" class="flex-1 bg-blue-400 text-white py-2 rounded-lg text-sm hover:bg-blue-500 transition-colors duration-200">
+                                <i class="fab fa-twitter mr-1"></i> Twitter
+                            </button>
+                            <button onclick="shareOn('whatsapp')" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200">
+                                <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center mb-4">
-                        <img src="https://placehold.co/40x40/5A00A8/FFFFFF?text=AY" alt="DönüşümAY Logo" class="w-10 h-10 rounded-lg">
-                        <div class="ml-3">
-                            <h3 class="text-lg font-bold">DönüşümAY</h3>
+    <!-- Tasarım Projesi İlanı Ver Modal -->
+    <div id="design-project-listing-modal-detail" class="fixed inset-0 z-[9999] hidden bg-black bg-opacity-60 flex items-center justify-center p-4" onclick="closeModalDetail('design-project-listing-modal-detail')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all modal-content" onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Tasarım Projesi İlanı Ver</h2>
+                <button onclick="closeModalDetail('design-project-listing-modal-detail')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- İlan Bilgileri -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Proje Bilgileri</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Arsa Alanı</p>
+                            <p id="design-project-plot-area-detail" class="font-medium text-gray-900">1.500 m²</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Beklenen Daire Sayısı</p>
+                            <p id="design-project-expected-units-detail" class="font-medium text-gray-900">24</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Hesaplanan Ücret</p>
+                            <p id="design-project-calculated-fee-detail" class="font-medium text-green-600 text-lg">3.600 ₺</p>
                         </div>
                     </div>
-                    <p class="text-gray-400 text-sm">Kentsel dönüşüm ve arsa değerlendirme projelerinde güvenilir çözüm ortağınız.</p>
                 </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Hızlı Linkler</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">İlanlar</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Hakkımızda</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">İletişim</a></li>
-                    </ul>
+
+                <!-- Ücret Hesaplama Formülü -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-medium text-blue-800 mb-2">Ücret Hesaplama Formülü</h4>
+                    <p class="text-blue-700 text-sm mb-2">Arsa Alanı × %10 × Daire Sayısı</p>
+                    <div class="text-blue-600 text-sm">
+                        <span id="formula-calculation-detail">1.500 m² × %10 × 24 daire = 3.600 ₺</span>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Hizmetler</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Kat Karşılığı</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors duration-200">Mimar Ağı</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">İletişim</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><i class="fas fa-phone mr-2"></i> +90 212 555 0123</li>
-                        <li><i class="fas fa-envelope mr-2"></i> info@donusumay.com</li>
-                        <li><i class="fas fa-map-marker-alt mr-2"></i> İstanbul, Türkiye</li>
-                    </ul>
+
+                <form id="design-project-form-detail" class="space-y-4">
+                    <div>
+                        <label for="design-project-title-detail" class="block text-sm font-medium text-gray-700 mb-2">İlan Başlığı</label>
+                        <input type="text" id="design-project-title-detail" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label for="design-project-description-detail" class="block text-sm font-medium text-gray-700 mb-2">Proje Açıklaması</label>
+                        <textarea id="design-project-description-detail" rows="4" placeholder="Projenin özelliklerini, isteklerinizi ve gereksinimlerinizi belirtin..." required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="design-project-deadline-detail" class="block text-sm font-medium text-gray-700 mb-2">Teslim Süresi (Gün)</label>
+                        <input type="number" id="design-project-deadline-detail" min="1" value="30" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button onclick="closeModalDetail('design-project-listing-modal-detail')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button onclick="publishDesignProjectListingDetail()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">İlanı Yayınla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Ana Footer İçeriği -->
+            <div class="py-12 lg:py-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                    
+                    <!-- Şirket Bilgileri -->
+                    <div class="lg:col-span-1">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span class="text-xl font-bold">DönüşümAY</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri buluşturan köprü.
+                        </p>
+                        
+                        <!-- Sosyal Medya -->
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Hızlı Linkler -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                        <ul class="space-y-3">
+                            <li><a href="index.html" class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
+                            <li><a href="contact.html" class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a></li>
+                            <li><a href="nasilcalisir.html" class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl Çalışır?</a></li>
+                            <li><a href="projeler.html" class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a></li>
+                            <li><a href="contact.html" class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Hizmetlerimiz -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina Yenileme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat Karşılığı Projeler</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- İletişim ve Newsletter -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                <div class="text-gray-300">
+                                    <p class="text-sm">Maslak Mahallesi,</p>
+                                    <p class="text-sm">Büyükdere Cad. No:123</p>
+                                    <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-phone text-primary"></i>
+                                <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Newsletter -->
+                        <div>
+                            <h4 class="font-medium mb-3">Newsletter</h4>
+                            <div class="flex">
+                                <input type="email" placeholder="E-posta adresiniz" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                <button title="Newsletter'a Abone Ol" class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
-                <p>&copy; 2024 DönüşümAY. Tüm hakları saklıdır.</p>
+            
+            <!-- Alt Footer -->
+            <div class="border-t border-gray-800 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-sm text-gray-400">
+                        &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <button onclick="openPrivacyModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik Politikası</button>
+                        <button onclick="openTermsModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım Şartları</button>
+                        <button onclick="openCookieModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Çerez Politikası</button>
+                        <button onclick="openKvkkModal()" class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</button>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
@@ -409,31 +580,57 @@
             event.target.reset();
         }
         
-        // Submit offer form
+        // Para formatı fonksiyonu
+        function formatCurrency(input) {
+            // Sadece sayıları al
+            let value = input.value.replace(/[^\d]/g, '');
+            
+            // Sayıyı formatlı şekilde göster
+            if (value) {
+                value = parseInt(value, 10).toLocaleString('tr-TR');
+                input.value = value;
+            }
+        }
+
+        // Form gönderme fonksiyonunu güncelle
         function submitOffer(event) {
             event.preventDefault();
             
             // Get form data
             const formData = {
-                name: document.getElementById('offer-name').value,
-                email: document.getElementById('offer-email').value,
-                phone: document.getElementById('offer-phone').value,
-                role: document.getElementById('offer-role').value,
+                taxNumber: document.getElementById('offer-tax-number').value,
                 company: document.getElementById('offer-company').value,
                 experience: document.getElementById('offer-experience').value,
-                budget: document.getElementById('offer-budget').value,
-                details: document.getElementById('offer-details').value
+                apartmentType: document.getElementById('offer-apartment-type').value,
+                floorCount: document.getElementById('offer-floor-count').value,
+                netArea: document.getElementById('offer-net-area').value,
+                grossArea: document.getElementById('offer-gross-area').value,
+                balconyCount: document.getElementById('offer-balcony-count').value,
+                bathroomCount: document.getElementById('offer-bathroom-count').value,
+                wcCount: document.getElementById('offer-wc-count').value,
+                cashPerApartment: document.getElementById('offer-cash-per-apartment').value,
+                details: document.getElementById('offer-details').value,
+                hasDesignFiles: document.getElementById('uploaded-design-files-detail').children.length > 0
             };
             
-            // Simple validation
-            if (!formData.name || !formData.email || !formData.phone || !formData.role || !formData.details) {
-                showNotification('Lütfen tüm zorunlu alanları doldurun.', 'error');
-                return;
+            // Validate required fields
+            for (let key in formData) {
+                if (key !== 'hasDesignFiles' && !formData[key]) {
+                    showNotification('Lütfen tüm zorunlu alanları doldurun.', 'error');
+                    return;
+                }
             }
             
             // Simulate sending offer
             showNotification('Teklifiniz başarıyla gönderildi! İlan sahibi en kısa sürede sizinle iletişime geçecektir.', 'success');
             event.target.reset();
+            
+            // Form temizle - tasarım dosyalarını da temizle
+            const designFilesContainer = document.getElementById('uploaded-design-files-detail');
+            if (designFilesContainer) {
+                designFilesContainer.classList.add('hidden');
+                designFilesContainer.innerHTML = '';
+            }
         }
         
         // Share functions
@@ -481,8 +678,207 @@
             }, 5000);
         }
         
+        // Favoriye ekleme fonksiyonu
+        function toggleFavorite() {
+            const btn = document.getElementById('favorite-btn');
+            const text = document.getElementById('favorite-text');
+            const icon = btn.querySelector('i');
+            
+            // Favori durumunu kontrol et
+            const isFavorite = btn.classList.contains('bg-red-600');
+            
+            if (isFavorite) {
+                // Favorilerden çıkar
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                text.textContent = 'Favorilere Ekle';
+                icon.classList.remove('text-white');
+                showNotification('İlan favorilerden çıkarıldı.', 'info');
+            } else {
+                // Favorilere ekle
+                btn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                text.textContent = 'Favorilerden Çıkar';
+                icon.classList.add('text-white');
+                showNotification('İlan favorilere eklendi!', 'success');
+                
+                // Favoriler sayfasına yönlendirme için timeout ayarla
+                setTimeout(() => {
+                    window.location.href = 'favorilerim.html';
+                }, 1500);
+            }
+        }
+
+        // Harita başlatma fonksiyonu
+        function initMap(lat = 40.9909, lng = 29.0304) { // Varsayılan konum: Kadıköy
+            const mapOptions = {
+                center: { lat, lng },
+                zoom: 15,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            };
+            
+            const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            
+            // Konum işaretleyici ekle
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: document.getElementById('property-title').textContent,
+                animation: google.maps.Animation.DROP
+            });
+
+            // Bilgi penceresi ekle
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div class="p-2">
+                        <h3 class="font-semibold mb-1">${document.getElementById('property-title').textContent}</h3>
+                        <p class="text-sm text-gray-600">${document.getElementById('property-location').textContent}</p>
+                    </div>
+                `
+            });
+
+            // Marker'a tıklandığında bilgi penceresini göster
+            marker.addListener('click', () => {
+                infoWindow.open(map, marker);
+            });
+        }
+
+        // ===============================================================
+        //                 DESIGN FILES & PROJECT FUNCTIONS
+        // ===============================================================
+        
+        // Tasarım dosyaları yükleme fonksiyonu (Detail sayfası için)
+        function handleDesignFilesUploadDetail(event) {
+            const files = event.target.files;
+            const container = document.getElementById('uploaded-design-files-detail');
+            
+            if (files.length > 0) {
+                container.classList.remove('hidden');
+                container.innerHTML = '';
+                
+                Array.from(files).forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between bg-gray-100 p-2 rounded text-xs';
+                    fileItem.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-file text-blue-500 mr-2"></i>
+                            <span class="text-gray-700 truncate">${file.name}</span>
+                        </div>
+                        <button onclick="removeDesignFileDetail(this)" class="text-red-500 hover:text-red-700 ml-2">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    container.appendChild(fileItem);
+                });
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        // Tasarım dosyası silme fonksiyonu (Detail sayfası için)
+        function removeDesignFileDetail(button) {
+            button.closest('div').remove();
+            const container = document.getElementById('uploaded-design-files-detail');
+            if (container.children.length === 0) {
+                container.classList.add('hidden');
+            }
+        }
+
+        // Modal açma/kapama fonksiyonları (Detail sayfası için)
+        function openModalDetail(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModalDetail(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Tasarım projesi modalını açma fonksiyonu (Detail sayfası için)
+        function openDesignProjectListingModalDetail() {
+            // Sabit değerler (ilan detay sayfasından)
+            const plotArea = 1500; // m²
+            const expectedUnits = 24; // daire sayısı
+            
+            // Formül: Arsa alanı x %10 x Daire sayısı
+            const calculatedFee = plotArea * 0.1 * expectedUnits;
+            
+            // Modal verilerini doldur
+            document.getElementById('design-project-plot-area-detail').textContent = plotArea.toLocaleString('tr-TR') + ' m²';
+            document.getElementById('design-project-expected-units-detail').textContent = expectedUnits;
+            document.getElementById('design-project-calculated-fee-detail').textContent = calculatedFee.toLocaleString('tr-TR') + ' ₺';
+            document.getElementById('formula-calculation-detail').textContent = `${plotArea.toLocaleString('tr-TR')} m² × %10 × ${expectedUnits} daire = ${calculatedFee.toLocaleString('tr-TR')} ₺`;
+            
+            openModalDetail('design-project-listing-modal-detail');
+        }
+
+        // Tasarım projesi ilanını yayınlama fonksiyonu (Detail sayfası için)
+        function publishDesignProjectListingDetail() {
+            const title = document.getElementById('design-project-title-detail').value;
+            const description = document.getElementById('design-project-description-detail').value;
+            const deadline = document.getElementById('design-project-deadline-detail').value;
+            
+            if (!title || !description || !deadline) {
+                showNotification('Lütfen tüm alanları doldurun.', 'error');
+                return;
+            }
+
+            const plotArea = 1500;
+            const expectedUnits = 24;
+            const calculatedFee = plotArea * 0.1 * expectedUnits;
+
+            // Başarı mesajı göster
+            showNotification('Tasarım projesi ilanınız başarıyla yayınlandı! Mimarlar teklif vermeye başlayabilir.', 'success');
+            
+            // Modalı kapat ve formu temizle
+            closeModalDetail('design-project-listing-modal-detail');
+            document.getElementById('design-project-form-detail').reset();
+            
+            console.log('Design Project Published:', {
+                title: title,
+                description: description,
+                deadline: parseInt(deadline),
+                plotArea: plotArea,
+                expectedUnits: expectedUnits,
+                calculatedFee: calculatedFee
+            });
+        }
+
         // Initialize page
-        document.addEventListener('DOMContentLoaded', loadListingData);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadListingData();
+            
+            // Favori butonuna title attribute ekle (accessibility için)
+            const favoriteBtn = document.getElementById('favorite-btn');
+            if (favoriteBtn) {
+                favoriteBtn.setAttribute('title', 'Favorilere Ekle/Çıkar');
+            }
+
+            // Haritayı başlat
+            initMap();
+        });
+
+        // ESC tuşuyla modal kapatma
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModalDetail('design-project-listing-modal-detail');
+            }
+        });
     </script>
     
     <script>
