@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Daire İlanları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Slider Styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+        
+        .slider {
+            position: relative;
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .slider img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .slider-nav {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .slider-dot:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .slider-dot.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+        
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            opacity: 0;
+        }
+        
+        .slider-container:hover .slider-arrow {
+            opacity: 1;
+        }
+        
+        .slider-arrow:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .slider-arrow.prev {
+            left: 15px;
+        }
+        
+        .slider-arrow.next {
+            right: 15px;
+        }
+        
+        /* Property Card Hover Effect */
+        .property-card:hover .slider-arrow {
+            opacity: 1;
+        }
+        
+        .filter-sidebar {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #f1f1f1;
+        }
+
+        .filter-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        .property-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .checkbox-custom {
+            position: relative;
+        }
+        
+        .checkbox-custom input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+        }
+        
+        .checkbox-custom label {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding-left: 2rem;
+        }
+        
+        .checkbox-custom label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-custom input[type="checkbox"]:checked + label:before {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .checkbox-custom input[type="checkbox"]:checked + label:after {
+            content: '\2713';
+            position: absolute;
+            left: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #d3d3d3;
+            outline: none;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+        
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg" style="width: 11rem;">
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex space-x-4">
+                    <a href="#" id="back-to-dashboard" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Panele Dön
+                    </a>
+                    <a href="ilanlar.html?from=customer" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-2"></i>Tüm İlanlar
+                    </a>
+                    <a href="daire-ilanlari.html" class="text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-building mr-2"></i>Daire İlanları
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- Filter Sidebar -->
+            <aside class="lg:w-1/4 relative">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 filter-sidebar">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Filtrele</h2>
+                    
+                    <!-- Konum Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Konum</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-2">İl</label>
+                                <select id="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tüm İller</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                    <option value="bursa">Bursa</option>
+                                    <option value="antalya">Antalya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="district" class="block text-sm font-medium text-gray-700 mb-2">İlçe</label>
+                                <select id="district" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tüm İlçeler</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Daire Tipi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Daire Tipi</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="apt-1-1" value="1+1">
+                                <label for="apt-1-1" class="text-sm text-gray-700">1+1</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="apt-2-1" value="2+1">
+                                <label for="apt-2-1" class="text-sm text-gray-700">2+1</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="apt-3-1" value="3+1">
+                                <label for="apt-3-1" class="text-sm text-gray-700">3+1</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="apt-4-1" value="4+1">
+                                <label for="apt-4-1" class="text-sm text-gray-700">4+1</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="apt-duplex" value="dublex">
+                                <label for="apt-duplex" class="text-sm text-gray-700">Dublex</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fiyat Aralığı -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Fiyat Aralığı (₺)</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Min: <span id="min-price-value">500.000</span> ₺</span>
+                                    <span>Max: <span id="max-price-value">10.000.000</span> ₺</span>
+                                </div>
+                                <input type="range" id="min-price" min="500000" max="10000000" value="500000" step="100000" class="range-slider mb-2">
+                                <input type="range" id="max-price" min="500000" max="10000000" value="10000000" step="100000" class="range-slider">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Metrekare -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Metrekare (m²)</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Min: <span id="min-sqm-value">50</span> m²</span>
+                                    <span>Max: <span id="max-sqm-value">300</span> m²</span>
+                                </div>
+                                <input type="range" id="min-sqm" min="50" max="300" value="50" step="10" class="range-slider mb-2">
+                                <input type="range" id="max-sqm" min="50" max="300" value="300" step="10" class="range-slider">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Oda/Salon Sayısı -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Oda/Salon Sayısı</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="rooms-1" value="1">
+                                <label for="rooms-1" class="text-sm text-gray-700">1 Oda</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="rooms-2" value="2">
+                                <label for="rooms-2" class="text-sm text-gray-700">2 Oda</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="rooms-3" value="3">
+                                <label for="rooms-3" class="text-sm text-gray-700">3 Oda</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="rooms-4" value="4">
+                                <label for="rooms-4" class="text-sm text-gray-700">4+ Oda</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Özellikler -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Özellikler</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="feature-balcony" value="balcony">
+                                <label for="feature-balcony" class="text-sm text-gray-700">Balkon</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="feature-elevator" value="elevator">
+                                <label for="feature-elevator" class="text-sm text-gray-700">Asansör</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="feature-parking" value="parking">
+                                <label for="feature-parking" class="text-sm text-gray-700">Otopark</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="feature-garden" value="garden">
+                                <label for="feature-garden" class="text-sm text-gray-700">Bahçe</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="feature-security" value="security">
+                                <label for="feature-security" class="text-sm text-gray-700">Güvenlik</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Actions -->
+                    <div class="pt-6">
+                        <button onclick="applyFilters()" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-3">
+                            Filtrele
+                        </button>
+                        <button onclick="clearAllFilters()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                            Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="lg:w-3/4">
+                <!-- Results Header -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-2">Daire İlanları</h1>
+                            <p class="text-gray-600">Toplam <span id="total-listings">0</span> daire ilanı bulundu</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <select id="sort-by" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="date-desc">En Yeni</option>
+                                <option value="date-asc">En Eski</option>
+                                <option value="price-desc">Fiyat (Yüksek → Düşük)</option>
+                                <option value="price-asc">Fiyat (Düşük → Yüksek)</option>
+                                <option value="sqm-desc">m² (Büyük → Küçük)</option>
+                                <option value="sqm-asc">m² (Küçük → Büyük)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Listings Grid -->
+                <div id="listings-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Kartlar burada dinamik olarak oluşturulacak -->
+                </div>
+                
+                <!-- Pagination -->
+                <div id="pagination" class="mt-8 flex justify-center">
+                    <!-- Pagination will be rendered here -->
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Ana Footer İçeriği -->
+            <div class="py-12 lg:py-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                    
+                    <!-- Şirket Bilgileri -->
+                    <div class="lg:col-span-1">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span class="text-xl font-bold">DönüşümAY</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri buluşturan köprü.
+                        </p>
+                        
+                        <!-- Sosyal Medya -->
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Hızlı Linkler -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                        <ul class="space-y-3">
+                            <li><a href="index.html" class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
+                            <li><a href="about.html" class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a></li>
+                            <li><a href="nasilcalisir.html" class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl Çalışır?</a></li>
+                            <li><a href="projeler.html" class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a></li>
+                            <li><a href="contact.html" class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Hizmetlerimiz -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina Yenileme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat Karşılığı Projeler</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- İletişim ve Newsletter -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                <div class="text-gray-300">
+                                    <p class="text-sm">Maslak Mahallesi,</p>
+                                    <p class="text-sm">Büyükdere Cad. No:123</p>
+                                    <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-phone text-primary"></i>
+                                <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Newsletter -->
+                        <div>
+                            <h4 class="font-medium mb-3">Newsletter</h4>
+                            <div class="flex">
+                                <input type="email" placeholder="E-posta adresiniz" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                <button title="Newsletter'a Abone Ol" class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alt Footer -->
+            <div class="border-t border-gray-800 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-sm text-gray-400">
+                        &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik Politikası</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım Şartları</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Çerez Politikası</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // Mock Data - Daire ilanları
+        const mockApartmentListings = [
+            {
+                id: 1,
+                title: "Kadıköy Merkez'de Satılık 3+1 Daire",
+                type: "3+1",
+                city: "istanbul",
+                district: "kadikoy",
+                address: "Kadıköy, İstanbul",
+                price: 2850000,
+                sqm: 125,
+                rooms: 3,
+                date: "2024-12-15",
+                description: "Deniz manzaralı, asansörlü binada, merkezi konumda 3+1 daire.",
+                images: [
+                    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Deniz Manzarası", "Asansör", "Balkon", "Otopark"]
+            },
+            {
+                id: 2,
+                title: "Çankaya'da Modern 2+1 Daire",
+                type: "2+1",
+                city: "ankara",
+                district: "cankaya",
+                address: "Çankaya, Ankara",
+                price: 1650000,
+                sqm: 95,
+                rooms: 2,
+                date: "2024-12-14",
+                description: "Yeni yapım, güvenlikli sitede 2+1 daire.",
+                images: [
+                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Güvenlik", "Otopark", "Balkon", "Asansör"]
+            },
+            {
+                id: 3,
+                title: "Bornova'da Geniş 4+1 Dublex",
+                type: "dublex",
+                city: "izmir",
+                district: "bornova",
+                address: "Bornova, İzmir",
+                price: 3200000,
+                sqm: 180,
+                rooms: 4,
+                date: "2024-12-13",
+                description: "Bahçeli, geniş dublex daire. Aile için ideal.",
+                images: [
+                    "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Bahçe", "Dublex", "Otopark", "Asansör"]
+            },
+            {
+                id: 4,
+                title: "Beşiktaş'ta Lüks 4+1 Daire",
+                type: "4+1",
+                city: "istanbul",
+                district: "besiktas",
+                address: "Beşiktaş, İstanbul",
+                price: 8500000,
+                sqm: 200,
+                rooms: 4,
+                date: "2024-12-12",
+                description: "Boğaz manzaralı, lüks konut kompleksinde daire.",
+                images: [
+                    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Boğaz Manzarası", "Lüks", "Güvenlik", "Otopark"]
+            },
+            {
+                id: 5,
+                title: "Şişli'de Merkezi 1+1 Daire",
+                type: "1+1",
+                city: "istanbul",
+                district: "sisli",
+                address: "Şişli, İstanbul",
+                price: 1450000,
+                sqm: 65,
+                rooms: 1,
+                date: "2024-12-11",
+                description: "Metro yakını, merkezi konumda 1+1 daire.",
+                images: [
+                    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Metro Yakını", "Merkezi", "Asansör"]
+            },
+            {
+                id: 6,
+                title: "Keçiören'de Aile Dostu 3+1",
+                type: "3+1",
+                city: "ankara",
+                district: "kecioren",
+                address: "Keçiören, Ankara",
+                price: 1850000,
+                sqm: 130,
+                rooms: 3,
+                date: "2024-12-10",
+                description: "Çocuk oyun alanı olan sitede 3+1 daire.",
+                images: [
+                    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=400&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1591474200742-8e512e6f98f8?q=80&w=400&auto=format&fit=crop"
+                ],
+                features: ["Çocuk Parkı", "Site İçi", "Otopark", "Güvenlik"]
+            }
+        ];
+        
+        const cities = {
+            istanbul: ["Kadıköy", "Beşiktaş", "Şişli", "Bakırköy", "Üsküdar"],
+            ankara: ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Sincan"],
+            izmir: ["Bornova", "Konak", "Karşıyaka", "Buca", "Balçova"],
+            bursa: ["Osmangazi", "Nilüfer", "Yıldırım", "Gemlik", "İnegöl"],
+            antalya: ["Muratpaşa", "Kepez", "Konyaaltı", "Aksu", "Döşemealtı"]
+        };
+        
+        let filteredListings = [...mockApartmentListings];
+        let currentPage = 1;
+        const itemsPerPage = 6;
+        
+        // Kullanıcının geldiği paneli belirlemek için URL parametrelerini kontrol eden fonksiyon
+        function checkUserPanel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userPanel = urlParams.get('from');
+            
+            // Dashboard linkini güncelle
+            const backToDashboard = document.getElementById('back-to-dashboard');
+            if (userPanel && backToDashboard) {
+                switch(userPanel) {
+                    case 'customer':
+                        backToDashboard.href = 'customer-dashboard.html';
+                        break;
+                    case 'contractor':
+                        backToDashboard.href = 'contractor-dashboard.html';
+                        break;
+                    case 'architect':
+                        backToDashboard.href = 'architect-dashboard.html';
+                        break;
+                    case 'notary':
+                        backToDashboard.href = 'notary-dashboard.html';
+                        break;
+                    default:
+                        backToDashboard.href = './index.html';
+                }
+            }
+            
+            // Tüm İlanlar linkini güncelle
+            const allListingsLink = document.querySelector('a[href="ilanlar.html?from=customer"]');
+            if (userPanel && allListingsLink) {
+                allListingsLink.href = `ilanlar.html?from=${userPanel}`;
+            }
+        }
+
+        // Sayfa yüklendiğinde fonksiyonu çağır
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserPanel();
+            updateDistrictOptions();
+            setupRangeSliders();
+            renderListings();
+            updateTotalCount();
+            
+            // Event listeners
+            document.getElementById('city').addEventListener('change', updateDistrictOptions);
+            document.getElementById('sort-by').addEventListener('change', applySorting);
+            
+            // Range slider listeners
+            document.getElementById('min-price').addEventListener('input', updatePriceDisplay);
+            document.getElementById('max-price').addEventListener('input', updatePriceDisplay);
+            document.getElementById('min-sqm').addEventListener('input', updateSqmDisplay);
+            document.getElementById('max-sqm').addEventListener('input', updateSqmDisplay);
+        });
+        
+        // District options update
+        function updateDistrictOptions() {
+            const citySelect = document.getElementById('city');
+            const districtSelect = document.getElementById('district');
+            const selectedCity = citySelect.value;
+            
+            districtSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
+            
+            if (selectedCity && cities[selectedCity]) {
+                cities[selectedCity].forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.toLowerCase().replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u');
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Range slider setup
+        function setupRangeSliders() {
+            updatePriceDisplay();
+            updateSqmDisplay();
+        }
+        
+        function updatePriceDisplay() {
+            const minPrice = document.getElementById('min-price').value;
+            const maxPrice = document.getElementById('max-price').value;
+            
+            document.getElementById('min-price-value').textContent = formatPrice(minPrice);
+            document.getElementById('max-price-value').textContent = formatPrice(maxPrice);
+            
+            // Ensure min is not greater than max
+            if (parseInt(minPrice) > parseInt(maxPrice)) {
+                document.getElementById('max-price').value = minPrice;
+                document.getElementById('max-price-value').textContent = formatPrice(minPrice);
+            }
+        }
+        
+        function updateSqmDisplay() {
+            const minSqm = document.getElementById('min-sqm').value;
+            const maxSqm = document.getElementById('max-sqm').value;
+            
+            document.getElementById('min-sqm-value').textContent = minSqm;
+            document.getElementById('max-sqm-value').textContent = maxSqm;
+            
+            // Ensure min is not greater than max
+            if (parseInt(minSqm) > parseInt(maxSqm)) {
+                document.getElementById('max-sqm').value = minSqm;
+                document.getElementById('max-sqm-value').textContent = minSqm;
+            }
+        }
+        
+        function formatPrice(price) {
+            return (parseInt(price) / 1000000).toFixed(1) + 'M';
+        }
+        
+        // Filter functions
+        function applyFilters() {
+            const city = document.getElementById('city').value;
+            const district = document.getElementById('district').value;
+            const minPrice = parseInt(document.getElementById('min-price').value);
+            const maxPrice = parseInt(document.getElementById('max-price').value);
+            const minSqm = parseInt(document.getElementById('min-sqm').value);
+            const maxSqm = parseInt(document.getElementById('max-sqm').value);
+            
+            // Get checked apartment types
+            const apartmentTypes = [];
+            document.querySelectorAll('input[type="checkbox"][id*="apt-"]').forEach(checkbox => {
+                if (checkbox.checked) {
+                    apartmentTypes.push(checkbox.value);
+                }
+            });
+            
+            // Get checked room counts
+            const roomCounts = [];
+            document.querySelectorAll('input[type="checkbox"][id*="rooms-"]').forEach(checkbox => {
+                if (checkbox.checked) {
+                    roomCounts.push(parseInt(checkbox.value));
+                }
+            });
+            
+            // Get checked features
+            const features = [];
+            document.querySelectorAll('input[type="checkbox"][id*="feature-"]').forEach(checkbox => {
+                if (checkbox.checked) {
+                    features.push(checkbox.value);
+                }
+            });
+            
+            // Apply filters
+            filteredListings = mockApartmentListings.filter(listing => {
+                // City filter
+                if (city && listing.city !== city) return false;
+                
+                // District filter
+                if (district && listing.district !== district) return false;
+                
+                // Price filter
+                if (listing.price < minPrice || listing.price > maxPrice) return false;
+                
+                // Sqm filter
+                if (listing.sqm < minSqm || listing.sqm > maxSqm) return false;
+                
+                // Apartment type filter
+                if (apartmentTypes.length > 0 && !apartmentTypes.includes(listing.type)) return false;
+                
+                // Room count filter
+                if (roomCounts.length > 0) {
+                    const rooms = listing.rooms;
+                    let matchesRoomCount = false;
+                    
+                    roomCounts.forEach(count => {
+                        if (count === 4 && rooms >= 4) matchesRoomCount = true;
+                        else if (rooms === count) matchesRoomCount = true;
+                    });
+                    
+                    if (!matchesRoomCount) return false;
+                }
+                
+                // Features filter
+                if (features.length > 0) {
+                    const hasAllFeatures = features.every(feature => {
+                        const featureMap = {
+                            'balcony': 'Balkon',
+                            'elevator': 'Asansör',
+                            'parking': 'Otopark',
+                            'garden': 'Bahçe',
+                            'security': 'Güvenlik'
+                        };
+                        return listing.features.some(f => f.includes(featureMap[feature]));
+                    });
+                    
+                    if (!hasAllFeatures) return false;
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            renderListings();
+            updateTotalCount();
+            showNotification(`${filteredListings.length} daire ilanı bulundu.`, 'success');
+        }
+        
+        function clearAllFilters() {
+            // Clear all form elements
+            document.getElementById('city').value = '';
+            document.getElementById('district').value = '';
+            document.getElementById('min-price').value = '500000';
+            document.getElementById('max-price').value = '10000000';
+            document.getElementById('min-sqm').value = '50';
+            document.getElementById('max-sqm').value = '300';
+            
+            // Clear all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            updateDistrictOptions();
+            updatePriceDisplay();
+            updateSqmDisplay();
+            
+            filteredListings = [...mockApartmentListings];
+            currentPage = 1;
+            renderListings();
+            updateTotalCount();
+            showNotification('Filtreler temizlendi.', 'info');
+        }
+        
+        // Sorting
+        function applySorting() {
+            const sortBy = document.getElementById('sort-by').value;
+            
+            switch(sortBy) {
+                case 'date-desc':
+                    filteredListings.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'date-asc':
+                    filteredListings.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'price-desc':
+                    filteredListings.sort((a, b) => b.price - a.price);
+                    break;
+                case 'price-asc':
+                    filteredListings.sort((a, b) => a.price - b.price);
+                    break;
+                case 'sqm-desc':
+                    filteredListings.sort((a, b) => b.sqm - a.sqm);
+                    break;
+                case 'sqm-asc':
+                    filteredListings.sort((a, b) => a.sqm - b.sqm);
+                    break;
+            }
+            
+            renderListings();
+        }
+        
+        // Render functions
+        function renderListings() {
+            const grid = document.getElementById('listings-grid');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageListings = filteredListings.slice(startIndex, endIndex);
+            
+            grid.innerHTML = pageListings.map(listing => `
+                <div class="property-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="relative">
+                        <div class="slider-container" id="slider-${listing.id}">
+                            <div class="slider">
+                                ${listing.images.map(img => `
+                                    <img src="${img}" alt="${listing.title}" loading="lazy">
+                                `).join('')}
+                            </div>
+                            <div class="slider-nav">
+                                ${listing.images.map((_, index) => `
+                                    <div class="slider-dot ${index === 0 ? 'active' : ''}" onclick="moveToSlide(${listing.id}, ${index})"></div>
+                                `).join('')}
+                            </div>
+                            <div class="slider-arrow prev" onclick="moveSlide(${listing.id}, -1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </div>
+                            <div class="slider-arrow next" onclick="moveSlide(${listing.id}, 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                ${listing.type}
+                            </span>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                Satılık
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${listing.title}</h3>
+                        <p class="text-gray-600 text-sm mb-3">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            ${listing.address}
+                        </p>
+                        <p class="text-gray-600 text-sm mb-4">${listing.description}</p>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fiyat:</span>
+                                <span class="font-bold text-purple-600">${formatCurrency(listing.price)} ₺</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Metrekare:</span>
+                                <span class="font-medium text-gray-800">${listing.sqm} m²</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Oda Sayısı:</span>
+                                <span class="font-medium text-gray-800">${listing.rooms} oda</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${listing.features.map(feature => `
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">${feature}</span>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">${formatDate(listing.date)}</span>
+                            <button onclick="viewDetails(${listing.id})" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors duration-200">
+                                Detayları Gör
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            renderPagination();
+            initializeSliders();
+        }
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('tr-TR').format(amount);
+        }
+        
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHTML += `
+                    <button onclick="changePage(${currentPage - 1})" class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600 transition-colors duration-200">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHTML += `
+                        <button class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg">${i}</button>
+                    `;
+                } else {
+                    paginationHTML += `
+                        <button onclick="changePage(${i})" class="px-4 py-2 text-sm text-gray-700 hover:text-purple-600 transition-colors duration-200">${i}</button>
+                    `;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHTML += `
+                    <button onclick="changePage(${currentPage + 1})" class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600 transition-colors duration-200">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+            }
+            
+            pagination.innerHTML = `<div class="flex items-center space-x-2">${paginationHTML}</div>`;
+        }
+        
+        function changePage(page) {
+            currentPage = page;
+            renderListings();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function updateTotalCount() {
+            document.getElementById('total-listings').textContent = filteredListings.length;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        function viewDetails(listingId) {
+            window.location.href = `daire-ilan-detay.html?id=${listingId}`;
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            const colors = {
+                'info': 'bg-blue-500',
+                'success': 'bg-green-500',
+                'error': 'bg-red-500',
+                'warning': 'bg-yellow-500'
+            };
+            
+            notification.className = `fixed top-4 right-4 z-50 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg max-w-sm transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Slider functions
+        function moveSlide(listingId, direction) {
+            const slider = document.querySelector(`#slider-${listingId} .slider`);
+            const dots = document.querySelectorAll(`#slider-${listingId} .slider-dot`);
+            const currentIndex = parseInt(slider.getAttribute('data-index') || '0');
+            const totalSlides = dots.length;
+            
+            let newIndex = currentIndex + direction;
+            
+            if (newIndex < 0) newIndex = totalSlides - 1;
+            if (newIndex >= totalSlides) newIndex = 0;
+            
+            updateSlider(listingId, newIndex);
+        }
+        
+        function moveToSlide(listingId, index) {
+            updateSlider(listingId, index);
+        }
+        
+        function updateSlider(listingId, index) {
+            const slider = document.querySelector(`#slider-${listingId} .slider`);
+            const dots = document.querySelectorAll(`#slider-${listingId} .slider-dot`);
+            
+            slider.style.transform = `translateX(-${index * 100}%)`;
+            slider.setAttribute('data-index', index);
+            
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize sliders after rendering
+        function initializeSliders() {
+            const sliders = document.querySelectorAll('.slider');
+            sliders.forEach(slider => {
+                slider.setAttribute('data-index', '0');
+            });
+        }
+    </script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#5A00A8',
+                        'primary-light': '#8B00FF',
+                        'primary-dark': '#4B0082',
+                        'accent': '#28a745'
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
