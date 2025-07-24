@@ -49,6 +49,63 @@
         .calendar-day-name {
             font-weight: bold;
             padding: 0.5rem;
+            color: var(--text-medium);
+        }
+
+        .calendar-day {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .calendar-day.current-month {
+            background-color: #e5e7eb;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots {
+            cursor: pointer;
+            background-color: #d1fae5;
+            font-weight: 500;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots:hover {
+            background-color: #a7f3d0;
+        }
+
+        .calendar-day.selected-day {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .calendar-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .calendar-slot {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #e0f2fe;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .calendar-slot:hover {
+            background-color: #bae6fd;
+        }
+
+        .calendar-slot.selected {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem;
         }
 
         .calendar-day {
@@ -1558,83 +1615,69 @@
 <div id="notary-appointment-modal"
     class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
     onclick="closeModal('notary-appointment-modal')">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl transform transition-all modal-content"
-        onclick="event.stopPropagation()">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex" onclick="event.stopPropagation()">
         <input type="hidden" id="notary-appointment-project-id">
-        <div class="px-6 py-4 border-b">
-            <h2 id="notary-appointment-modal-title" class="text-xl font-bold text-gray-800">Noter Randevu Seçimi
-            </h2>
-        </div>
-        <div id="notary-appointment-modal-body" class="p-6 flex flex-col md:flex-row gap-6">
-            <!-- Left side: Calendar -->
-            <div class="flex-1 border rounded-lg p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <button onclick="changeMonth(-1)" class="text-gray-600 hover:text-primary" title="Önceki Ay">
+        
+        <!-- Left side - Calendar -->
+        <div class="flex-1 border-r">
+            <div class="p-6 border-b">
+                <h3 id="notary-appointment-modal-title" class="text-xl font-bold text-gray-800">Noter Randevu Seçimi</h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)" class="text-gray-600 hover:text-gray-800" title="Önceki Ay">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <h3 id="calendar-month" class="text-lg font-semibold"></h3>
-                    <button onclick="changeMonth(1)" class="text-gray-600 hover:text-primary" title="Sonraki Ay">
+                    <span id="current-month-display">Temmuz 2025</span>
+                    <button onclick="changeMonth(1)" class="text-gray-600 hover:text-gray-800" title="Sonraki Ay">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-                <table class="calendar">
-                    <thead>
-                        <tr>
-                            <th>Pzt</th>
-                            <th>Sal</th>
-                            <th>Çar</th>
-                            <th>Per</th>
-                            <th>Cum</th>
-                            <th>Cmt</th>
-                            <th>Paz</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendar-body"></tbody>
-                </table>
-            </div>
-
-            <!-- Right side: Time slots and details -->
-            <div class="flex-1 border rounded-lg p-4">
-                <div id="time-slot-container" class="mb-6">
-                    <h3 class="text-lg font-semibold mb-4">Müsait Saatler</h3>
-                    <div id="time-slots" class="grid grid-cols-3 gap-2">
-                        <!-- Time slots will be rendered here -->
-                    </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-name">Pzt</div>
+                    <div class="calendar-day-name">Sal</div>
+                    <div class="calendar-day-name">Çar</div>
+                    <div class="calendar-day-name">Per</div>
+                    <div class="calendar-day-name">Cum</div>
+                    <div class="calendar-day-name">Cmt</div>
+                    <div class="calendar-day-name">Paz</div>
+                    <!-- Calendar days will be rendered here by JS -->
                 </div>
-
-                <div id="appointment-details" class="space-y-4 border-t pt-4">
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Atanan Noter</h4>
-                        <p class="text-gray-600" id="assigned-notary-info">Lütfen önce bir tarih ve saat seçin</p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Randevu Tarihi ve Saati</h4>
-                        <p class="text-gray-600" id="selected-datetime"></p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Randevu Adresi</h4>
-                        <p class="text-gray-600" id="notary-address"></p>
-                    </div>
-                    <div class="flex items-center justify-between pt-4 border-t">
-                        <span class="font-medium text-gray-700">SMS Randevu Hatırlatıcısı</span>
-                        <button id="notary-sms-reminder-toggle" onclick="toggleNotarySmsReminder()"
-                            class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none">
-                            <span class="sr-only">SMS Hatırlatıcıyı Aç/Kapat</span>
-                            <span id="notary-sms-reminder-bg"
-                                class="absolute left-0 w-11 h-6 rounded-full transition-colors"></span>
-                            <span id="notary-sms-reminder-knob"
-                                class="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform"></span>
-                        </button>
-                    </div>
+                <div id="available-slots" class="calendar-slots hidden">
+                    <!-- Time slots will be rendered here when a date is selected -->
                 </div>
             </div>
         </div>
-        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
-            <button type="button" onclick="closeModal('notary-appointment-modal')"
-                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
-            <button type="button" onclick="confirmNotaryAppointment()" id="confirm-appointment-btn"
-                class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark disabled:bg-gray-400 disabled:cursor-not-allowed"
-                style="background-color: blue;" disabled>Randevuyu Onayla</button>
+
+        <!-- Right side - Appointment Details -->
+        <div class="w-96">
+            <div class="p-6 border-b">
+                <h4 class="font-semibold text-gray-800">Randevu Detayları</h4>
+            </div>
+            <div id="selected-appointment-details" class="hidden h-full">
+                <div class="p-6 space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">Tarih: <span id="selected-date" class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Saat: <span id="selected-time" class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Noter: <span id="selected-notary" class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Adres: <span id="selected-location" class="font-medium text-gray-800"></span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="sms-reminder-toggle" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                        <label for="sms-reminder-toggle" class="ml-2 block text-sm text-gray-900">SMS ile hatırlatma al</label>
+                    </div>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 border-t">
+                    <button onclick="confirmNotaryAppointment()" id="confirm-appointment-btn" class="w-full bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed mb-2" style="background-color: blue;" disabled>Randevuyu Onayla</button>
+                    <button onclick="closeModal('notary-appointment-modal')" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                </div>
+            </div>
+            <div id="no-appointment-selected" class="p-6 text-center text-gray-500">
+                <p>Lütfen takvimden bir tarih ve saat seçin</p>
+            </div>
+                 </div>
+     </div>
+ </div>
         </div>
     </div>
 </div>
@@ -4828,7 +4871,10 @@
 
     // --- NOTARY APPOINTMENT CALENDAR ---
     let currentDate = new Date();
-    let selectedAppointment = { date: null, time: null, projectId: null };
+    let selectedDate = null;
+    let selectedTimeSlot = null;
+    let currentLegalProjectId = null;
+    let availableSlots = {};
 
     const notaryAvailabilityData = {
         "2025-07-15": ["09:00", "10:00", "11:00", "14:00", "15:00"],
@@ -4844,100 +4890,112 @@
     };
 
     function openNotaryAppointmentModal(projectId) {
+        currentLegalProjectId = projectId;
         const process = customerData.legalProcesses.find(p => p.projectId === projectId);
         if (!process) return;
 
-        document.getElementById('notary-appointment-project-id').value = projectId;
-        document.getElementById('notary-appointment-modal-title').textContent = `Noter Randevu ${process.notaryAppointment ? 'Düzenleme' : 'Seçimi'} - ${process.projectName}`;
+        document.getElementById('notary-appointment-modal-title').textContent = `Noter Randevu Seçimi - ${process.projectName}`;
 
-        // Reset selections and button state
-        selectedAppointment = { date: null, time: null, projectId };
-        const confirmButton = document.getElementById('confirm-appointment-btn');
-        if (confirmButton) {
-            confirmButton.disabled = true;
-            confirmButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-            confirmButton.classList.remove('bg-primary', 'hover:bg-primary-dark', 'cursor-pointer');
+        // Reset selection state
+        selectedDate = null;
+        selectedTimeSlot = null;
+        document.getElementById('confirm-appointment-btn').disabled = true;
+        document.getElementById('selected-appointment-details').classList.add('hidden');
+        document.getElementById('available-slots').classList.add('hidden');
+        document.getElementById('no-appointment-selected').classList.remove('hidden');
+
+        // Ensure notary is assigned
+        if (!process.assignedNotary) {
+            const defaultNotary = {
+                id: 'notary-auto-' + Date.now(),
+                name: 'Kadıköy 15. Noterliği - Ahmet Çelik',
+                contact: '0216 123 45 67',
+                location: 'Kadıköy 15. Noterliği, Caferağa Mah. Mühürdar Cad. No:5 D:1, Kadıköy/İstanbul'
+            };
+            process.assignedNotary = defaultNotary;
+            process.notaryStatus = 'notary_assigned';
         }
 
-        // Initialize calendar
+        // Generate available slots for the next 30 days
+        generateAvailableSlots();
+
+        // Render initial calendar
         renderCalendar();
-
-        // Clear time slots and details
-        document.getElementById('time-slots').innerHTML = '<p class="text-gray-500 text-center col-span-3">Lütfen önce bir tarih seçin</p>';
-        document.getElementById('selected-datetime').textContent = 'Henüz seçilmedi';
-        document.getElementById('assigned-notary-info').textContent = process.assignedNotary ? process.assignedNotary.name : 'Lütfen önce bir tarih ve saat seçin';
-        document.getElementById('notary-address').textContent = process.assignedNotary ? process.assignedNotary.location || 'Adres bilgisi yükleniyor...' : 'Lütfen önce bir tarih ve saat seçin';
-
-        // Initialize SMS reminder toggle
-        renderNotarySmsReminderToggle(process.notaryAppointment?.smsReminderEnabled || false);
-
-        // If there's an existing appointment, pre-select it
-        if (process.notaryAppointment) {
-            const appointmentDate = new Date(process.notaryAppointment.date);
-            if (!isNaN(appointmentDate.getTime())) {
-                currentDate = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), 1);
-                selectDate(appointmentDate.getDate());
-                if (process.notaryAppointment.time) {
-                    selectTimeSlot(process.notaryAppointment.time);
-                }
-            }
-        }
 
         openModal('notary-appointment-modal');
     }
 
+    function generateAvailableSlots() {
+        availableSlots = {};
+        const today = new Date();
+
+        // Generate slots for next 30 days
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+
+            // Skip weekends
+            if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+            const dateStr = date.toISOString().split('T')[0];
+            availableSlots[dateStr] = [
+                '10:00', '10:30', '11:00', '11:30',
+                '14:00', '14:30', '15:00', '15:30'
+            ];
+        }
+    }
+
     function renderCalendar() {
-        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-        // Set month and year in header
-        document.getElementById('calendar-month').textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        // Update month display
+        document.getElementById('current-month-display').textContent =
+            `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
+        // Get first day of month and number of days
         const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const daysInMonth = lastDay.getDate();
 
-        // Get the day of week for the first day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-        let firstDayOfWeek = firstDay.getDay();
-        // Convert to Monday-based week (0 = Monday, ..., 6 = Sunday)
-        firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+        // Calculate how many days from Monday to show from previous month
+        const startDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
 
-        const totalDays = lastDay.getDate();
-        const weeks = Math.ceil((totalDays + firstDayOfWeek) / 7);
+        let calendarHTML = '';
 
-        let html = '';
-        let dayCount = 1;
-
-        for (let i = 0; i < weeks; i++) {
-            html += '<tr>';
-            for (let j = 0; j < 7; j++) {
-                if (i === 0 && j < firstDayOfWeek) {
-                    html += '<td></td>';
-                } else if (dayCount > totalDays) {
-                    html += '<td></td>';
-                } else {
-                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayCount);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const isDisabled = date < today || date.getDay() === 0; // Disable past dates and Sundays
-
-                    const dateStr = date.toISOString().split('T')[0];
-                    const hasSlots = notaryAvailabilityData[dateStr] && notaryAvailabilityData[dateStr].length > 0;
-
-                    const classes = [
-                        'calendar-day',
-                        'current-month',
-                        isDisabled ? 'disabled' : '',
-                        hasSlots && !isDisabled ? 'has-slots' : '',
-                        selectedAppointment.date && date.toDateString() === selectedAppointment.date.toDateString() ? 'selected-day' : ''
-                    ].filter(Boolean).join(' ');
-
-                    html += `<td class="${classes}" ${isDisabled || !hasSlots ? '' : `onclick="selectDate(${dayCount})"`}>${dayCount}</td>`;
-                    dayCount++;
-                }
-            }
-            html += '</tr>';
+        // Add empty cells for previous month
+        for (let i = 0; i < startDayOfWeek; i++) {
+            calendarHTML += `<div class="calendar-day"></div>`;
         }
 
-        document.getElementById('calendar-body').innerHTML = html;
+        // Add days of current month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            const dateStr = date.toISOString().split('T')[0];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let classes = ['calendar-day', 'current-month'];
+            
+            if (availableSlots[dateStr] && date >= today) {
+                classes.push('has-slots');
+                calendarHTML += `<div class="${classes.join(' ')}" onclick="selectDate('${dateStr}')">${day}</div>`;
+            } else {
+                calendarHTML += `<div class="${classes.join(' ')}">${day}</div>`;
+            }
+        }
+
+        // Add empty cells for next month to complete the grid
+        const totalCells = Math.ceil((startDayOfWeek + daysInMonth) / 7) * 7;
+        for (let i = startDayOfWeek + daysInMonth; i < totalCells; i++) {
+            calendarHTML += `<div class="calendar-day"></div>`;
+        }
+
+        // Update calendar grid
+        const calendar = document.querySelector('.calendar-grid');
+        const existingDays = calendar.querySelectorAll('.calendar-day');
+        existingDays.forEach(day => day.remove());
+        calendar.insertAdjacentHTML('beforeend', calendarHTML);
     }
 
     function changeMonth(delta) {
@@ -4945,133 +5003,99 @@
         renderCalendar();
     }
 
-    function selectDate(day) {
-        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        selectedAppointment.date = newDate;
-        selectedAppointment.time = null;
-        selectedAppointment.projectId = document.getElementById('notary-appointment-project-id').value;
+    function selectDate(dateStr) {
+        selectedDate = dateStr;
+        selectedTimeSlot = null;
 
-        // Önceki seçili günü temizle
-        const previouslySelectedDay = document.querySelector('.calendar-day.selected-day');
-        if (previouslySelectedDay) {
-            previouslySelectedDay.classList.remove('selected-day', 'bg-emerald-400', 'text-white');
-            if (previouslySelectedDay.classList.contains('has-slots')) {
-                previouslySelectedDay.classList.add('bg-emerald-100', 'hover:bg-emerald-200');
-            }
-        }
+        // Update calendar UI
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('selected-day');
+        });
+        document.querySelector(`.calendar-day[onclick*="${dateStr}"]`).classList.add('selected-day');
 
-        // Yeni seçilen günü vurgula
-        const selectedDayElement = document.querySelector(`.calendar-day[data-date="${newDate.toISOString().split('T')[0]}"]`);
-        if (selectedDayElement) {
-            selectedDayElement.classList.add('selected-day', 'bg-emerald-400', 'text-white');
-            selectedDayElement.classList.remove('bg-emerald-100', 'hover:bg-emerald-200');
-        }
-
-        renderCalendar();
-        renderTimeSlots();
-        updateAppointmentDetails();
-    }
-
-    function renderTimeSlots() {
-        if (!selectedAppointment.date) return;
-
-        const dateStr = selectedAppointment.date.toISOString().split('T')[0];
-        const availableSlots = notaryAvailabilityData[dateStr] || [];
-
-        const container = document.getElementById('time-slots');
-        if (availableSlots.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center col-span-3">Bu tarih için müsait saat bulunmuyor</p>';
-            return;
-        }
-
-        container.innerHTML = availableSlots.map(time => {
-            const isSelected = selectedAppointment.time === time;
-            const classes = [
-                'calendar-slot',
-                'transition-all duration-200',
-                isSelected ? 'selected bg-sky-500 text-white' : 'bg-sky-100 hover:bg-sky-200 text-gray-800'
-            ].filter(Boolean).join(' ');
-
-            return `
-            <button 
-                class="${classes}"
-                onclick="selectTimeSlot('${time}')"
-                title="${time} için randevu al">
+        // Show available time slots
+        const slotsContainer = document.getElementById('available-slots');
+        slotsContainer.classList.remove('hidden');
+        slotsContainer.innerHTML = availableSlots[dateStr].map(time => `
+            <button type="button" class="calendar-slot" data-time="${time}">
                 ${time}
             </button>
-        `;
-        }).join('');
+        `).join('');
+
+        // Add click event listeners to all time slots
+        slotsContainer.querySelectorAll('.calendar-slot').forEach(slot => {
+            slot.addEventListener('click', function () {
+                const time = this.getAttribute('data-time');
+                selectTimeSlot(time);
+            });
+        });
+
+        // Hide appointment details until time is selected
+        document.getElementById('selected-appointment-details').classList.add('hidden');
+        document.getElementById('confirm-appointment-btn').disabled = true;
     }
 
     function selectTimeSlot(time) {
-        // Önceki seçimi kaldır
-        const previouslySelected = document.querySelector('.calendar-slot.selected');
-        if (previouslySelected) {
-            previouslySelected.classList.remove('selected', 'bg-sky-500', 'text-white');
-            previouslySelected.classList.add('bg-sky-100', 'hover:bg-sky-200', 'text-gray-800');
-        }
+        selectedTimeSlot = time;
 
-        // Yeni seçimi vurgula
-        const element = document.querySelector(`.calendar-slot[onclick*="${time}"]`);
-        if (element) {
-            element.classList.add('selected', 'bg-sky-500', 'text-white');
-            element.classList.remove('bg-sky-100', 'hover:bg-sky-200', 'text-gray-800');
-        }
-
-        selectedAppointment.time = time;
-        updateAppointmentDetails();
-
-        // "Randevuyu Onayla" butonunu aktif et
-        const confirmButton = document.getElementById('confirm-appointment-btn');
-        if (confirmButton) {
-            confirmButton.disabled = false;
-            confirmButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-            confirmButton.classList.add('bg-primary', 'hover:bg-primary-dark', 'cursor-pointer');
-        }
-    }
-
-    function updateAppointmentDetails() {
-        if (!selectedAppointment.date || !selectedAppointment.time) return;
-
-        const process = customerData.legalProcesses.find(p => p.projectId === selectedAppointment.projectId);
-        if (!process || !process.assignedNotary) return;
-
-        const dateStr = selectedAppointment.date.toLocaleDateString('tr-TR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        // Update time slots UI
+        document.querySelectorAll('.calendar-slot').forEach(slot => {
+            slot.classList.remove('selected');
+            if (slot.getAttribute('data-time') === time) {
+                slot.classList.add('selected');
+            }
         });
 
-        document.getElementById('selected-datetime').textContent = `${dateStr}, ${selectedAppointment.time}`;
-        document.getElementById('assigned-notary-info').textContent = process.assignedNotary.name;
-        document.getElementById('notary-address').textContent = process.assignedNotary.location || 'Kadıköy 5. Noterliği, Bostancı Mah. Bağdat Cad. No: 512/B, Kadıköy/İstanbul';
+        // Show appointment details
+        const process = customerData.legalProcesses.find(p => p.projectId === currentLegalProjectId);
+        const details = document.getElementById('selected-appointment-details');
+        const noSelection = document.getElementById('no-appointment-selected');
+
+        details.classList.remove('hidden');
+        noSelection.classList.add('hidden');
+
+        // Format date for display
+        const dateObj = new Date(selectedDate);
+        const formattedDate = dateObj.toLocaleDateString('tr-TR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            weekday: 'long'
+        });
+
+        document.getElementById('selected-date').textContent = formattedDate;
+        document.getElementById('selected-time').textContent = time;
+        document.getElementById('selected-notary').textContent = process.assignedNotary.name;
+        document.getElementById('selected-location').textContent = process.assignedNotary.location;
+
+        // Enable confirm button
+        document.getElementById('confirm-appointment-btn').disabled = false;
     }
+
+
 
     function confirmNotaryAppointment() {
-        if (!selectedDate || !selectedTimeSlot) return;
+        if (!selectedDate || !selectedTimeSlot || !currentLegalProjectId) return;
 
-        const projectId = document.getElementById('notary-appointment-project-id').value;
-        const process = customerData.legalProcesses.find(p => p.projectId === projectId);
+        const process = customerData.legalProcesses.find(p => p.projectId === currentLegalProjectId);
         if (!process) return;
 
-        const dateStr = selectedDate.toLocaleDateString('tr-TR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
+        // Create appointment object
         process.notaryAppointment = {
-            date: dateStr,
+            date: selectedDate,
             time: selectedTimeSlot,
-            location: process.assignedNotary.location || 'Kadıköy 5. Noterliği, Bostancı Mah. Bağdat Cad. No: 512/B, Kadıköy/İstanbul',
-            smsReminderEnabled: document.getElementById('notary-sms-reminder-bg').classList.contains('bg-green-400')
+            location: process.assignedNotary.location,
+            smsReminderEnabled: document.getElementById('sms-reminder-toggle').checked
         };
 
+        // Update process status
         process.notaryStatus = 'appointment_set';
 
-        showNotification('Noter randevunuz başarıyla oluşturuldu.', 'success');
+        // Close modal and show success message
         closeModal('notary-appointment-modal');
+        showNotification('Noter randevunuz başarıyla oluşturuldu!', 'success');
+
+        // Re-render legal processes section
         renderLegalProcesses();
     }
 
