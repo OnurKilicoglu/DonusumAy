@@ -1753,6 +1753,59 @@
     </div>
 </div>
 
+<!-- Notary Payment Modal -->
+<div id="notary-payment-modal"
+    class="fixed inset-0 z-[60] hidden bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notary-payment-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+        <div class="p-6 border-b">
+            <h3 class="text-xl font-bold text-gray-800">Noter Ücret Ödemesi</h3>
+            <p class="text-gray-600 mt-1">Ödenecek Tutar: <span id="notary-payment-amount" class="font-bold text-orange-600">2,500 TL</span></p>
+            <p class="text-sm text-gray-500 mt-2">Proje: <span id="notary-project-name" class="font-medium"></span></p>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label for="notary-registered-cards" class="block text-sm font-medium text-gray-700 mb-1">Kayıtlı Kartlarım</label>
+                <select id="notary-registered-cards" onchange="fillNotaryCardDetails(this.value)"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                    <option value="">Yeni kart ile ödeme yap</option>
+                    <option value="card1">**** 1234 (Ziraat Bankası)</option>
+                    <option value="card2">**** 5678 (İş Bankası)</option>
+                </select>
+            </div>
+            <input type="text" id="notary-card-holder" placeholder="Kart Sahibinin Adı Soyadı"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+            <input type="text" id="notary-card-number" placeholder="Kart Numarası (örn: 1234 5678 1234 5678)"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" maxlength="19">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="notary-card-expiry" placeholder="Son Kul. Tarihi (AA/YY)"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" maxlength="5">
+                <input type="text" id="notary-card-cvv" placeholder="CVV"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" maxlength="4">
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="notary-save-card-checkbox"
+                    class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                <label for="notary-save-card-checkbox" class="ml-2 block text-sm text-gray-900">Kart Bilgilerimi Kaydet</label>
+            </div>
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p class="text-sm text-orange-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Bilgilendirme:</strong> Bu ödeme noter ücretleri için yapılmaktadır. Ödeme güvenli SSL şifreleme ile korunmaktadır.
+                </p>
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+            <button onclick="closeModal('notary-payment-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm font-medium transition-colors">İptal</button>
+            <button onclick="processNotaryPayment()"
+                class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 font-medium transition-colors">
+                <i class="fas fa-credit-card mr-2"></i>Güvenli Ödeme Yap
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- #endregion -->
 
 <!-- İmar Çapı İşlem Modalı -->
@@ -4604,6 +4657,9 @@
                 <button onclick="openNotaryAppointmentModal('${process.projectId}')" ${!canScheduleAppointment ? 'disabled' : ''} class="text-sm bg-indigo-100 text-indigo-700 font-semibold py-2 rounded-lg hover:bg-indigo-200 transition-colors flex items-center justify-center space-x-2 ${!canScheduleAppointment ? 'disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed' : ''}">
                     <i class="fas ${appointmentButtonIcon}"></i><span>${appointmentButtonText}</span>
                 </button>
+                <button onclick="openNotaryPaymentModal('${process.projectId}')" class="text-sm bg-orange-100 text-orange-700 font-semibold py-2 rounded-lg hover:bg-orange-200 transition-colors flex items-center justify-center space-x-2">
+                    <i class="fas fa-credit-card"></i><span>Noter Ödemesi</span>
+                </button>
                 <button onclick="viewDownloadNotarizedContract('${process.projectId}')" ${process.notaryStatus !== 'contract_notarized' ? 'disabled' : ''} class="text-sm bg-green-100 text-green-700 font-semibold py-2 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-2 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
                     <i class="fas fa-file-contract"></i><span>Sözleşme</span>
                 </button>
@@ -5066,6 +5122,147 @@
         link.click();
         document.body.removeChild(link);
         showNotification('Sözleşme indirme işlemi başlatıldı.', 'info');
+    }
+
+    // --- NOTARY PAYMENT FUNCTIONS ---
+    
+    // Notary Payment Input Formatting
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format card number input
+        const cardNumberInput = document.getElementById('notary-card-number');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                if (formattedValue.length > 19) formattedValue = formattedValue.substring(0, 19);
+                e.target.value = formattedValue;
+            });
+        }
+
+        // Format expiry date input
+        const expiryInput = document.getElementById('notary-card-expiry');
+        if (expiryInput) {
+            expiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Only allow numbers in CVV
+        const cvvInput = document.getElementById('notary-card-cvv');
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    });
+
+    function openNotaryPaymentModal(projectId) {
+        console.log('Noter ödeme modalı açılıyor, proje ID:', projectId);
+        const process = customerData.legalProcesses.find(p => p.projectId === projectId);
+        if (!process) {
+            showNotification('Proje bilgisi bulunamadı.', 'error');
+            return;
+        }
+
+        // Set project name in modal
+        document.getElementById('notary-project-name').textContent = process.projectName;
+        
+        // Clear form fields
+        document.getElementById('notary-registered-cards').value = '';
+        document.getElementById('notary-card-holder').value = '';
+        document.getElementById('notary-card-number').value = '';
+        document.getElementById('notary-card-expiry').value = '';
+        document.getElementById('notary-card-cvv').value = '';
+        document.getElementById('notary-save-card-checkbox').checked = false;
+        
+        // Store current project for payment processing
+        window.currentNotaryPaymentProject = projectId;
+        
+        openModal('notary-payment-modal');
+    }
+
+    function fillNotaryCardDetails(cardId) {
+        if (!cardId) {
+            // Clear fields for new card
+            document.getElementById('notary-card-holder').value = '';
+            document.getElementById('notary-card-number').value = '';
+            document.getElementById('notary-card-expiry').value = '';
+            document.getElementById('notary-card-cvv').value = '';
+            return;
+        }
+        
+        // Simulate filling saved card details (in real app, this would come from secure storage)
+        if (cardId === 'card1') {
+            document.getElementById('notary-card-holder').value = 'AYŞE DEMİR';
+            document.getElementById('notary-card-number').value = '1234 5678 9012 1234';
+            document.getElementById('notary-card-expiry').value = '12/25';
+            document.getElementById('notary-card-cvv').value = '';  // CVV always empty for security
+        } else if (cardId === 'card2') {
+            document.getElementById('notary-card-holder').value = 'AYŞE DEMİR';
+            document.getElementById('notary-card-number').value = '9876 5432 1098 5678';
+            document.getElementById('notary-card-expiry').value = '06/26';
+            document.getElementById('notary-card-cvv').value = '';  // CVV always empty for security
+        }
+    }
+
+    function processNotaryPayment() {
+        const cardHolder = document.getElementById('notary-card-holder').value.trim();
+        const cardNumber = document.getElementById('notary-card-number').value.trim();
+        const cardExpiry = document.getElementById('notary-card-expiry').value.trim();
+        const cardCvv = document.getElementById('notary-card-cvv').value.trim();
+        
+        // Basic validation
+        if (!cardHolder) {
+            showNotification('Kart sahibinin adını giriniz.', 'error');
+            return;
+        }
+        
+        if (!cardNumber || cardNumber.length < 16) {
+            showNotification('Geçerli bir kart numarası giriniz.', 'error');
+            return;
+        }
+        
+        if (!cardExpiry || !cardExpiry.match(/^\d{2}\/\d{2}$/)) {
+            showNotification('Son kullanma tarihini AA/YY formatında giriniz.', 'error');
+            return;
+        }
+        
+        if (!cardCvv || cardCvv.length < 3) {
+            showNotification('CVV kodunu giriniz.', 'error');
+            return;
+        }
+        
+        // Simulate payment processing
+        const paymentButton = document.querySelector('#notary-payment-modal button[onclick="processNotaryPayment()"]');
+        paymentButton.disabled = true;
+        paymentButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>İşleminiz gerçekleştiriliyor...';
+        
+        setTimeout(() => {
+            // Simulate successful payment
+            const projectId = window.currentNotaryPaymentProject;
+            const process = customerData.legalProcesses.find(p => p.projectId === projectId);
+            
+            if (process) {
+                // Update process status to show payment completed
+                process.notaryPaymentCompleted = true;
+                process.notaryPaymentDate = new Date().toISOString();
+            }
+            
+            closeModal('notary-payment-modal');
+            showNotification('Noter ücreti başarıyla ödendi! Noter süreçleriniz başlatılacaktır.', 'success');
+            
+            // Reset button
+            paymentButton.disabled = false;
+            paymentButton.innerHTML = '<i class="fas fa-credit-card mr-2"></i>Güvenli Ödeme Yap';
+            
+            // Refresh legal processes
+            renderLegalProcesses();
+            
+        }, 2000);
     }
 
     // --- LAWYER PROCESSES SECTION (OLD - TO BE REMOVED) ---
