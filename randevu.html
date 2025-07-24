@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+     <div id="notary-appointment-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center" onclick="closeModal('notary-appointment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex" onclick="event.stopPropagation()">
+            <!-- Left side - Calendar -->
+            <div class="flex-1 border-r">
+                <div class="p-6 border-b">
+                    <h3 id="notary-appointment-modal-title" class="text-xl font-bold text-gray-800">Noter Randevu Seçimi</h3>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div class="calendar-header">
+                        <button onclick="changeMonth(-1)" class="text-gray-600 hover:text-gray-800" title="Önceki Ay">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="current-month-display">Temmuz 2025</span>
+                        <button onclick="changeMonth(1)" class="text-gray-600 hover:text-gray-800" title="Sonraki Ay">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-name">Pzt</div>
+                        <div class="calendar-day-name">Sal</div>
+                        <div class="calendar-day-name">Çar</div>
+                        <div class="calendar-day-name">Per</div>
+                        <div class="calendar-day-name">Cum</div>
+                        <div class="calendar-day-name">Cmt</div>
+                        <div class="calendar-day-name">Paz</div>
+                        <!-- Calendar days will be rendered here by JS -->
+                    </div>
+                    <div id="available-slots" class="calendar-slots hidden">
+                        <!-- Time slots will be rendered here when a date is selected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side - Appointment Details -->
+            <div class="w-96">
+                <div class="p-6 border-b">
+                    <h4 class="font-semibold text-gray-800">Randevu Detayları</h4>
+                </div>
+                <div id="selected-appointment-details" class="hidden h-full">
+                    <div class="p-6 space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Tarih: <span id="selected-date" class="font-medium text-gray-800"></span></p>
+                            <p class="text-sm text-gray-600">Saat: <span id="selected-time" class="font-medium text-gray-800"></span></p>
+                            <p class="text-sm text-gray-600">Noter: <span id="selected-notary" class="font-medium text-gray-800"></span></p>
+                            <p class="text-sm text-gray-600">Adres: <span id="selected-location" class="font-medium text-gray-800"></span></p>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sms-reminder-toggle" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                            <label for="sms-reminder-toggle" class="ml-2 block text-sm text-gray-900">SMS ile hatırlatma al</label>
+                        </div>
+                    </div>
+                    <div class="mt-auto p-6 bg-gray-50 border-t">
+                        <button onclick="confirmAppointment()" id="confirm-appointment-btn" class="w-full bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed mb-2" disabled>Randevuyu Onayla</button>
+                        <button onclick="closeModal('notary-appointment-modal')" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                    </div>
+                </div>
+                <div id="no-appointment-selected" class="p-6 text-center text-gray-500">
+                    <p>Lütfen takvimden bir tarih ve saat seçin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        function confirmAppointment() {
+            if (!selectedDate || !selectedTimeSlot || !currentLegalProjectId) return;
+            
+            const process = appData.legalProcesses.find(p => p.projectId === currentLegalProjectId);
+            if (!process) return;
+            
+            // Create appointment object
+            process.notaryAppointment = {
+                date: selectedDate,
+                time: selectedTimeSlot,
+                location: process.assignedNotary.contact,
+                smsReminderEnabled: document.getElementById('sms-reminder-toggle').checked
+            };
+            
+            // Update process status
+            process.notaryStatus = 'appointment_set';
+            
+            // Close modal and show success message
+            closeModal('notary-appointment-modal');
+            showNotification('Noter randevunuz başarıyla oluşturuldu!', 'success');
+            
+            // Re-render legal processes section
+            renderLegalProcesses();
+        }
+    </script>
+</body>
+</html>
