@@ -163,13 +163,26 @@
     </div>
 
     <script>
-        // URL parametrelerini kontrol et
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('register') === 'true') {
-            document.addEventListener('DOMContentLoaded', () => {
+        // Sayfa yüklenirken oturum kontrolü
+        document.addEventListener('DOMContentLoaded', () => {
+            // Eğer kullanıcı zaten oturum açmışsa dashboard'a yönlendir
+            const isLoggedIn = localStorage.getItem('admin_logged_in');
+            const userRole = localStorage.getItem('admin_user_role');
+            
+            if (isLoggedIn === 'true' && userRole) {
+                showNotification('Zaten oturum açmışsınız, dashboard\'a yönlendiriliyorsunuz...', 'success');
+                setTimeout(() => {
+                    window.location.href = `${userRole}-dashboard.html`;
+                }, 1000);
+                return;
+            }
+            
+            // URL parametrelerini kontrol et
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('register') === 'true') {
                 toggleForms();
-            });
-        }
+            }
+        });
 
         // Bildirim gösterme fonksiyonu
         function showNotification(message, type) {
@@ -204,6 +217,12 @@
 
         // Simüle edilmiş kullanıcı verileri
         const users = {
+            'admin@donusumay.com': {
+                password: '123456',
+                role: 'admin',
+                name: 'Sistem Yöneticisi',
+                dashboard: 'admin-dashboard.html'
+            },
             'customer@donusumay.com': {
                 password: '123456',
                 role: 'customer',
@@ -242,8 +261,18 @@
             
             const user = users[email];
             if (user && user.password === password) {
+                // localStorage'a kullanıcı bilgilerini kaydet
+                localStorage.setItem('admin_logged_in', 'true');
+                localStorage.setItem('admin_user_email', email);
+                localStorage.setItem('admin_user_role', user.role);
+                localStorage.setItem('admin_user_name', user.name);
+                
                 showNotification(`Hoş geldiniz, ${user.name}!`, 'success');
-                window.location.href = user.dashboard;
+                
+                // Kısa bir gecikme ile yönlendirme yap
+                setTimeout(() => {
+                    window.location.href = user.dashboard;
+                }, 1000);
             } else {
                 showNotification('Geçersiz e-posta veya şifre.', 'error');
                 setLoading(button, false);
@@ -275,11 +304,16 @@
                 dashboard: `${role}-dashboard.html`
             };
             
-            showNotification('Kayıt başarılı! Giriş yapabilirsiniz.', 'success');
+            // Kayıt olan kullanıcıyı otomatik olarak giriş yap
+            localStorage.setItem('admin_logged_in', 'true');
+            localStorage.setItem('admin_user_email', email);
+            localStorage.setItem('admin_user_role', role);
+            localStorage.setItem('admin_user_name', name);
+            
+            showNotification('Kayıt başarılı! Dashboard\'a yönlendiriliyorsunuz...', 'success');
             setTimeout(() => {
-                toggleForms();
-                setLoading(button, false);
-            }, 1000);
+                window.location.href = `${role}-dashboard.html`;
+            }, 1500);
         });
 
         // Örnek giriş bilgilerini sayfaya ekle
@@ -290,6 +324,7 @@
             demoCredentials.innerHTML = `
                 <h3 class="text-sm font-medium text-gray-700 mb-2">Örnek Giriş Bilgileri:</h3>
                 <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Admin:</strong> admin@donusumay.com / 123456</p>
                     <p><strong>Müşteri:</strong> customer@donusumay.com / 123456</p>
                     <p><strong>Müteahhit:</strong> contractor@donusumay.com / 123456</p>
                     <p><strong>Mimar:</strong> architect@donusumay.com / 123456</p>
