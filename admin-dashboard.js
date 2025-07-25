@@ -1,1262 +1,1506 @@
-// Firebase yapılandırması
+// Firebase Configuration
 const firebaseConfig = {
-    // Firebase config buraya eklenecek
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-app.firebaseapp.com",
+    apiKey: "your-api-key",
+    authDomain: "your-auth-domain",
     projectId: "your-project-id",
-    storageBucket: "your-app.appspot.com",
-    messagingSenderId: "your-sender-id",
+    storageBucket: "your-storage-bucket",
+    messagingSenderId: "your-messaging-sender-id",
     appId: "your-app-id"
 };
 
-// Firebase başlatma
-firebase.initializeApp(firebaseConfig);
-
-// Geçici olarak localStorage kullanacağız
-const localDb = {
-    collection: function(name) {
-        return {
-            get: async function() {
-                const data = JSON.parse(localStorage.getItem(name) || '[]');
-                return {
-                    size: data.length,
-                    forEach: function(callback) {
-                        data.forEach((item, index) => {
-                            callback({
-                                id: item.id,
-                                data: function() { return item; }
-                            });
-                        });
-                    }
-                };
+// Initialize Firebase (only if config is valid)
+let db, auth;
+try {
+    if (firebaseConfig.apiKey !== "your-api-key") {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        auth = firebase.auth();
+        console.log('Firebase initialized successfully');
+    } else {
+        console.log('Firebase config not set, using local mode');
+        // Mock auth object for development
+        auth = {
+            onAuthStateChanged: function(callback) {
+                // Check if user is logged in via localStorage
+                const isLoggedIn = localStorage.getItem('admin_logged_in');
+                const userEmail = localStorage.getItem('admin_user_email');
+                
+                if (isLoggedIn === 'true' && userEmail) {
+                    setTimeout(() => {
+                        callback({ email: userEmail, uid: 'mock-uid' });
+                    }, 100);
+                } else {
+                    setTimeout(() => {
+                        callback(null);
+                    }, 100);
+                }
             },
-            where: function() { return this; },
-            orderBy: function() { return this; },
-            limit: function() { return this; },
-            offset: function() { return this; },
-            doc: function(id) {
-                return {
-                    get: async function() {
-                        const data = JSON.parse(localStorage.getItem(name) || '[]');
-                        const item = data.find(item => item.id === id);
-                        return {
-                            exists: !!item,
-                            data: function() { return item; }
-                        };
-                    },
-                    set: async function(data) {
-                        let items = JSON.parse(localStorage.getItem(name) || '[]');
-                        const index = items.findIndex(item => item.id === id);
-                        if (index > -1) {
-                            items[index] = { ...items[index], ...data };
-                        } else {
-                            items.push({ ...data, id });
-                        }
-                        localStorage.setItem(name, JSON.stringify(items));
-                    },
-                    update: async function(data) {
-                        let items = JSON.parse(localStorage.getItem(name) || '[]');
-                        const index = items.findIndex(item => item.id === id);
-                        if (index > -1) {
-                            items[index] = { ...items[index], ...data };
-                            localStorage.setItem(name, JSON.stringify(items));
-                        }
-                    },
-                    delete: async function() {
-                        let items = JSON.parse(localStorage.getItem(name) || '[]');
-                        items = items.filter(item => item.id !== id);
-                        localStorage.setItem(name, JSON.stringify(items));
-                    }
-                };
-            },
-            add: async function(data) {
-                const id = `doc_${Math.random().toString(36).substr(2, 9)}`;
-                let items = JSON.parse(localStorage.getItem(name) || '[]');
-                items.push({ ...data, id });
-                localStorage.setItem(name, JSON.stringify(items));
-                return { id };
+            signOut: function() {
+                localStorage.removeItem('admin_logged_in');
+                localStorage.removeItem('admin_user_email');
+                return Promise.resolve();
             }
         };
     }
-};
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+}
 
-// Firebase yerine localStorage kullanalım
-const db = localDb;
-const auth = firebase.auth();
+// Global Variables
+let currentUser = null;
+let currentSection = 'dashboard-section';
 
-// Kullanıcı yönetimi değişkenleri
-let currentPage = 1;
-const usersPerPage = 10;
-let totalUsers = 0;
-let currentFilters = {
-    userType: '',
-    status: '',
-    registrationDate: '',
-    searchQuery: ''
-};
-
-// İçerik yönetimi değişkenleri
-let currentContentPage = 1;
-const contentPerPage = 10;
-let totalContent = 0;
-let currentContentTab = 'listings';
-let currentContentFilters = {
-    status: '',
-    searchQuery: ''
-};
-
-// Content Management
-let contentData = {
+// Sample Data
+const sampleData = {
+    users: [
+        { id: 1, name: "Ahmet Yılmaz", email: "ahmet@example.com", type: "customer", status: "active", registrationDate: "2024-01-15", lastLogin: "2024-01-20" },
+        { id: 2, name: "Fatma Kaya", email: "fatma@example.com", type: "contractor", status: "active", registrationDate: "2024-01-10", lastLogin: "2024-01-19" },
+        { id: 3, name: "Mehmet Öz", email: "mehmet@example.com", type: "architect", status: "pending", registrationDate: "2024-01-18", lastLogin: "Never" }
+    ],
     listings: [
-        {
-            id: "L1001",
-            title: "Kadıköy'de 3+1 Kentsel Dönüşüm Projesi",
-            owner: "Ahmet Yılmaz",
-            status: "active",
-            createdAt: "2025-07-01",
-            views: 245,
-            type: "Residential"
-        },
-        {
-            id: "L1002",
-            title: "Beşiktaş Merkezi Konumda Dönüşüm Fırsatı",
-            owner: "Mehmet Demir",
-            status: "pending",
-            createdAt: "2025-07-02",
-            views: 180,
-            type: "Commercial"
-        },
-        {
-            id: "L1003",
-            title: "Üsküdar Tarihi Bina Renovasyon Projesi",
-            owner: "Ayşe Kaya",
-            status: "active",
-            createdAt: "2025-07-03",
-            views: 320,
-            type: "Historical"
-        },
-        {
-            id: "L1004",
-            title: "Maltepe'de Yeni Rezidans Projesi",
-            owner: "Can Özkan",
-            status: "rejected",
-            createdAt: "2025-07-04",
-            views: 150,
-            type: "Residential"
-        },
-        {
-            id: "L1005",
-            title: "Şişli'de Ofis Kompleksi Dönüşüm Projesi",
-            owner: "Zeynep Aydın",
-            status: "expired",
-            createdAt: "2025-07-05",
-            views: 200,
-            type: "Commercial"
-        }
+        { id: 101, title: "3+1 Daire Kadıköy", type: "apartment", location: "İstanbul, Kadıköy", price: "₺850,000", status: "active", date: "2024-01-15", owner: "Ahmet Yılmaz" },
+        { id: 102, title: "Villa Zekeriyaköy", type: "house", location: "İstanbul, Sarıyer", price: "₺2,500,000", status: "pending", date: "2024-01-18", owner: "Fatma Kaya" },
+        { id: 103, title: "Ofis Levent", type: "office", location: "İstanbul, Beşiktaş", price: "₺1,200,000", status: "rejected", date: "2024-01-12", owner: "Mehmet Öz" }
     ],
-    announcements: [
-        {
-            id: "A1001",
-            title: "Yeni Kentsel Dönüşüm Teşvikleri",
-            content: "Hükümet tarafından açıklanan yeni kentsel dönüşüm teşvikleri hakkında detaylı bilgilendirme.",
-            date: "2025-07-01",
-            author: "Admin"
-        },
-        {
-            id: "A1002",
-            title: "Sistem Bakım Duyurusu",
-            content: "15 Temmuz 2025 tarihinde sistem bakımı yapılacaktır. İşlemlerinizi buna göre planlamanızı rica ederiz.",
-            date: "2025-07-10",
-            author: "Sistem Yöneticisi"
-        },
-        {
-            id: "A1003",
-            title: "Yeni Özellik: Gelişmiş Proje Takibi",
-            content: "Projelerinizi daha detaylı takip edebileceğiniz yeni özelliklerimiz kullanıma açılmıştır.",
-            date: "2025-07-12",
-            author: "Admin"
-        }
+    offers: [
+        { id: 201, listingTitle: "3+1 Daire Kadıköy", offerBy: "Ayşe Demir", amount: "₺800,000", status: "pending", date: "2024-01-19" },
+        { id: 202, listingTitle: "Villa Zekeriyaköy", offerBy: "Can Yıldız", amount: "₺2,300,000", status: "accepted", date: "2024-01-17" },
+        { id: 203, listingTitle: "Ofis Levent", offerBy: "Selin Ak", amount: "₺1,100,000", status: "rejected", date: "2024-01-16" }
     ],
-    faqs: [
-        {
-            id: "F1001",
-            question: "Kentsel dönüşüm başvurusu nasıl yapılır?",
-            answer: "Kentsel dönüşüm başvurusu için gerekli belgelerle birlikte sistemimiz üzerinden online başvuru yapabilirsiniz.",
-            category: "Başvuru"
-        },
-        {
-            id: "F1002",
-            question: "Proje onay süreci ne kadar sürer?",
-            answer: "Proje onay süreci, belgelerin eksiksiz olması durumunda ortalama 15-20 iş günü sürmektedir.",
-            category: "Süreç"
-        },
-        {
-            id: "F1003",
-            question: "Hangi belgeler gereklidir?",
-            answer: "Tapu, kimlik, imar durumu belgesi ve muvafakatname başlıca gerekli belgelerdir.",
-            category: "Belgeler"
-        }
+    projects: [
+        { id: 301, name: "Kadıköy Konut Projesi", contractor: "ABC İnşaat", architect: "Mimar Sinan", status: "ongoing", startDate: "2024-01-01", endDate: "2024-12-31" },
+        { id: 302, name: "Zekeriyaköy Villa Projesi", contractor: "XYZ Yapı", architect: "Mimar Kemalettin", status: "planning", startDate: "2024-02-01", endDate: "2024-10-15" },
+        { id: 303, name: "Levent Ofis Projesi", contractor: "DEF İnşaat", architect: "Mimar Vedat", status: "completed", startDate: "2023-06-01", endDate: "2023-12-31" }
+    ],
+    legalProcesses: {
+        contracts: [
+            { id: 401, type: "Satış Sözleşmesi", parties: "Ahmet Yılmaz - Ayşe Demir", status: "active", date: "2024-01-15" },
+            { id: 402, type: "İnşaat Sözleşmesi", parties: "ABC İnşaat - Fatma Kaya", status: "pending", date: "2024-01-10" }
+        ],
+        documents: [
+            { id: 501, type: "Tapu Senedi", owner: "Ahmet Yılmaz", status: "approved", uploadDate: "2024-01-12" },
+            { id: 502, type: "İmar Durum Belgesi", owner: "Fatma Kaya", status: "pending", uploadDate: "2024-01-18" }
+        ],
+        notary: [
+            { id: 601, type: "Tapu Devri", notary: "1. Noter", status: "scheduled", appointmentDate: "2024-01-25" },
+            { id: 602, type: "Sözleşme Onayı", notary: "2. Noter", status: "completed", appointmentDate: "2024-01-20" }
+        ]
+    },
+    supportComplaints: {
+        support: [
+            { id: 701, user: "Ahmet Yılmaz", subject: "Giriş Sorunu", priority: "high", status: "open", date: "2024-01-19" },
+            { id: 702, user: "Fatma Kaya", subject: "İlan Yayınlama", priority: "medium", status: "closed", date: "2024-01-18" }
+        ],
+        complaints: [
+            { id: 801, complainant: "Ayşe Demir", defendant: "Mehmet Öz", category: "Müteahhit Sorunu", status: "investigating", date: "2024-01-17" },
+            { id: 802, complainant: "Can Yıldız", defendant: "ABC İnşaat", category: "Gecikmeli Teslim", status: "resolved", date: "2024-01-15" }
+        ],
+        feedback: [
+            { id: 901, user: "Selin Ak", type: "Platform Değerlendirmesi", rating: 4, date: "2024-01-16" },
+            { id: 902, user: "Ahmet Yılmaz", type: "Hizmet Kalitesi", rating: 5, date: "2024-01-14" }
+        ]
+    },
+    tickets: [
+        { id: 1001, title: "Sistem Hatası", category: "technical", status: "open", date: "2024-01-19" },
+        { id: 1002, title: "Fatura Sorunu", category: "billing", status: "closed", date: "2024-01-18" },
+        { id: 1003, title: "Hesap Sorunu", category: "account", status: "pending", date: "2024-01-17" }
     ]
 };
 
-// Content Management Functions
-function initializeContentManagement() {
-    populateListings();
-    populateAnnouncements();
-    populateFAQs();
-    setupContentEventListeners();
+// Authentication Check
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+});
+
+function initializeApp() {
+    console.log('Initializing admin dashboard...');
+    
+    // Check authentication status
+    auth.onAuthStateChanged(function(user) {
+        console.log('Auth state changed:', user);
+        
+        if (user) {
+            console.log('User is authenticated:', user.email);
+            console.log('Checking admin status...');
+            
+            if (isAdmin(user)) {
+                console.log('User is admin, initializing dashboard...');
+                currentUser = user;
+                initializeDashboard();
+                loadDashboardData();
+            } else {
+                console.log('User is not admin, redirecting to auth...');
+                window.location.href = 'auth.html';
+            }
+        } else {
+            console.log('No user authenticated, redirecting to auth...');
+            window.location.href = 'auth.html';
+        }
+    });
 }
 
-function populateListings() {
-    const listingsTable = document.querySelector('#listings-list');
-    if (!listingsTable) return;
+function isAdmin(user) {
+    // For development purposes, allow any authenticated user to access admin panel
+    // In production, you should implement proper admin role checking
+    return user && user.email;
+    
+    // Alternative: Check for specific admin emails
+    // const adminEmails = ['admin@donusumay.com', 'yonetici@donusumay.com', 'test@admin.com'];
+    // return user && user.email && adminEmails.includes(user.email);
+    
+    // Alternative: Check for admin role in user claims (requires Firebase Admin SDK setup)
+    // return user && user.email && user.customClaims && user.customClaims.admin === true;
+}
 
-    listingsTable.innerHTML = contentData.listings.map(listing => `
+function initializeDashboard() {
+    // Initialize event listeners
+    setupSidebarNavigation();
+    setupCharts();
+    setupEventListeners();
+    
+    // Load initial data
+    loadDashboardStats();
+    loadRecentActivity();
+    
+    // Show default section
+    showSection('dashboard-section');
+}
+
+// Navigation Functions
+function showSection(sectionId) {
+    // Hide all sections
+    const sections = document.querySelectorAll('[id$="-section"]');
+    sections.forEach(section => {
+        section.classList.add('hidden');
+    });
+    
+    // Show selected section
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+        selectedSection.classList.remove('hidden');
+        currentSection = sectionId;
+        
+        // Update sidebar active state
+        updateSidebarActiveState(sectionId);
+        
+        // Load section-specific data
+        loadSectionData(sectionId);
+    }
+}
+
+function updateSidebarActiveState(sectionId) {
+    // Remove active class from all sidebar links
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.remove('active', 'bg-purple-100', 'text-purple-600');
+        link.classList.add('text-gray-700');
+    });
+    
+    // Add active class to current link
+    const activeLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+    if (activeLink) {
+        activeLink.classList.add('active', 'bg-purple-100', 'text-purple-600');
+        activeLink.classList.remove('text-gray-700');
+    }
+}
+
+function loadSectionData(sectionId) {
+    switch(sectionId) {
+        case 'dashboard-section':
+            loadDashboardStats();
+            loadRecentActivity();
+            break;
+        case 'user-management-section':
+            loadUsers();
+            break;
+        case 'listing-management-section':
+            loadListings();
+            break;
+        case 'offer-management-section':
+            loadOffers();
+            break;
+        case 'project-management-section':
+            loadProjects();
+            break;
+        case 'legal-processes-section':
+            loadLegalProcesses();
+            break;
+        case 'support-complaints-section':
+            loadSupportComplaints();
+            break;
+        case 'content-management-section':
+            loadContentManagement();
+            break;
+        case 'support-management-section':
+            loadSupportTickets();
+            break;
+        case 'financial-section':
+            loadFinancialData();
+            break;
+        case 'analytics-section':
+            loadAnalyticsData();
+            break;
+        case 'marketing-section':
+            loadMarketingData();
+            break;
+        case 'settings-section':
+            loadSettings();
+            break;
+    }
+}
+
+// Dashboard Functions
+function loadDashboardStats() {
+    // Update dashboard statistics
+    document.getElementById('total-users').textContent = sampleData.users.length;
+    document.getElementById('active-projects').textContent = sampleData.projects.filter(p => p.status === 'ongoing').length;
+    document.getElementById('open-tickets').textContent = sampleData.tickets.filter(t => t.status === 'open').length;
+}
+
+function loadRecentActivity() {
+    const activityList = document.getElementById('recent-activity-list');
+    const activities = [
+        { icon: 'fa-user-plus', text: 'Yeni kullanıcı kaydı: Ahmet Yılmaz', time: '5 dakika önce', color: 'text-green-600' },
+        { icon: 'fa-home', text: 'Yeni ilan eklendi: 3+1 Daire Kadıköy', time: '15 dakika önce', color: 'text-blue-600' },
+        { icon: 'fa-handshake', text: 'Teklif kabul edildi: Villa Zekeriyaköy', time: '1 saat önce', color: 'text-purple-600' },
+        { icon: 'fa-exclamation-triangle', text: 'Yeni şikayet: Müteahhit Sorunu', time: '2 saat önce', color: 'text-red-600' }
+    ];
+    
+    activityList.innerHTML = activities.map(activity => `
+        <div class="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg">
+            <div class="flex-shrink-0">
+                <i class="fas ${activity.icon} ${activity.color}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">${activity.text}</p>
+                <p class="text-xs text-gray-500">${activity.time}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// User Management Functions
+function loadUsers() {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = sampleData.users.map(user => `
         <tr>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-gray-900">${listing.id}</span>
-            </td>
-            <td class="px-6 py-4">
-                <div class="text-sm text-gray-900">${listing.title}</div>
-                <div class="text-sm text-gray-500">${listing.type}</div>
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span class="text-sm font-medium text-purple-600">${user.name.charAt(0)}</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                        <div class="text-sm text-gray-500">${user.email}</div>
+                    </div>
+                </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-gray-900">${listing.owner}</span>
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    ${getUserTypeText(user.type)}
+                </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                ${getStatusBadge(listing.status)}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}">
+                    ${getStatusText(user.status)}
+                </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-gray-900">${listing.createdAt}</span>
-            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(user.registrationDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.lastLogin === 'Never' ? 'Hiç' : formatDate(user.lastLogin)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button onclick="viewListing('${listing.id}')" class="text-purple-600 hover:text-purple-900 mr-3">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editListing('${listing.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteListing('${listing.id}')" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <button onclick="viewUser(${user.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="editUser(${user.id})" class="text-green-600 hover:text-green-900 mr-2">Düzenle</button>
+                <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-900">Sil</button>
             </td>
         </tr>
     `).join('');
 }
 
-function getStatusBadge(status) {
-    const statusClasses = {
-        active: 'bg-green-100 text-green-800',
-        pending: 'bg-yellow-100 text-yellow-800',
-        rejected: 'bg-red-100 text-red-800',
-        expired: 'bg-gray-100 text-gray-800'
-    };
-
-    return `
-        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[status]}">
-            ${status.charAt(0).toUpperCase() + status.slice(1)}
-        </span>
-    `;
-}
-
-function populateAnnouncements() {
-    const announcementsList = document.querySelector('#announcements-list');
-    if (!announcementsList) return;
-
-    announcementsList.innerHTML = contentData.announcements.map(announcement => `
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="text-lg font-semibold text-gray-900">${announcement.title}</h4>
-                    <p class="text-sm text-gray-500 mt-1">${announcement.date} - ${announcement.author}</p>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="editAnnouncement('${announcement.id}')" class="text-blue-600 hover:text-blue-900">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteAnnouncement('${announcement.id}')" class="text-red-600 hover:text-red-900">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <p class="text-gray-600 mt-4">${announcement.content}</p>
-        </div>
+// Listing Management Functions
+function loadListings() {
+    updateListingStats();
+    const listingsTable = document.getElementById('listings-table');
+    listingsTable.innerHTML = sampleData.listings.map(listing => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${listing.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${listing.title}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    ${getListingTypeText(listing.type)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${listing.location}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${listing.price}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}">
+                    ${getStatusText(listing.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(listing.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewListing(${listing.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="approveListing(${listing.id})" class="text-green-600 hover:text-green-900 mr-2">Onayla</button>
+                <button onclick="rejectListing(${listing.id})" class="text-red-600 hover:text-red-900">Reddet</button>
+            </td>
+        </tr>
     `).join('');
 }
 
-function populateFAQs() {
-    const faqsList = document.querySelector('#faqs-list');
-    if (!faqsList) return;
+function updateListingStats() {
+    document.getElementById('total-listings').textContent = sampleData.listings.length;
+    document.getElementById('active-listings-count').textContent = sampleData.listings.filter(l => l.status === 'active').length;
+    document.getElementById('pending-listings').textContent = sampleData.listings.filter(l => l.status === 'pending').length;
+    document.getElementById('rejected-listings').textContent = sampleData.listings.filter(l => l.status === 'rejected').length;
+}
 
-    faqsList.innerHTML = contentData.faqs.map(faq => `
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <h4 class="text-lg font-semibold text-gray-900">${faq.question}</h4>
-                    <span class="inline-block px-2 py-1 text-xs font-semibold text-purple-600 bg-purple-100 rounded-full mt-2">
-                        ${faq.category}
-                    </span>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="editFAQ('${faq.id}')" class="text-blue-600 hover:text-blue-900">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteFAQ('${faq.id}')" class="text-red-600 hover:text-red-900">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <p class="text-gray-600 mt-4">${faq.answer}</p>
-        </div>
+// Offer Management Functions
+function loadOffers() {
+    updateOfferStats();
+    const offersTable = document.getElementById('offers-table');
+    offersTable.innerHTML = sampleData.offers.map(offer => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${offer.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${offer.listingTitle}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${offer.offerBy}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${offer.amount}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(offer.status)}">
+                    ${getOfferStatusText(offer.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(offer.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewOffer(${offer.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="approveOffer(${offer.id})" class="text-green-600 hover:text-green-900 mr-2">Onayla</button>
+                <button onclick="rejectOffer(${offer.id})" class="text-red-600 hover:text-red-900">Reddet</button>
+            </td>
+        </tr>
     `).join('');
 }
 
-function setupContentEventListeners() {
-    // Add event listeners for content management actions
-    document.querySelectorAll('.content-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
+function updateOfferStats() {
+    document.getElementById('total-offers').textContent = sampleData.offers.length;
+    document.getElementById('pending-offers').textContent = sampleData.offers.filter(o => o.status === 'pending').length;
+    document.getElementById('accepted-offers').textContent = sampleData.offers.filter(o => o.status === 'accepted').length;
+    document.getElementById('rejected-offers').textContent = sampleData.offers.filter(o => o.status === 'rejected').length;
 }
 
-// Content Management Action Functions
-function viewListing(id) {
-    showNotification('success', `İlan görüntüleniyor: ${id}`);
+// Project Management Functions
+function loadProjects() {
+    updateProjectStats();
+    const projectsTable = document.getElementById('projects-table');
+    projectsTable.innerHTML = sampleData.projects.map(project => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${project.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.contractor}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.architect}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getProjectStatusColor(project.status)}">
+                    ${getProjectStatusText(project.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(project.startDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(project.endDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewProject(${project.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-2">Düzenle</button>
+                <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">Sil</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-function editListing(id) {
-    showNotification('info', `İlan düzenleniyor: ${id}`);
+function updateProjectStats() {
+    document.getElementById('total-projects').textContent = sampleData.projects.length;
+    document.getElementById('ongoing-projects').textContent = sampleData.projects.filter(p => p.status === 'ongoing').length;
+    document.getElementById('completed-projects').textContent = sampleData.projects.filter(p => p.status === 'completed').length;
+    document.getElementById('cancelled-projects').textContent = sampleData.projects.filter(p => p.status === 'cancelled').length;
 }
 
-function deleteListing(id) {
-    if (confirm('Bu ilanı silmek istediğinizden emin misiniz?')) {
-        showNotification('success', `İlan silindi: ${id}`);
-    }
+// Legal Processes Functions
+function loadLegalProcesses() {
+    updateLegalStats();
+    loadContracts();
+    switchLegalTab('contracts');
 }
 
-function editAnnouncement(id) {
-    showNotification('info', `Duyuru düzenleniyor: ${id}`);
+function updateLegalStats() {
+    const totalProcesses = sampleData.legalProcesses.contracts.length + 
+                          sampleData.legalProcesses.documents.length + 
+                          sampleData.legalProcesses.notary.length;
+    document.getElementById('total-legal-processes').textContent = totalProcesses;
+    document.getElementById('ongoing-legal').textContent = sampleData.legalProcesses.contracts.filter(c => c.status === 'active').length;
+    document.getElementById('completed-legal').textContent = sampleData.legalProcesses.notary.filter(n => n.status === 'completed').length;
+    document.getElementById('pending-documents').textContent = sampleData.legalProcesses.documents.filter(d => d.status === 'pending').length;
 }
 
-function deleteAnnouncement(id) {
-    if (confirm('Bu duyuruyu silmek istediğinizden emin misiniz?')) {
-        showNotification('success', `Duyuru silindi: ${id}`);
-    }
-}
-
-function editFAQ(id) {
-    showNotification('info', `SSS düzenleniyor: ${id}`);
-}
-
-function deleteFAQ(id) {
-    if (confirm('Bu SSS\'yi silmek istediğinizden emin misiniz?')) {
-        showNotification('success', `SSS silindi: ${id}`);
-    }
-}
-
-function openNewAnnouncementModal() {
-    document.getElementById('new-announcement-modal').classList.remove('hidden');
-}
-
-function closeNewAnnouncementModal() {
-    document.getElementById('new-announcement-modal').classList.add('hidden');
-}
-
-function openNewFAQModal() {
-    document.getElementById('new-faq-modal').classList.remove('hidden');
-}
-
-function closeNewFAQModal() {
-    document.getElementById('new-faq-modal').classList.add('hidden');
-}
-
-// Initialize content management when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeContentManagement();
-});
-
-// DOM elementleri
-const userTypeFilter = document.getElementById('user-type-filter');
-const userStatusFilter = document.getElementById('user-status-filter');
-const registrationDateFilter = document.getElementById('registration-date-filter');
-const userSearch = document.getElementById('user-search');
-const userList = document.getElementById('user-list');
-const prevPageBtn = document.getElementById('prev-page');
-const nextPageBtn = document.getElementById('next-page');
-const pageInfo = document.getElementById('page-info');
-const perPageSelect = document.getElementById('per-page');
-
-// İçerik yönetimi DOM elementleri
-const contentTabs = document.querySelectorAll('.content-tab');
-const contentTabPanels = document.querySelectorAll('.content-tab-panel');
-const listingsList = document.getElementById('listings-list');
-const announcementsList = document.getElementById('announcements-list');
-const faqsList = document.getElementById('faqs-list');
-
-// Event listeners
-userTypeFilter?.addEventListener('change', handleFiltersChange);
-userStatusFilter?.addEventListener('change', handleFiltersChange);
-registrationDateFilter?.addEventListener('change', handleFiltersChange);
-userSearch?.addEventListener('input', debounce(handleFiltersChange, 300));
-prevPageBtn?.addEventListener('click', () => changePage(currentPage - 1));
-nextPageBtn?.addEventListener('click', () => changePage(currentPage + 1));
-perPageSelect?.addEventListener('change', handlePerPageChange);
-
-// İçerik sekmesi değiştirme
-function switchContentTab(tabId) {
-    // Tüm sekmeleri ve panelleri gizle
-    document.querySelectorAll('.content-tab-panel').forEach(panel => {
+function switchLegalTab(tabName) {
+    // Hide all tab panels
+    document.querySelectorAll('.legal-tab-panel').forEach(panel => {
         panel.classList.add('hidden');
     });
     
-    document.querySelectorAll('.content-tab').forEach(tab => {
-        tab.classList.remove('border-purple-500', 'text-purple-600');
+    // Remove active class from all tabs
+    document.querySelectorAll('.legal-tab').forEach(tab => {
+        tab.classList.remove('active', 'border-purple-500', 'text-purple-600');
         tab.classList.add('border-transparent', 'text-gray-500');
     });
-
-    // Seçilen sekmeyi ve paneli göster
-    const selectedPanel = document.getElementById(`${tabId}-content`);
-    const selectedTab = document.querySelector(`[onclick="switchContentTab('${tabId}')"]`);
     
+    // Show selected tab panel
+    const selectedPanel = document.getElementById(`${tabName}-content`);
     if (selectedPanel) {
         selectedPanel.classList.remove('hidden');
     }
     
+    // Add active class to selected tab
+    const selectedTab = document.querySelector(`[onclick="switchLegalTab('${tabName}')"]`);
     if (selectedTab) {
-        selectedTab.classList.add('border-purple-500', 'text-purple-600');
+        selectedTab.classList.add('active', 'border-purple-500', 'text-purple-600');
         selectedTab.classList.remove('border-transparent', 'text-gray-500');
     }
-
-    // İçeriği yükle
-    switch (tabId) {
-        case 'listings':
-            populateListings();
+    
+    // Load tab-specific data
+    switch(tabName) {
+        case 'contracts':
+            loadContracts();
             break;
-        case 'announcements':
-            populateAnnouncements();
+        case 'documents':
+            loadDocuments();
             break;
-        case 'faqs':
-            populateFAQs();
+        case 'notary':
+            loadNotaryProcesses();
             break;
     }
 }
 
-// Debounce fonksiyonu
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+function loadContracts() {
+    const contractsTable = document.getElementById('contracts-table');
+    contractsTable.innerHTML = sampleData.legalProcesses.contracts.map(contract => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${contract.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${contract.type}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${contract.parties}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(contract.status)}">
+                    ${getStatusText(contract.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(contract.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewContract(${contract.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="editContract(${contract.id})" class="text-green-600 hover:text-green-900 mr-2">Düzenle</button>
+                <button onclick="deleteContract(${contract.id})" class="text-red-600 hover:text-red-900">Sil</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-// Filtreleri işleme
-function handleFiltersChange() {
-    currentFilters = {
-        userType: userTypeFilter?.value || '',
-        status: userStatusFilter?.value || '',
-        registrationDate: registrationDateFilter?.value || '',
-        searchQuery: userSearch?.value || ''
-    };
-    currentPage = 1;
-    loadUsers();
+function loadDocuments() {
+    const documentsTable = document.getElementById('documents-table');
+    documentsTable.innerHTML = sampleData.legalProcesses.documents.map(document => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${document.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${document.type}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${document.owner}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(document.status)}">
+                    ${getDocumentStatusText(document.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(document.uploadDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewDocument(${document.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="approveDocument(${document.id})" class="text-green-600 hover:text-green-900 mr-2">Onayla</button>
+                <button onclick="rejectDocument(${document.id})" class="text-red-600 hover:text-red-900">Reddet</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-// Sayfa başına gösterilen kullanıcı sayısını değiştirme
-function handlePerPageChange() {
-    const newPerPage = parseInt(perPageSelect.value);
-    if (newPerPage !== usersPerPage) {
-        usersPerPage = newPerPage;
-        currentPage = 1;
-        loadUsers();
+function loadNotaryProcesses() {
+    const notaryTable = document.getElementById('notary-table');
+    notaryTable.innerHTML = sampleData.legalProcesses.notary.map(notary => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${notary.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${notary.type}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${notary.notary}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getNotaryStatusColor(notary.status)}">
+                    ${getNotaryStatusText(notary.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(notary.appointmentDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewNotaryProcess(${notary.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="editNotaryProcess(${notary.id})" class="text-green-600 hover:text-green-900 mr-2">Düzenle</button>
+                <button onclick="cancelNotaryProcess(${notary.id})" class="text-red-600 hover:text-red-900">İptal</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Support & Complaints Functions
+function loadSupportComplaints() {
+    updateSupportStats();
+    loadSupportRequests();
+    switchSupportTab('support');
+}
+
+function updateSupportStats() {
+    const totalRequests = sampleData.supportComplaints.support.length + 
+                         sampleData.supportComplaints.complaints.length + 
+                         sampleData.supportComplaints.feedback.length;
+    document.getElementById('total-support-requests').textContent = totalRequests;
+    document.getElementById('open-support-requests').textContent = sampleData.supportComplaints.support.filter(s => s.status === 'open').length;
+    document.getElementById('total-complaints').textContent = sampleData.supportComplaints.complaints.length;
+    document.getElementById('resolution-rate').textContent = '85%';
+}
+
+function switchSupportTab(tabName) {
+    // Hide all tab panels
+    document.querySelectorAll('.support-tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.support-tab').forEach(tab => {
+        tab.classList.remove('active', 'border-purple-500', 'text-purple-600');
+        tab.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab panel
+    const selectedPanel = document.getElementById(`${tabName}-content`);
+    if (selectedPanel) {
+        selectedPanel.classList.remove('hidden');
+    }
+    
+    // Add active class to selected tab
+    const selectedTab = document.querySelector(`[onclick="switchSupportTab('${tabName}')"]`);
+    if (selectedTab) {
+        selectedTab.classList.add('active', 'border-purple-500', 'text-purple-600');
+        selectedTab.classList.remove('border-transparent', 'text-gray-500');
+    }
+    
+    // Load tab-specific data
+    switch(tabName) {
+        case 'support':
+            loadSupportRequests();
+            break;
+        case 'complaints':
+            loadComplaints();
+            break;
+        case 'feedback':
+            loadFeedback();
+            break;
     }
 }
 
-// Sayfa değiştirme
-function changePage(newPage) {
-    if (newPage >= 1 && newPage <= Math.ceil(totalUsers / usersPerPage)) {
-        currentPage = newPage;
-        loadUsers();
-    }
+function loadSupportRequests() {
+    const supportTable = document.getElementById('support-requests-table');
+    supportTable.innerHTML = sampleData.supportComplaints.support.map(support => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${support.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${support.user}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${support.subject}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(support.priority)}">
+                    ${getPriorityText(support.priority)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(support.status)}">
+                    ${getSupportStatusText(support.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(support.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewSupportRequest(${support.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="respondToSupport(${support.id})" class="text-green-600 hover:text-green-900 mr-2">Yanıtla</button>
+                <button onclick="closeSupportRequest(${support.id})" class="text-red-600 hover:text-red-900">Kapat</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-// Kullanıcıları yükleme
-async function loadUsers() {
-    try {
-        let users = JSON.parse(localStorage.getItem('users') || '[]');
-        
-        // Filtreleri uygula
-        if (currentFilters.userType) {
-            users = users.filter(user => user.type === currentFilters.userType);
-        }
-        if (currentFilters.status) {
-            users = users.filter(user => user.status === currentFilters.status);
-        }
-        if (currentFilters.registrationDate) {
-            const date = getDateFilter(currentFilters.registrationDate);
-            if (date) {
-                users = users.filter(user => new Date(user.createdAt) >= date);
-            }
-        }
-        if (currentFilters.searchQuery) {
-            const query = currentFilters.searchQuery.toLowerCase();
-            users = users.filter(user => 
-                user.displayName.toLowerCase().includes(query) ||
-                user.email.toLowerCase().includes(query) ||
-                user.id.toLowerCase().includes(query)
-            );
-        }
-
-        // Toplam kullanıcı sayısını güncelle
-        totalUsers = users.length;
-
-        // Sayfalama uygula
-        const startIndex = (currentPage - 1) * usersPerPage;
-        const endIndex = startIndex + usersPerPage;
-        const paginatedUsers = users.slice(startIndex, endIndex);
-
-        // Kullanıcı listesini temizle
-        userList.innerHTML = '';
-
-        // Kullanıcıları listele
-        paginatedUsers.forEach(userData => {
-            const userRow = createUserRow(userData.id, userData);
-            userList.appendChild(userRow);
-        });
-
-        // Sayfalama bilgisini güncelle
-        updatePagination();
-
-    } catch (error) {
-        console.error('Kullanıcılar yüklenirken hata:', error);
-        showNotification('Kullanıcılar yüklenirken bir hata oluştu', 'error');
-    }
+function loadComplaints() {
+    const complaintsTable = document.getElementById('complaints-table');
+    complaintsTable.innerHTML = sampleData.supportComplaints.complaints.map(complaint => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${complaint.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${complaint.complainant}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${complaint.defendant}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${complaint.category}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getComplaintStatusColor(complaint.status)}">
+                    ${getComplaintStatusText(complaint.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(complaint.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewComplaint(${complaint.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="investigateComplaint(${complaint.id})" class="text-yellow-600 hover:text-yellow-900 mr-2">İncele</button>
+                <button onclick="resolveComplaint(${complaint.id})" class="text-green-600 hover:text-green-900">Çöz</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-// Kullanıcı satırı oluşturma
-function createUserRow(userId, userData) {
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-gray-50';
-    tr.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 h-10 w-10">
-                    <img class="h-10 w-10 rounded-full" src="${userData.photoURL}" alt="${userData.displayName}">
+function loadFeedback() {
+    const feedbackTable = document.getElementById('feedback-table');
+    feedbackTable.innerHTML = sampleData.supportComplaints.feedback.map(feedback => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${feedback.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${feedback.user}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${feedback.type}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div class="flex items-center">
+                    ${generateStars(feedback.rating)}
+                    <span class="ml-2 text-sm text-gray-600">(${feedback.rating}/5)</span>
                 </div>
-                <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">${userData.displayName}</div>
-                    <div class="text-sm text-gray-500">${userData.email}</div>
-                </div>
-            </div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                ${getUserTypeName(userData.type)}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(userData.status)}">
-                ${getStatusName(userData.status)}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            ${formatDate(userData.createdAt)}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            ${formatDate(userData.lastLoginAt)}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <div class="flex justify-end space-x-2">
-                <button onclick="editUser('${userId}')" class="text-indigo-600 hover:text-indigo-900" title="Düzenle">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="toggleUserStatus('${userId}', '${userData.status}')" 
-                    class="text-yellow-600 hover:text-yellow-900" 
-                    title="${userData.status === 'active' ? 'Askıya Al' : 'Aktifleştir'}">
-                    <i class="fas fa-ban"></i>
-                </button>
-                <button onclick="deleteUser('${userId}')" class="text-red-600 hover:text-red-900" title="Sil">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    return tr;
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(feedback.date)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="viewFeedback(${feedback.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                <button onclick="respondToFeedback(${feedback.id})" class="text-green-600 hover:text-green-900">Yanıtla</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-// Kullanıcı tipini formatla
-function getUserTypeName(type) {
+// Utility Functions
+function getUserTypeText(type) {
     const types = {
-        customer: 'Müşteri',
-        contractor: 'Müteahhit',
-        architect: 'Mimar',
-        notary: 'Noter'
+        'customer': 'Müşteri',
+        'contractor': 'Müteahhit',
+        'architect': 'Mimar',
+        'notary': 'Noter'
     };
     return types[type] || type;
 }
 
-// Kullanıcı durumunu formatla
-function getStatusName(status) {
+function getListingTypeText(type) {
+    const types = {
+        'apartment': 'Daire',
+        'house': 'Ev',
+        'office': 'Ofis',
+        'land': 'Arsa'
+    };
+    return types[type] || type;
+}
+
+function getStatusText(status) {
     const statuses = {
-        active: 'Aktif',
-        pending: 'Onay Bekliyor',
-        suspended: 'Askıya Alındı'
+        'active': 'Aktif',
+        'pending': 'Beklemede',
+        'rejected': 'Reddedildi',
+        'suspended': 'Askıya Alındı',
+        'expired': 'Süresi Doldu'
     };
     return statuses[status] || status;
 }
 
-// Durum renklerini belirle
-function getStatusClass(status) {
-    const classes = {
-        active: 'bg-green-100 text-green-800',
-        pending: 'bg-yellow-100 text-yellow-800',
-        suspended: 'bg-red-100 text-red-800'
+function getOfferStatusText(status) {
+    const statuses = {
+        'pending': 'Beklemede',
+        'accepted': 'Kabul Edildi',
+        'rejected': 'Reddedildi'
     };
-    return classes[status] || 'bg-gray-100 text-gray-800';
+    return statuses[status] || status;
 }
 
-// Tarih filtresini oluştur
-function getDateFilter(filterType) {
-    const now = new Date();
-    switch (filterType) {
-        case 'today':
-            now.setHours(0, 0, 0, 0);
-            return now;
-        case 'week':
-            now.setDate(now.getDate() - 7);
-            return now;
-        case 'month':
-            now.setMonth(now.getMonth() - 1);
-            return now;
-        default:
-            return null;
+function getProjectStatusText(status) {
+    const statuses = {
+        'planning': 'Planlama',
+        'ongoing': 'Devam Eden',
+        'completed': 'Tamamlandı',
+        'cancelled': 'İptal Edildi'
+    };
+    return statuses[status] || status;
+}
+
+function getDocumentStatusText(status) {
+    const statuses = {
+        'approved': 'Onaylandı',
+        'pending': 'Beklemede',
+        'rejected': 'Reddedildi'
+    };
+    return statuses[status] || status;
+}
+
+function getNotaryStatusText(status) {
+    const statuses = {
+        'scheduled': 'Randevu Alındı',
+        'completed': 'Tamamlandı',
+        'cancelled': 'İptal Edildi'
+    };
+    return statuses[status] || status;
+}
+
+function getSupportStatusText(status) {
+    const statuses = {
+        'open': 'Açık',
+        'closed': 'Kapalı',
+        'pending': 'Beklemede'
+    };
+    return statuses[status] || status;
+}
+
+function getComplaintStatusText(status) {
+    const statuses = {
+        'investigating': 'İnceleniyor',
+        'resolved': 'Çözüldü',
+        'dismissed': 'Reddedildi'
+    };
+    return statuses[status] || status;
+}
+
+function getPriorityText(priority) {
+    const priorities = {
+        'high': 'Yüksek',
+        'medium': 'Orta',
+        'low': 'Düşük'
+    };
+    return priorities[priority] || priority;
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'active': 'bg-green-100 text-green-800',
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'rejected': 'bg-red-100 text-red-800',
+        'suspended': 'bg-gray-100 text-gray-800',
+        'expired': 'bg-red-100 text-red-800',
+        'accepted': 'bg-green-100 text-green-800',
+        'open': 'bg-blue-100 text-blue-800',
+        'closed': 'bg-gray-100 text-gray-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+}
+
+function getProjectStatusColor(status) {
+    const colors = {
+        'planning': 'bg-blue-100 text-blue-800',
+        'ongoing': 'bg-yellow-100 text-yellow-800',
+        'completed': 'bg-green-100 text-green-800',
+        'cancelled': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+}
+
+function getNotaryStatusColor(status) {
+    const colors = {
+        'scheduled': 'bg-blue-100 text-blue-800',
+        'completed': 'bg-green-100 text-green-800',
+        'cancelled': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+}
+
+function getComplaintStatusColor(status) {
+    const colors = {
+        'investigating': 'bg-yellow-100 text-yellow-800',
+        'resolved': 'bg-green-100 text-green-800',
+        'dismissed': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+}
+
+function getPriorityColor(priority) {
+    const colors = {
+        'high': 'bg-red-100 text-red-800',
+        'medium': 'bg-yellow-100 text-yellow-800',
+        'low': 'bg-green-100 text-green-800'
+    };
+    return colors[priority] || 'bg-gray-100 text-gray-800';
+}
+
+function formatDate(dateString) {
+    if (!dateString || dateString === 'Never') return dateString;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR');
+}
+
+function generateStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars += '<i class="fas fa-star text-yellow-400"></i>';
+        } else {
+            stars += '<i class="far fa-star text-gray-300"></i>';
+        }
     }
+    return stars;
 }
 
-// Tarihi formatla
-function formatDate(timestamp) {
-    if (!timestamp) return 'Belirtilmemiş';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.DateTimeFormat('tr-TR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(date);
+// Modal Functions
+function openViewModal(title, content) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-content').innerHTML = content;
+    document.getElementById('view-modal').classList.remove('hidden');
+    document.getElementById('view-modal').classList.add('flex');
 }
 
-// Sayfalama bilgisini güncelle
-function updatePagination() {
-    const totalPages = Math.ceil(totalUsers / usersPerPage);
-    pageInfo.textContent = `Sayfa ${currentPage} / ${totalPages}`;
-    prevPageBtn.disabled = currentPage === 1;
-    nextPageBtn.disabled = currentPage === totalPages;
+function closeViewModal() {
+    document.getElementById('view-modal').classList.add('hidden');
+    document.getElementById('view-modal').classList.remove('flex');
 }
 
-// Kullanıcı düzenleme
-async function editUser(userId) {
-    // Kullanıcı düzenleme modalını aç
-    // TODO: Kullanıcı düzenleme modalı implementasyonu
+function openEditModal(title, formContent, onSubmit) {
+    document.getElementById('edit-modal-title').textContent = title;
+    document.getElementById('edit-form-content').innerHTML = formContent;
+    document.getElementById('edit-modal').classList.remove('hidden');
+    document.getElementById('edit-modal').classList.add('flex');
+    
+    // Set form submit handler
+    document.getElementById('edit-form').onsubmit = onSubmit;
 }
 
-// Kullanıcı durumunu değiştir
-async function toggleUserStatus(userId, currentStatus) {
-    try {
-        const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
-        await db.collection('users').doc(userId).update({
-            status: newStatus
-        });
-        showNotification('Kullanıcı durumu güncellendi', 'success');
-        loadUsers();
-    } catch (error) {
-        console.error('Kullanıcı durumu güncellenirken hata:', error);
-        showNotification('Kullanıcı durumu güncellenirken bir hata oluştu', 'error');
+function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden');
+    document.getElementById('edit-modal').classList.remove('flex');
+}
+
+// User Management Functions
+function viewUser(id) {
+    const user = sampleData.users.find(u => u.id == id);
+    if (!user) {
+        showNotification('Kullanıcı bulunamadı', 'error');
+        return;
     }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Temel Bilgiler</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">ID:</span> ${user.id}</p>
+                        <p><span class="font-medium">Ad Soyad:</span> ${user.name}</p>
+                        <p><span class="font-medium">E-posta:</span> ${user.email}</p>
+                        <p><span class="font-medium">Kullanıcı Tipi:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${getUserTypeText(user.type)}</span></p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}">${getStatusText(user.status)}</span></p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Tarih Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Kayıt Tarihi:</span> ${formatDate(user.registrationDate)}</p>
+                        <p><span class="font-medium">Son Giriş:</span> ${user.lastLogin === 'Never' ? 'Hiç giriş yapmamış' : formatDate(user.lastLogin)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İstatistikler</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Toplam İlan:</span> ${sampleData.listings.filter(l => l.owner === user.name).length}</p>
+                        <p><span class="font-medium">Aktif İlan:</span> ${sampleData.listings.filter(l => l.owner === user.name && l.status === 'active').length}</p>
+                        <p><span class="font-medium">Gönderilen Teklif:</span> ${sampleData.offers.filter(o => o.offerBy === user.name).length}</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="editUser(${user.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Düzenle</button>
+                        <button onclick="resetPassword(${user.id})" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">Şifre Sıfırla</button>
+                        <button onclick="toggleUserStatus(${user.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Durumu Değiştir</button>
+                        <button onclick="deleteUser(${user.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Sil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Kullanıcı Detayları - ${user.name}`, content);
 }
 
-// Kullanıcı silme
-async function deleteUser(userId) {
+function editUser(id) {
+    const user = sampleData.users.find(u => u.id == id);
+    if (!user) {
+        showNotification('Kullanıcı bulunamadı', 'error');
+        return;
+    }
+    
+    const formContent = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+                <input type="text" id="edit-user-name" value="${user.name}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                <input type="email" id="edit-user-email" value="${user.email}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Tipi</label>
+                <select id="edit-user-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="customer" ${user.type === 'customer' ? 'selected' : ''}>Müşteri</option>
+                    <option value="contractor" ${user.type === 'contractor' ? 'selected' : ''}>Müteahhit</option>
+                    <option value="architect" ${user.type === 'architect' ? 'selected' : ''}>Mimar</option>
+                    <option value="notary" ${user.type === 'notary' ? 'selected' : ''}>Noter</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                <select id="edit-user-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="active" ${user.status === 'active' ? 'selected' : ''}>Aktif</option>
+                    <option value="pending" ${user.status === 'pending' ? 'selected' : ''}>Onay Bekleyen</option>
+                    <option value="suspended" ${user.status === 'suspended' ? 'selected' : ''}>Askıya Alınmış</option>
+                </select>
+            </div>
+        </div>
+    `;
+    
+    openEditModal(`Kullanıcı Düzenle - ${user.name}`, formContent, function(e) {
+        e.preventDefault();
+        // Update user data
+        user.name = document.getElementById('edit-user-name').value;
+        user.email = document.getElementById('edit-user-email').value;
+        user.type = document.getElementById('edit-user-type').value;
+        user.status = document.getElementById('edit-user-status').value;
+        
+        closeEditModal();
+        showNotification('Kullanıcı başarıyla güncellendi', 'success');
+        loadUsers(); // Refresh the user list
+    });
+}
+
+function deleteUser(id) {
     if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
-        try {
-            await db.collection('users').doc(userId).delete();
+        const index = sampleData.users.findIndex(u => u.id == id);
+        if (index > -1) {
+            sampleData.users.splice(index, 1);
             showNotification('Kullanıcı başarıyla silindi', 'success');
             loadUsers();
-        } catch (error) {
-            console.error('Kullanıcı silinirken hata:', error);
-            showNotification('Kullanıcı silinirken bir hata oluştu', 'error');
+            closeViewModal();
         }
     }
 }
 
-// Bildirim gösterme fonksiyonunu güncelle
+// Listing Management Functions
+function viewListing(id) {
+    const listing = sampleData.listings.find(l => l.id == id);
+    if (!listing) {
+        showNotification('İlan bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İlan Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">İlan ID:</span> #${listing.id}</p>
+                        <p><span class="font-medium">Başlık:</span> ${listing.title}</p>
+                        <p><span class="font-medium">Tip:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${getListingTypeText(listing.type)}</span></p>
+                        <p><span class="font-medium">Konum:</span> ${listing.location}</p>
+                        <p><span class="font-medium">Fiyat:</span> <span class="text-lg font-bold text-green-600">${listing.price}</span></p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}">${getStatusText(listing.status)}</span></p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Sahibi</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Ad Soyad:</span> ${listing.owner}</p>
+                        <p><span class="font-medium">Oluşturulma Tarihi:</span> ${formatDate(listing.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İstatistikler</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Alınan Teklifler:</span> ${sampleData.offers.filter(o => o.listingTitle === listing.title).length}</p>
+                        <p><span class="font-medium">Bekleyen Teklifler:</span> ${sampleData.offers.filter(o => o.listingTitle === listing.title && o.status === 'pending').length}</p>
+                        <p><span class="font-medium">Kabul Edilen Teklifler:</span> ${sampleData.offers.filter(o => o.listingTitle === listing.title && o.status === 'accepted').length}</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${listing.status === 'pending' ? `
+                            <button onclick="approveListing(${listing.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Onayla</button>
+                            <button onclick="rejectListing(${listing.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Reddet</button>
+                        ` : ''}
+                        <button onclick="editListing(${listing.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Düzenle</button>
+                        <button onclick="deleteListing(${listing.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Sil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`İlan Detayları - ${listing.title}`, content);
+}
+
+function approveListing(id) {
+    const listing = sampleData.listings.find(l => l.id == id);
+    if (listing) {
+        listing.status = 'active';
+        showNotification('İlan onaylandı', 'success');
+        loadListings();
+        closeViewModal();
+    }
+}
+
+function rejectListing(id) {
+    const listing = sampleData.listings.find(l => l.id == id);
+    if (listing) {
+        listing.status = 'rejected';
+        showNotification('İlan reddedildi', 'error');
+        loadListings();
+        closeViewModal();
+    }
+}
+
+// Offer Management Functions
+function viewOffer(id) {
+    const offer = sampleData.offers.find(o => o.id == id);
+    if (!offer) {
+        showNotification('Teklif bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Teklif Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Teklif ID:</span> #${offer.id}</p>
+                        <p><span class="font-medium">İlan:</span> ${offer.listingTitle}</p>
+                        <p><span class="font-medium">Teklif Veren:</span> ${offer.offerBy}</p>
+                        <p><span class="font-medium">Teklif Tutarı:</span> <span class="text-lg font-bold text-green-600">${offer.amount}</span></p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(offer.status)}">${getOfferStatusText(offer.status)}</span></p>
+                        <p><span class="font-medium">Tarih:</span> ${formatDate(offer.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${offer.status === 'pending' ? `
+                            <button onclick="approveOffer(${offer.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Onayla</button>
+                            <button onclick="rejectOffer(${offer.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Reddet</button>
+                        ` : ''}
+                        <button onclick="deleteOffer(${offer.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Sil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Teklif Detayları - #${offer.id}`, content);
+}
+
+function approveOffer(id) {
+    const offer = sampleData.offers.find(o => o.id == id);
+    if (offer) {
+        offer.status = 'accepted';
+        showNotification('Teklif onaylandı', 'success');
+        loadOffers();
+        closeViewModal();
+    }
+}
+
+function rejectOffer(id) {
+    const offer = sampleData.offers.find(o => o.id == id);
+    if (offer) {
+        offer.status = 'rejected';
+        showNotification('Teklif reddedildi', 'error');
+        loadOffers();
+        closeViewModal();
+    }
+}
+
+// Project Management Functions
+function viewProject(id) {
+    const project = sampleData.projects.find(p => p.id == id);
+    if (!project) {
+        showNotification('Proje bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Proje Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Proje ID:</span> #${project.id}</p>
+                        <p><span class="font-medium">Proje Adı:</span> ${project.name}</p>
+                        <p><span class="font-medium">Müteahhit:</span> ${project.contractor}</p>
+                        <p><span class="font-medium">Mimar:</span> ${project.architect}</p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getProjectStatusColor(project.status)}">${getProjectStatusText(project.status)}</span></p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Tarih Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Başlangıç Tarihi:</span> ${formatDate(project.startDate)}</p>
+                        <p><span class="font-medium">Bitiş Tarihi:</span> ${formatDate(project.endDate)}</p>
+                        <p><span class="font-medium">Süre:</span> ${calculateProjectDuration(project.startDate, project.endDate)} gün</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="editProject(${project.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Düzenle</button>
+                        <button onclick="changeProjectStatus(${project.id})" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">Durum Değiştir</button>
+                        <button onclick="deleteProject(${project.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Sil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Proje Detayları - ${project.name}`, content);
+}
+
+function editProject(id) { showNotification('Proje düzenleniyor: ' + id, 'info'); }
+function deleteProject(id) { 
+    if (confirm('Bu projeyi silmek istediğinizden emin misiniz?')) {
+        const index = sampleData.projects.findIndex(p => p.id == id);
+        if (index > -1) {
+            sampleData.projects.splice(index, 1);
+            showNotification('Proje başarıyla silindi', 'success');
+            loadProjects();
+            closeViewModal();
+        }
+    }
+}
+
+// Legal Process Functions
+function viewContract(id) {
+    const contract = sampleData.legalProcesses.contracts.find(c => c.id == id);
+    if (!contract) {
+        showNotification('Sözleşme bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Sözleşme Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Sözleşme ID:</span> #${contract.id}</p>
+                        <p><span class="font-medium">Tür:</span> ${contract.type}</p>
+                        <p><span class="font-medium">Taraflar:</span> ${contract.parties}</p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(contract.status)}">${getStatusText(contract.status)}</span></p>
+                        <p><span class="font-medium">Tarih:</span> ${formatDate(contract.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="editContract(${contract.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Düzenle</button>
+                        <button onclick="downloadContract(${contract.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">İndir</button>
+                        <button onclick="deleteContract(${contract.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Sil</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Sözleşme Detayları - ${contract.type}`, content);
+}
+
+function editContract(id) { showNotification('Sözleşme düzenleniyor: ' + id, 'info'); }
+function deleteContract(id) { showNotification('Sözleşme siliniyor: ' + id, 'warning'); }
+
+function viewDocument(id) {
+    const document = sampleData.legalProcesses.documents.find(d => d.id == id);
+    if (!document) {
+        showNotification('Belge bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Belge Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Belge ID:</span> #${document.id}</p>
+                        <p><span class="font-medium">Belge Türü:</span> ${document.type}</p>
+                        <p><span class="font-medium">Sahibi:</span> ${document.owner}</p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(document.status)}">${getDocumentStatusText(document.status)}</span></p>
+                        <p><span class="font-medium">Yükleme Tarihi:</span> ${formatDate(document.uploadDate)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${document.status === 'pending' ? `
+                            <button onclick="approveDocument(${document.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Onayla</button>
+                            <button onclick="rejectDocument(${document.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">Reddet</button>
+                        ` : ''}
+                        <button onclick="downloadDocument(${document.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">İndir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Belge Detayları - ${document.type}`, content);
+}
+
+function approveDocument(id) {
+    const document = sampleData.legalProcesses.documents.find(d => d.id == id);
+    if (document) {
+        document.status = 'approved';
+        showNotification('Belge onaylandı', 'success');
+        loadDocuments();
+        closeViewModal();
+    }
+}
+
+function rejectDocument(id) {
+    const document = sampleData.legalProcesses.documents.find(d => d.id == id);
+    if (document) {
+        document.status = 'rejected';
+        showNotification('Belge reddedildi', 'error');
+        loadDocuments();
+        closeViewModal();
+    }
+}
+
+function viewNotaryProcess(id) {
+    const notary = sampleData.legalProcesses.notary.find(n => n.id == id);
+    if (!notary) {
+        showNotification('Noter işlemi bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Noter İşlem Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">İşlem ID:</span> #${notary.id}</p>
+                        <p><span class="font-medium">İşlem Türü:</span> ${notary.type}</p>
+                        <p><span class="font-medium">Noter:</span> ${notary.notary}</p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getNotaryStatusColor(notary.status)}">${getNotaryStatusText(notary.status)}</span></p>
+                        <p><span class="font-medium">Randevu Tarihi:</span> ${formatDate(notary.appointmentDate)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="editNotaryProcess(${notary.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Düzenle</button>
+                        <button onclick="cancelNotaryProcess(${notary.id})" class="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600">İptal Et</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Noter İşlemi - ${notary.type}`, content);
+}
+
+function editNotaryProcess(id) { showNotification('Noter işlemi düzenleniyor: ' + id, 'info'); }
+function cancelNotaryProcess(id) { showNotification('Noter işlemi iptal edildi: ' + id, 'warning'); }
+
+// Support & Complaints Functions
+function viewSupportRequest(id) {
+    const support = sampleData.supportComplaints.support.find(s => s.id == id);
+    if (!support) {
+        showNotification('Destek talebi bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Destek Talebi</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Talep ID:</span> #${support.id}</p>
+                        <p><span class="font-medium">Kullanıcı:</span> ${support.user}</p>
+                        <p><span class="font-medium">Konu:</span> ${support.subject}</p>
+                        <p><span class="font-medium">Öncelik:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(support.priority)}">${getPriorityText(support.priority)}</span></p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(support.status)}">${getSupportStatusText(support.status)}</span></p>
+                        <p><span class="font-medium">Tarih:</span> ${formatDate(support.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="respondToSupport(${support.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Yanıtla</button>
+                        <button onclick="closeSupportRequest(${support.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Destek Talebi - ${support.subject}`, content);
+}
+
+function respondToSupport(id) { showNotification('Destek talebine yanıt veriliyor: ' + id, 'info'); }
+function closeSupportRequest(id) { 
+    const support = sampleData.supportComplaints.support.find(s => s.id == id);
+    if (support) {
+        support.status = 'closed';
+        showNotification('Destek talebi kapatıldı', 'success');
+        loadSupportRequests();
+        closeViewModal();
+    }
+}
+
+function viewComplaint(id) {
+    const complaint = sampleData.supportComplaints.complaints.find(c => c.id == id);
+    if (!complaint) {
+        showNotification('Şikayet bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Şikayet Bilgileri</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Şikayet ID:</span> #${complaint.id}</p>
+                        <p><span class="font-medium">Şikayet Eden:</span> ${complaint.complainant}</p>
+                        <p><span class="font-medium">Şikayet Edilen:</span> ${complaint.defendant}</p>
+                        <p><span class="font-medium">Kategori:</span> ${complaint.category}</p>
+                        <p><span class="font-medium">Durum:</span> <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getComplaintStatusColor(complaint.status)}">${getComplaintStatusText(complaint.status)}</span></p>
+                        <p><span class="font-medium">Tarih:</span> ${formatDate(complaint.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="investigateComplaint(${complaint.id})" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">İncele</button>
+                        <button onclick="resolveComplaint(${complaint.id})" class="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600">Çöz</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Şikayet - ${complaint.category}`, content);
+}
+
+function investigateComplaint(id) { showNotification('Şikayet inceleniyor: ' + id, 'info'); }
+function resolveComplaint(id) { 
+    const complaint = sampleData.supportComplaints.complaints.find(c => c.id == id);
+    if (complaint) {
+        complaint.status = 'resolved';
+        showNotification('Şikayet çözüldü', 'success');
+        loadComplaints();
+        closeViewModal();
+    }
+}
+
+function viewFeedback(id) {
+    const feedback = sampleData.supportComplaints.feedback.find(f => f.id == id);
+    if (!feedback) {
+        showNotification('Geri bildirim bulunamadı', 'error');
+        return;
+    }
+    
+    const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">Geri Bildirim</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Geri Bildirim ID:</span> #${feedback.id}</p>
+                        <p><span class="font-medium">Kullanıcı:</span> ${feedback.user}</p>
+                        <p><span class="font-medium">Tür:</span> ${feedback.type}</p>
+                        <p><span class="font-medium">Puan:</span> 
+                            <div class="flex items-center mt-1">
+                                ${generateStars(feedback.rating)}
+                                <span class="ml-2 text-sm text-gray-600">(${feedback.rating}/5)</span>
+                            </div>
+                        </p>
+                        <p><span class="font-medium">Tarih:</span> ${formatDate(feedback.date)}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-800 mb-2">İşlemler</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="respondToFeedback(${feedback.id})" class="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Yanıtla</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openViewModal(`Geri Bildirim - ${feedback.type}`, content);
+}
+
+function respondToFeedback(id) { showNotification('Geri bildirime yanıt veriliyor: ' + id, 'info'); }
+
+// Helper Functions
+function calculateProjectDuration(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+}
+
+// Additional helper functions for new features
+function resetPassword(id) { showNotification('Şifre sıfırlama e-postası gönderildi: ' + id, 'success'); }
+function toggleUserStatus(id) { showNotification('Kullanıcı durumu güncellendi: ' + id, 'success'); }
+function editListing(id) { showNotification('İlan düzenleniyor: ' + id, 'info'); }
+function deleteListing(id) { showNotification('İlan siliniyor: ' + id, 'warning'); }
+function deleteOffer(id) { showNotification('Teklif siliniyor: ' + id, 'warning'); }
+function changeProjectStatus(id) { showNotification('Proje durumu değiştiriliyor: ' + id, 'info'); }
+function downloadContract(id) { showNotification('Sözleşme indiriliyor: ' + id, 'info'); }
+function downloadDocument(id) { showNotification('Belge indiriliyor: ' + id, 'info'); }
+
+// Notification System
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
-        type === 'error' ? 'bg-red-500' : 'bg-green-500'
-    } text-white`;
+    notification.className = `notification fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white ${getNotificationColor(type)}`;
     notification.textContent = message;
     
     document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
     setTimeout(() => {
-        notification.remove();
+        notification.classList.add('removing');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
     }, 3000);
 }
 
-// İçerik yükleme
-async function loadContent() {
-    switch (currentContentTab) {
-        case 'listings':
-            await loadListings();
-            break;
-        case 'projects':
-            await loadProjects();
-            break;
-        case 'announcements':
-            await loadAnnouncements();
-            break;
-        case 'faqs':
-            await loadFAQs();
-            break;
-    }
-}
-
-// İlanları yükleme
-async function loadListings() {
-    try {
-        let query = db.collection('listings');
-
-        // Filtreleri uygula
-        if (currentContentFilters.status) {
-            query = query.where('status', '==', currentContentFilters.status);
-        }
-
-        // Toplam ilan sayısını al
-        const snapshot = await query.get();
-        totalContent = snapshot.size;
-
-        // Sayfalama uygula
-        const startAt = (currentContentPage - 1) * contentPerPage;
-        query = query.orderBy('createdAt', 'desc')
-            .limit(contentPerPage)
-            .offset(startAt);
-
-        // İlanları getir
-        const listings = await query.get();
-        
-        // İlan listesini temizle
-        listingsList.innerHTML = '';
-
-        // İlanları listele
-        listings.forEach(doc => {
-            const listingData = doc.data();
-            const listingRow = createListingRow(doc.id, listingData);
-            listingsList.appendChild(listingRow);
-        });
-
-        // Sayfalama bilgisini güncelle
-        updateContentPagination();
-
-    } catch (error) {
-        console.error('İlanlar yüklenirken hata:', error);
-        showNotification('İlanlar yüklenirken bir hata oluştu', 'error');
-    }
-}
-
-// İlan satırı oluşturma
-function createListingRow(listingId, listingData) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            #${listingId}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">${listingData.title}</div>
-            <div class="text-sm text-gray-500">${listingData.description?.substring(0, 50)}...</div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">${listingData.owner?.name || 'Bilinmiyor'}</div>
-            <div class="text-sm text-gray-500">${listingData.owner?.email || ''}</div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getListingStatusClass(listingData.status)}">
-                ${getListingStatusName(listingData.status)}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            ${formatDate(listingData.createdAt)}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <div class="flex justify-end space-x-2">
-                <button onclick="viewListing('${listingId}')" class="text-indigo-600 hover:text-indigo-900">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="approveListing('${listingId}')" class="text-green-600 hover:text-green-900">
-                    <i class="fas fa-check"></i>
-                </button>
-                <button onclick="rejectListing('${listingId}')" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    return tr;
-}
-
-// İlan durumu sınıfları
-function getListingStatusClass(status) {
-    const classes = {
-        active: 'bg-green-100 text-green-800',
-        pending: 'bg-yellow-100 text-yellow-800',
-        rejected: 'bg-red-100 text-red-800',
-        expired: 'bg-gray-100 text-gray-800'
+function getNotificationColor(type) {
+    const colors = {
+        'success': 'bg-green-500',
+        'error': 'bg-red-500',
+        'warning': 'bg-yellow-500',
+        'info': 'bg-blue-500'
     };
-    return classes[status] || 'bg-gray-100 text-gray-800';
+    return colors[type] || 'bg-blue-500';
 }
 
-// İlan durumu isimleri
-function getListingStatusName(status) {
-    const names = {
-        active: 'Aktif',
-        pending: 'Onay Bekliyor',
-        rejected: 'Reddedildi',
-        expired: 'Süresi Doldu'
-    };
-    return names[status] || status;
-}
-
-// Duyuruları yükleme
-async function loadAnnouncements() {
-    try {
-        const query = db.collection('announcements')
-            .orderBy('createdAt', 'desc');
-        
-        const announcements = await query.get();
-        announcementsList.innerHTML = '';
-
-        announcements.forEach(doc => {
-            const announcementData = doc.data();
-            const announcementCard = createAnnouncementCard(doc.id, announcementData);
-            announcementsList.appendChild(announcementCard);
-        });
-    } catch (error) {
-        console.error('Duyurular yüklenirken hata:', error);
-        showNotification('Duyurular yüklenirken bir hata oluştu', 'error');
-    }
-}
-
-// Duyuru kartı oluşturma
-function createAnnouncementCard(announcementId, announcementData) {
-    const div = document.createElement('div');
-    div.className = 'bg-white rounded-lg shadow p-6 mb-4';
-    div.innerHTML = `
-        <div class="flex justify-between items-start">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-900">${announcementData.title}</h3>
-                <p class="mt-2 text-gray-600">${announcementData.content}</p>
-                <p class="mt-2 text-sm text-gray-500">${formatDate(announcementData.createdAt)}</p>
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="editAnnouncement('${announcementId}')" class="text-indigo-600 hover:text-indigo-900">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteAnnouncement('${announcementId}')" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    return div;
-}
-
-// SSS yükleme
-async function loadFAQs() {
-    try {
-        const query = db.collection('faqs')
-            .orderBy('createdAt', 'desc');
-        
-        const faqs = await query.get();
-        faqsList.innerHTML = '';
-
-        faqs.forEach(doc => {
-            const faqData = doc.data();
-            const faqCard = createFAQCard(doc.id, faqData);
-            faqsList.appendChild(faqCard);
-        });
-    } catch (error) {
-        console.error('SSS yüklenirken hata:', error);
-        showNotification('SSS yüklenirken bir hata oluştu', 'error');
-    }
-}
-
-// SSS kartı oluşturma
-function createFAQCard(faqId, faqData) {
-    const div = document.createElement('div');
-    div.className = 'bg-white rounded-lg shadow p-6 mb-4';
-    div.innerHTML = `
-        <div class="flex justify-between items-start">
-            <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-900">${faqData.question}</h3>
-                <p class="mt-2 text-gray-600">${faqData.answer}</p>
-                <p class="mt-2 text-sm text-gray-500">${formatDate(faqData.createdAt)}</p>
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="editFAQ('${faqId}')" class="text-indigo-600 hover:text-indigo-900">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteFAQ('${faqId}')" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    return div;
-}
-
-// Yeni duyuru oluşturma
-async function createAnnouncement(event) {
-    event.preventDefault();
-    
-    const title = document.getElementById('announcement-title').value;
-    const content = document.getElementById('announcement-content').value;
-
-    try {
-        await db.collection('announcements').add({
-            title,
-            content,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            createdBy: auth.currentUser.uid
-        });
-
-        showNotification('Duyuru başarıyla oluşturuldu', 'success');
-        closeNewAnnouncementModal();
-        loadAnnouncements();
-    } catch (error) {
-        console.error('Duyuru oluşturulurken hata:', error);
-        showNotification('Duyuru oluşturulurken bir hata oluştu', 'error');
-    }
-}
-
-// Yeni SSS oluşturma
-async function createFAQ(event) {
-    event.preventDefault();
-    
-    const question = document.getElementById('faq-question').value;
-    const answer = document.getElementById('faq-answer').value;
-
-    try {
-        await db.collection('faqs').add({
-            question,
-            answer,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            createdBy: auth.currentUser.uid
-        });
-
-        showNotification('SSS başarıyla oluşturuldu', 'success');
-        closeNewFAQModal();
-        loadFAQs();
-    } catch (error) {
-        console.error('SSS oluşturulurken hata:', error);
-        showNotification('SSS oluşturulurken bir hata oluştu', 'error');
-    }
-}
-
-// İlan görüntüleme
-async function viewListing(listingId) {
-    try {
-        const doc = await db.collection('listings').doc(listingId).get();
-        if (doc.exists) {
-            const listingData = doc.data();
-            // TODO: İlan detay modalını göster
-            console.log('İlan detayları:', listingData);
-        }
-    } catch (error) {
-        console.error('İlan görüntülenirken hata:', error);
-        showNotification('İlan görüntülenirken bir hata oluştu', 'error');
-    }
-}
-
-// İlan onaylama
-async function approveListing(listingId) {
-    try {
-        await db.collection('listings').doc(listingId).update({
-            status: 'active',
-            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            approvedBy: auth.currentUser.uid
-        });
-        showNotification('İlan başarıyla onaylandı', 'success');
-        loadListings();
-    } catch (error) {
-        console.error('İlan onaylanırken hata:', error);
-        showNotification('İlan onaylanırken bir hata oluştu', 'error');
-    }
-}
-
-// İlan reddetme
-async function rejectListing(listingId) {
-    try {
-        await db.collection('listings').doc(listingId).update({
-            status: 'rejected',
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: auth.currentUser.uid
-        });
-        showNotification('İlan reddedildi', 'success');
-        loadListings();
-    } catch (error) {
-        console.error('İlan reddedilirken hata:', error);
-        showNotification('İlan reddedilirken bir hata oluştu', 'error');
-    }
-}
-
-// Modal işlevleri
-function openNewAnnouncementModal() {
-    document.getElementById('new-announcement-modal').classList.remove('hidden');
-}
-
-function closeNewAnnouncementModal() {
-    document.getElementById('new-announcement-modal').classList.add('hidden');
-    document.getElementById('new-announcement-form').reset();
-}
-
-function openNewFAQModal() {
-    document.getElementById('new-faq-modal').classList.remove('hidden');
-}
-
-function closeNewFAQModal() {
-    document.getElementById('new-faq-modal').classList.add('hidden');
-    document.getElementById('new-faq-form').reset();
-}
-
-// Örnek kullanıcı verilerini ekle
-async function seedSampleUsers() {
-    try {
-        // Önce mevcut kullanıcıları temizle
-        localStorage.setItem('users', '[]');
-
-        // Örnek kullanıcı verileri
-        const sampleUsers = [
-            {
-                displayName: 'Ahmet Yılmaz',
-                email: 'ahmet.yilmaz@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/men/1.jpg',
-                type: 'customer',
-                status: 'active',
-                createdAt: new Date('2024-01-15').toISOString(),
-                lastLoginAt: new Date('2024-03-20').toISOString(),
-                phone: '+90 555 111 2233',
-                address: 'Kadıköy, İstanbul'
-            },
-            {
-                displayName: 'Mehmet Demir',
-                email: 'mehmet.demir@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/men/2.jpg',
-                type: 'contractor',
-                status: 'active',
-                createdAt: new Date('2024-02-01').toISOString(),
-                lastLoginAt: new Date('2024-03-21').toISOString(),
-                phone: '+90 555 222 3344',
-                address: 'Çankaya, Ankara',
-                companyName: 'Demir İnşaat Ltd. Şti.'
-            },
-            {
-                displayName: 'Ayşe Kaya',
-                email: 'ayse.kaya@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/women/1.jpg',
-                type: 'architect',
-                status: 'active',
-                createdAt: new Date('2024-02-15').toISOString(),
-                lastLoginAt: new Date('2024-03-22').toISOString(),
-                phone: '+90 555 333 4455',
-                address: 'Konak, İzmir',
-                licenseNumber: 'ARC2024001'
-            },
-            {
-                displayName: 'Fatma Şahin',
-                email: 'fatma.sahin@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/women/2.jpg',
-                type: 'notary',
-                status: 'active',
-                createdAt: new Date('2024-03-01').toISOString(),
-                lastLoginAt: new Date('2024-03-23').toISOString(),
-                phone: '+90 555 444 5566',
-                address: 'Şişli, İstanbul',
-                notaryOffice: '15. Noter'
-            },
-            {
-                displayName: 'Ali Öztürk',
-                email: 'ali.ozturk@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/men/3.jpg',
-                type: 'customer',
-                status: 'pending',
-                createdAt: new Date('2024-03-15').toISOString(),
-                lastLoginAt: new Date('2024-03-15').toISOString(),
-                phone: '+90 555 555 6677',
-                address: 'Nilüfer, Bursa'
-            },
-            {
-                displayName: 'Zeynep Çelik',
-                email: 'zeynep.celik@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/women/3.jpg',
-                type: 'contractor',
-                status: 'suspended',
-                createdAt: new Date('2024-01-20').toISOString(),
-                lastLoginAt: new Date('2024-03-10').toISOString(),
-                phone: '+90 555 666 7788',
-                address: 'Muratpaşa, Antalya',
-                companyName: 'Çelik Yapı A.Ş.'
-            },
-            {
-                displayName: 'Mustafa Aydın',
-                email: 'mustafa.aydin@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/men/4.jpg',
-                type: 'architect',
-                status: 'pending',
-                createdAt: new Date('2024-03-10').toISOString(),
-                lastLoginAt: new Date('2024-03-10').toISOString(),
-                phone: '+90 555 777 8899',
-                address: 'Seyhan, Adana',
-                licenseNumber: 'ARC2024002'
-            },
-            {
-                displayName: 'Elif Yıldız',
-                email: 'elif.yildiz@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/women/4.jpg',
-                type: 'customer',
-                status: 'active',
-                createdAt: new Date('2024-02-20').toISOString(),
-                lastLoginAt: new Date('2024-03-21').toISOString(),
-                phone: '+90 555 888 9900',
-                address: 'Karşıyaka, İzmir'
-            },
-            {
-                displayName: 'Can Aksoy',
-                email: 'can.aksoy@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/men/5.jpg',
-                type: 'contractor',
-                status: 'active',
-                createdAt: new Date('2024-01-25').toISOString(),
-                lastLoginAt: new Date('2024-03-22').toISOString(),
-                phone: '+90 555 999 0011',
-                address: 'Beyoğlu, İstanbul',
-                companyName: 'Aksoy İnşaat Ltd. Şti.'
-            },
-            {
-                displayName: 'Selin Korkmaz',
-                email: 'selin.korkmaz@example.com',
-                photoURL: 'https://randomuser.me/api/portraits/women/5.jpg',
-                type: 'notary',
-                status: 'active',
-                createdAt: new Date('2024-02-10').toISOString(),
-                lastLoginAt: new Date('2024-03-23').toISOString(),
-                phone: '+90 555 000 1122',
-                address: 'Melikgazi, Kayseri',
-                notaryOffice: '8. Noter'
-            }
-        ];
-
-        // Her bir örnek kullanıcıyı ekle
-        for (const userData of sampleUsers) {
-            const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-            await db.collection('users').doc(userId).set({
-                ...userData,
-                id: userId
-            });
-        }
-
-        showNotification('Örnek kullanıcılar başarıyla eklendi', 'success');
-        // Kullanıcı listesini yenile
-        loadUsers();
-    } catch (error) {
-        console.error('Örnek kullanıcılar eklenirken hata:', error);
-        showNotification('Örnek kullanıcılar eklenirken bir hata oluştu', 'error');
-    }
-}
-
-// Örnek kullanıcıları eklemek için bir buton ekle
-document.addEventListener('DOMContentLoaded', () => {
-    // Form event listeners
-    document.getElementById('new-announcement-form')?.addEventListener('submit', createAnnouncement);
-    document.getElementById('new-faq-form')?.addEventListener('submit', createFAQ);
-
-    // İçerik yönetimi sayfası açıldığında içeriği yükle
-    if (document.getElementById('content-management-section')) {
-        loadContent();
-    }
-
-    // Kullanıcı yönetimi sayfasında örnek veri butonu ekle
-    const userManagementSection = document.getElementById('user-management-section');
-    if (userManagementSection) {
-        const filterContainer = userManagementSection.querySelector('.bg-white.rounded-xl.shadow-sm.p-6.border.border-gray-200.mb-6');
-        if (filterContainer) {
-            const buttonDiv = document.createElement('div');
-            buttonDiv.className = 'mt-4 flex justify-end';
-            buttonDiv.innerHTML = `
-                <button onclick="seedSampleUsers()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                    <i class="fas fa-plus mr-2"></i>Örnek Kullanıcılar Ekle
-                </button>
-            `;
-            filterContainer.appendChild(buttonDiv);
-        }
-    }
-});
-
-// Sayfalama bilgisini güncelle
-function updatePagination() {
-    const totalPages = Math.ceil(totalUsers / usersPerPage);
-    pageInfo.textContent = `Sayfa ${currentPage} / ${totalPages}`;
-    prevPageBtn.disabled = currentPage === 1;
-    nextPageBtn.disabled = currentPage === totalPages;
-}
-
-// Sayfalama bilgisini güncelle
-function updateContentPagination() {
-    const totalPages = Math.ceil(totalContent / contentPerPage);
-    // Sayfalama bilgisini güncellemek için bir element gerekiyor, bu yüzden burada bir güncelleme yapılmadı.
-    // Sayfalama butonlarının disabled durumlarını kontrol etmek için totalPages kullanılabilir.
-    // Örneğin, prevPageBtn.disabled = currentContentPage === 1;
-    // nextPageBtn.disabled = currentContentPage === totalPages;
-}
-
-// Sayfa yüklendiğinde kullanıcıları yükle
-document.addEventListener('DOMContentLoaded', () => {
-    // Aktif sekmeyi kontrol et ve kullanıcıları yükle
-    if (document.getElementById('user-management-section')) {
-        loadUsers();
-    }
-});
-
-// Sidebar ve mobil menü işlevleri
-function showSection(sectionId) {
-    // Tüm bölümleri gizle
-    document.querySelectorAll('main > div').forEach(section => {
-        section.classList.add('hidden');
-    });
-    
-    // Seçilen bölümü göster
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.classList.remove('hidden');
-        
-        // Eğer içerik yönetimi bölümü açıldıysa içeriği yükle
-        if (sectionId === 'content-management-section') {
-            switchContentTab('listings');
-        }
-        // Eğer kullanıcı yönetimi bölümü açıldıysa kullanıcıları yükle
-        else if (sectionId === 'user-management-section') {
-            loadUsers();
-        }
-    }
-    
-    // Mobil menüyü kapat
-    closeMobileMenu();
-}
-
+// Mobile Menu Functions
 function openMobileMenu() {
     document.getElementById('sidebar').classList.remove('-translate-x-full');
     document.getElementById('sidebar-overlay').classList.remove('hidden');
@@ -1267,549 +1511,223 @@ function closeMobileMenu() {
     document.getElementById('sidebar-overlay').classList.add('hidden');
 }
 
-// Çıkış yapma işlevi
-async function logout() {
-    try {
-        await auth.signOut();
-        window.location.href = '/login.html';
-    } catch (error) {
-        console.error('Çıkış yapılırken hata:', error);
-        showNotification('Çıkış yapılırken bir hata oluştu', 'error');
-    }
-} 
-
-// Pazarlama Yönetimi
-
-// Global değişkenler ve varsayılan değerler
-const __firebase_config = window.__firebase_config || {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-app.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-app.appspot.com",
-    messagingSenderId: "your-sender-id",
-    appId: "your-app-id"
-};
-
-const __app_id = window.__app_id || 'default_app_id';
-const __initial_auth_token = window.__initial_auth_token || null;
-
-// Firebase referansları
-let marketingMetricsRef;
-let customerInquiriesRef;
-let usersRef;
-
-// Grafik referansları
-let cacTrendChart;
-let inquiryDistributionChart;
-
-// Pazarlama verilerini tutan değişkenler
-let marketingData = {
-    metrics: {},
-    inquiries: [],
-    users: {}
-};
-
-// Pazarlama yönetimi başlatma
-async function initializeMarketing() {
-    try {
-        showMarketingLoading(true);
-
-        // Firebase kimlik doğrulama
-        if (__initial_auth_token) {
-            await firebase.auth().signInWithCustomToken(__initial_auth_token);
-        } else {
-            await firebase.auth().signInAnonymously();
-        }
-
-        // Firestore referanslarını oluştur
-        marketingMetricsRef = db.collection(`artifacts/${__app_id}/adminData/marketingMetrics`);
-        customerInquiriesRef = db.collection(`artifacts/${__app_id}/adminData/customerInquiries`);
-        usersRef = db.collection(`artifacts/${__app_id}/users`);
-
-        // Veri dinleyicilerini başlat
-        setupMarketingListeners();
-        
-        // Grafikleri başlat
-        initializeCharts();
-
-    } catch (error) {
-        console.error('Pazarlama yönetimi başlatılırken hata:', error);
-        showNotification('Pazarlama verileri yüklenirken bir hata oluştu', 'error');
-    } finally {
-        showMarketingLoading(false);
-    }
+// Setup Event Listeners
+function setupEventListeners() {
+    // Setup filters and search functionality
+    setupFilters();
+    
+    // Setup mobile menu
+    document.getElementById('mobile-menu-toggle')?.addEventListener('click', openMobileMenu);
+    document.getElementById('sidebar-overlay')?.addEventListener('click', closeMobileMenu);
 }
 
-// Veri dinleyicilerini kurma
-function setupMarketingListeners() {
-    // Pazarlama metrikleri dinleyicisi
-    marketingMetricsRef.onSnapshot(snapshot => {
-        try {
-            const metrics = snapshot.data() || {};
-            marketingData.metrics = metrics;
-            updateMarketingMetrics(metrics);
-            updateCACTrendChart(metrics.cacTrend || []);
-        } catch (error) {
-            console.error('Metrikler güncellenirken hata:', error);
-        }
-    });
-
-    // Müşteri talepleri dinleyicisi
-    customerInquiriesRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        try {
-            marketingData.inquiries = [];
-            snapshot.forEach(doc => {
-                marketingData.inquiries.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            updateInquiriesList();
-            updateInquiryDistributionChart();
-        } catch (error) {
-            console.error('Talepler güncellenirken hata:', error);
-        }
-    });
-
-    // Kullanıcı verileri dinleyicisi
-    usersRef.onSnapshot(snapshot => {
-        try {
-            marketingData.users = {};
-            snapshot.forEach(doc => {
-                marketingData.users[doc.id] = doc.data();
-            });
-            // Kullanıcı verileri güncellendiğinde talep listesini yenile
-            updateInquiriesList();
-        } catch (error) {
-            console.error('Kullanıcı verileri güncellenirken hata:', error);
-        }
-    });
+function setupFilters() {
+    // Add event listeners for all filter elements
+    // This would include search inputs, select filters, etc.
+    // Implementation depends on specific filtering requirements
 }
 
-// Pazarlama metriklerini güncelleme
-function updateMarketingMetrics(metrics) {
-    // CAC değerini güncelle
-    document.getElementById('cac-value').textContent = formatCurrency(metrics.cac || 0);
-    document.getElementById('cac-trend').textContent = formatTrend(metrics.cacTrendPercentage || 0);
-
-    // CLTV değerini güncelle
-    document.getElementById('cltv-value').textContent = formatCurrency(metrics.cltv || 0);
-    document.getElementById('cltv-trend').textContent = formatTrend(metrics.cltvTrendPercentage || 0);
-
-    // Toplam harcama değerini güncelle
-    document.getElementById('total-spend-value').textContent = formatCurrency(metrics.totalSpend || 0);
-    document.getElementById('spend-trend').textContent = formatTrend(metrics.spendTrendPercentage || 0);
+function setupSidebarNavigation() {
+    // Already handled by onclick attributes in HTML
 }
 
-// Grafikleri başlatma
-function initializeCharts() {
-    // CAC Trend Grafiği
-    const cacCtx = document.getElementById('cac-trend-chart').getContext('2d');
-    cacTrendChart = new Chart(cacCtx, {
+// Chart Functions
+function setupCharts() {
+    setupUserGrowthChart();
+    setupProjectDistributionChart();
+}
+
+function setupUserGrowthChart() {
+    const ctx = document.getElementById('userGrowthChart');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [],
+            labels: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz'],
             datasets: [{
-                label: 'Müşteri Edinme Maliyeti (CAC)',
-                data: [],
-                borderColor: '#5A00A8',
-                tension: 0.4
+                label: 'Kullanıcı Sayısı',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: 'rgb(147, 51, 234)',
+                backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                tension: 0.1
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: value => '₺' + value
-                    }
-                }
-            }
+            maintainAspectRatio: false
         }
     });
+}
 
-    // Talep Dağılımı Grafiği
-    const inquiryCtx = document.getElementById('inquiry-distribution-chart').getContext('2d');
-    inquiryDistributionChart = new Chart(inquiryCtx, {
-        type: 'pie',
+function setupProjectDistributionChart() {
+    const ctx = document.getElementById('projectDistributionChart');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
         data: {
-            labels: ['Soru', 'Öneri', 'Şikayet'],
+            labels: ['Devam Eden', 'Tamamlanan', 'Planlama', 'İptal Edilen'],
             datasets: [{
-                data: [0, 0, 0],
-                backgroundColor: ['#5A00A8', '#28a745', '#dc3545']
+                data: [30, 45, 15, 10],
+                backgroundColor: [
+                    '#fbbf24',
+                    '#10b981',
+                    '#3b82f6',
+                    '#ef4444'
+                ]
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+            maintainAspectRatio: false
         }
     });
 }
 
-// CAC Trend Grafiğini Güncelleme
-function updateCACTrendChart(trendData) {
-    if (!cacTrendChart) return;
-
-    const labels = trendData.map(item => item.date);
-    const values = trendData.map(item => item.value);
-
-    cacTrendChart.data.labels = labels;
-    cacTrendChart.data.datasets[0].data = values;
-    cacTrendChart.update();
+// Logout Function
+function logout() {
+    if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+        if (auth && auth.signOut) {
+            auth.signOut().then(() => {
+                // Clear localStorage as well
+                localStorage.removeItem('admin_logged_in');
+                localStorage.removeItem('admin_user_email');
+                localStorage.removeItem('admin_user_role');
+                localStorage.removeItem('admin_user_name');
+                window.location.href = 'auth.html';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+                showNotification('Çıkış yapılırken hata oluştu', 'error');
+            });
+        } else {
+            // Mock logout - just clear localStorage
+            localStorage.removeItem('admin_logged_in');
+            localStorage.removeItem('admin_user_email');
+            localStorage.removeItem('admin_user_role');
+            localStorage.removeItem('admin_user_name');
+            window.location.href = 'auth.html';
+        }
+    }
 }
 
-// Talep Dağılımı Grafiğini Güncelleme
-function updateInquiryDistributionChart() {
-    if (!inquiryDistributionChart) return;
-
-    const distribution = {
-        question: 0,
-        suggestion: 0,
-        complaint: 0
-    };
-
-    marketingData.inquiries.forEach(inquiry => {
-        distribution[inquiry.type] = (distribution[inquiry.type] || 0) + 1;
+// Content Management Functions (existing functionality)
+function switchContentTab(tabName) {
+    // Hide all content tab panels
+    document.querySelectorAll('.content-tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
     });
-
-    inquiryDistributionChart.data.datasets[0].data = [
-        distribution.question,
-        distribution.suggestion,
-        distribution.complaint
-    ];
-    inquiryDistributionChart.update();
-}
-
-// Müşteri Talepleri Listesini Güncelleme
-function updateInquiriesList() {
-    const inquiriesList = document.getElementById('inquiries-list');
-    if (!inquiriesList) return;
-
-    inquiriesList.innerHTML = marketingData.inquiries.map(inquiry => `
-        <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                #${inquiry.id}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${getUserName(inquiry.userId)}</div>
-                <div class="text-sm text-gray-500">${inquiry.userId}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getInquiryTypeClass(inquiry.type)}">
-                    ${getInquiryTypeName(inquiry.type)}
-                </span>
-            </td>
-            <td class="px-6 py-4">
-                <div class="text-sm text-gray-900">${inquiry.message.substring(0, 50)}${inquiry.message.length > 50 ? '...' : ''}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getInquiryStatusClass(inquiry.status)}">
-                    ${getInquiryStatusName(inquiry.status)}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                ${formatDate(inquiry.createdAt)}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button onclick="openInquiryModal('${inquiry.id}')" class="text-purple-600 hover:text-purple-900">
-                    <i class="fas fa-reply"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-// Yardımcı Fonksiyonlar
-function getUserName(userId) {
-    const user = marketingData.users[userId];
-    return user ? user.displayName : 'Bilinmeyen Kullanıcı';
-}
-
-function getInquiryTypeName(type) {
-    const types = {
-        question: 'Soru',
-        suggestion: 'Öneri',
-        complaint: 'Şikayet'
-    };
-    return types[type] || type;
-}
-
-function getInquiryTypeClass(type) {
-    const classes = {
-        question: 'bg-purple-100 text-purple-800',
-        suggestion: 'bg-green-100 text-green-800',
-        complaint: 'bg-red-100 text-red-800'
-    };
-    return classes[type] || 'bg-gray-100 text-gray-800';
-}
-
-function getInquiryStatusName(status) {
-    const statuses = {
-        pending: 'Beklemede',
-        in_progress: 'İşleme Alındı',
-        resolved: 'Çözüldü',
-        closed: 'Kapatıldı'
-    };
-    return statuses[status] || status;
-}
-
-function getInquiryStatusClass(status) {
-    const classes = {
-        pending: 'bg-yellow-100 text-yellow-800',
-        in_progress: 'bg-blue-100 text-blue-800',
-        resolved: 'bg-green-100 text-green-800',
-        closed: 'bg-gray-100 text-gray-800'
-    };
-    return classes[status] || 'bg-gray-100 text-gray-800';
-}
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY'
-    }).format(value);
-}
-
-function formatTrend(value) {
-    const sign = value >= 0 ? '↑' : '↓';
-    return `${sign} ${Math.abs(value)}%`;
-}
-
-// Modal İşlevleri
-function openInquiryModal(inquiryId) {
-    const inquiry = marketingData.inquiries.find(i => i.id === inquiryId);
-    if (!inquiry) return;
-
-    const modal = document.getElementById('inquiry-modal');
-    const details = document.getElementById('inquiry-details');
     
-    details.innerHTML = `
-        <div class="space-y-4">
-            <div>
-                <h4 class="text-sm font-medium text-gray-500">Kullanıcı</h4>
-                <p class="mt-1">${getUserName(inquiry.userId)}</p>
-            </div>
-            <div>
-                <h4 class="text-sm font-medium text-gray-500">Mesaj</h4>
-                <p class="mt-1">${inquiry.message}</p>
-            </div>
-            <div>
-                <h4 class="text-sm font-medium text-gray-500">Tarih</h4>
-                <p class="mt-1">${formatDate(inquiry.createdAt)}</p>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('inquiry-status').value = inquiry.status;
-    document.getElementById('inquiry-response').value = '';
+    // Remove active class from all content tabs
+    document.querySelectorAll('.content-tab').forEach(tab => {
+        tab.classList.remove('active', 'border-purple-500', 'text-purple-600');
+        tab.classList.add('border-transparent', 'text-gray-500');
+    });
     
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    // Form gönderme işleyicisini ayarla
-    const form = document.getElementById('inquiry-response-form');
-    form.onsubmit = (e) => handleInquiryResponse(e, inquiryId);
-}
-
-function closeInquiryModal() {
-    const modal = document.getElementById('inquiry-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
-
-async function handleInquiryResponse(event, inquiryId) {
-    event.preventDefault();
-
-    const response = document.getElementById('inquiry-response').value;
-    const status = document.getElementById('inquiry-status').value;
-
-    try {
-        await customerInquiriesRef.doc(inquiryId).update({
-            status,
-            response,
-            respondedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            respondedBy: auth.currentUser.uid
-        });
-
-        showNotification('Yanıt başarıyla gönderildi', 'success');
-        closeInquiryModal();
-    } catch (error) {
-        console.error('Yanıt gönderilirken hata:', error);
-        showNotification('Yanıt gönderilirken bir hata oluştu', 'error');
+    // Show selected tab panel
+    const selectedPanel = document.getElementById(`${tabName}-content`);
+    if (selectedPanel) {
+        selectedPanel.classList.remove('hidden');
+    }
+    
+    // Add active class to selected tab
+    const selectedTab = document.querySelector(`[onclick="switchContentTab('${tabName}')"]`);
+    if (selectedTab) {
+        selectedTab.classList.add('active', 'border-purple-500', 'text-purple-600');
+        selectedTab.classList.remove('border-transparent', 'text-gray-500');
     }
 }
 
-// Yükleme ekranını göster/gizle
-function showMarketingLoading(show) {
-    const loadingElement = document.getElementById('marketing-loading');
-    if (loadingElement) {
-        loadingElement.style.display = show ? 'flex' : 'none';
+function loadContentManagement() {
+    // Load content management data
+    switchContentTab('listings');
+}
+
+function loadSupportTickets() {
+    // Load support tickets
+    const ticketList = document.getElementById('ticket-list');
+    if (ticketList) {
+        ticketList.innerHTML = sampleData.tickets.map(ticket => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${ticket.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${ticket.title}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${ticket.category}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}">
+                        ${getStatusText(ticket.status)}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(ticket.date)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button onclick="viewTicket(${ticket.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Görüntüle</button>
+                    <button onclick="closeTicket(${ticket.id})" class="text-green-600 hover:text-green-900">Kapat</button>
+                </td>
+            </tr>
+        `).join('');
     }
 }
 
-// Sayfa yüklendiğinde pazarlama yönetimini başlat
-document.addEventListener('DOMContentLoaded', () => {
-    const marketingSection = document.getElementById('marketing-section');
-    if (marketingSection && !marketingSection.classList.contains('hidden')) {
-        initializeMarketing();
-    }
-}); 
+function loadFinancialData() {
+    // Load financial data
+    document.getElementById('total-revenue').textContent = '₺150,000';
+    document.getElementById('average-revenue').textContent = '₺25,000';
+    document.getElementById('last-revenue').textContent = '₺30,000';
+    document.getElementById('total-expenses').textContent = '₺75,000';
+    document.getElementById('average-expenses').textContent = '₺12,500';
+    document.getElementById('last-expense').textContent = '₺15,000';
+}
 
-// Kampanya Yönetimi Fonksiyonları
+function loadAnalyticsData() {
+    // Load analytics data
+    document.getElementById('total-users-analytics').textContent = sampleData.users.length;
+    document.getElementById('active-users-analytics').textContent = sampleData.users.filter(u => u.status === 'active').length;
+    document.getElementById('avg-session-duration').textContent = '25 dk';
+    document.getElementById('churn-rate').textContent = '5%';
+    document.getElementById('total-content').textContent = sampleData.listings.length;
+    document.getElementById('active-listings').textContent = sampleData.listings.filter(l => l.status === 'active').length;
+    document.getElementById('avg-content-views').textContent = '150';
+    document.getElementById('avg-content-duration').textContent = '3.5 dk';
+}
+
+function loadMarketingData() {
+    // Load marketing data - already implemented in the existing code
+}
+
+function loadSettings() {
+    // Load system settings
+    // Implementation for settings functionality
+}
+
+// Modal Functions
+function openNewAnnouncementModal() {
+    document.getElementById('new-announcement-modal').classList.remove('hidden');
+    document.getElementById('new-announcement-modal').classList.add('flex');
+}
+
+function closeNewAnnouncementModal() {
+    document.getElementById('new-announcement-modal').classList.add('hidden');
+    document.getElementById('new-announcement-modal').classList.remove('flex');
+}
+
+function openNewFAQModal() {
+    document.getElementById('new-faq-modal').classList.remove('hidden');
+    document.getElementById('new-faq-modal').classList.add('flex');
+}
+
+function closeNewFAQModal() {
+    document.getElementById('new-faq-modal').classList.add('hidden');
+    document.getElementById('new-faq-modal').classList.remove('flex');
+}
+
 function openNewCampaignModal() {
-    const modal = document.getElementById('new-campaign-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    document.getElementById('new-campaign-modal').classList.remove('hidden');
+    document.getElementById('new-campaign-modal').classList.add('flex');
 }
 
 function closeNewCampaignModal() {
-    const modal = document.getElementById('new-campaign-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    document.getElementById('new-campaign-modal').classList.add('hidden');
+    document.getElementById('new-campaign-modal').classList.remove('flex');
 }
 
-// Yeni kampanya form yönetimi
-document.getElementById('new-campaign-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    // Form verilerini al
-    const campaignData = {
-        name: document.getElementById('campaign-name').value,
-        platform: document.getElementById('campaign-platform').value,
-        budget: document.getElementById('campaign-budget').value,
-        startDate: document.getElementById('campaign-start-date').value,
-        endDate: document.getElementById('campaign-end-date').value
-    };
-
-    try {
-        // Form validasyonu
-        if (!campaignData.name || !campaignData.platform || !campaignData.budget || !campaignData.startDate || !campaignData.endDate) {
-            showNotification('Lütfen tüm alanları doldurun', 'error');
-            return;
-        }
-
-        // Başlangıç tarihi bitiş tarihinden sonra olamaz
-        if (new Date(campaignData.startDate) > new Date(campaignData.endDate)) {
-            showNotification('Başlangıç tarihi bitiş tarihinden sonra olamaz', 'error');
-            return;
-        }
-
-        // Firebase'e kaydet
-        await firebase.firestore().collection('campaigns').add({
-            ...campaignData,
-            status: 'active',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Başarılı bildirim göster
-        showNotification('Kampanya başarıyla oluşturuldu', 'success');
-        
-        // Modalı kapat ve formu temizle
-        closeNewCampaignModal();
-        e.target.reset();
-        
-        // Kampanya listesini güncelle
-        loadCampaigns();
-    } catch (error) {
-        console.error('Kampanya oluşturma hatası:', error);
-        showNotification('Kampanya oluşturulurken bir hata oluştu', 'error');
-    }
-});
-
-// Kampanyaları yükle
-async function loadCampaigns() {
-    try {
-        const campaignsRef = firebase.firestore().collection('campaigns');
-        const snapshot = await campaignsRef.orderBy('createdAt', 'desc').get();
-        
-        const campaignList = document.getElementById('campaign-list');
-        campaignList.innerHTML = ''; // Listeyi temizle
-        
-        snapshot.forEach(doc => {
-            const campaign = doc.data();
-            const row = document.createElement('tr');
-            
-            // Tarih formatını düzenle
-            const startDate = new Date(campaign.startDate).toLocaleDateString('tr-TR');
-            const endDate = new Date(campaign.endDate).toLocaleDateString('tr-TR');
-            
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">${campaign.name}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${campaign.platform}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">₺${campaign.budget}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${startDate}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${endDate}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        ${campaign.status}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick="editCampaign('${doc.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteCampaign('${doc.id}')" class="text-red-600 hover:text-red-900">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            
-            campaignList.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Kampanyaları yükleme hatası:', error);
-        showNotification('Kampanyalar yüklenirken bir hata oluştu', 'error');
-    }
-}
-
-// Kampanya düzenleme
-async function editCampaign(campaignId) {
-    // Kampanya düzenleme modalını aç ve verileri doldur
-    // Bu fonksiyon daha sonra implemente edilecek
-    console.log('Kampanya düzenleme:', campaignId);
-}
-
-// Kampanya silme
-async function deleteCampaign(campaignId) {
-    if (confirm('Bu kampanyayı silmek istediğinizden emin misiniz?')) {
-        try {
-            await firebase.firestore().collection('campaigns').doc(campaignId).delete();
-            showNotification('Kampanya başarıyla silindi', 'success');
-            loadCampaigns(); // Listeyi güncelle
-        } catch (error) {
-            console.error('Kampanya silme hatası:', error);
-            showNotification('Kampanya silinirken bir hata oluştu', 'error');
-        }
-    }
-}
-
-// Sayfa yüklendiğinde kampanyaları yükle
-document.addEventListener('DOMContentLoaded', function() {
-    // Pazarlama sekmesi aktif olduğunda kampanyaları yükle
-    const marketingTab = document.querySelector('a[onclick="showSection(\'marketing-section\')"]');
-    if (marketingTab) {
-        marketingTab.addEventListener('click', loadCampaigns);
-    }
-}); 
+function viewTicket(id) { showNotification('Ticket görüntüleniyor: ' + id, 'info'); }
+function closeTicket(id) { showNotification('Ticket kapatıldı: ' + id, 'success'); } 
