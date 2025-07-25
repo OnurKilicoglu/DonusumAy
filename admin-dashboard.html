@@ -95,6 +95,26 @@
                     <i class="fas fa-file-alt w-5"></i>
                     <span>İçerik Yönetimi</span>
                 </a>
+                <a href="#" onclick="showSection('listing-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-list-ul w-5"></i>
+                    <span>İlan Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('offer-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-handshake w-5"></i>
+                    <span>Teklif Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('project-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-project-diagram w-5"></i>
+                    <span>Proje Yönetimi</span>
+                </a>
+                <a href="#" onclick="showSection('legal-processes-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-gavel w-5"></i>
+                    <span>Hukuki Süreçler</span>
+                </a>
+                <a href="#" onclick="showSection('support-complaints-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-exclamation-triangle w-5"></i>
+                    <span>Destek ve Şikayet</span>
+                </a>
                 <a href="#" onclick="showSection('support-management-section')" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
                     <i class="fas fa-headset w-5"></i>
                     <span>Destek Yönetimi</span>
@@ -262,6 +282,7 @@
                                     <option value="contractor">Müteahhit</option>
                                     <option value="architect">Mimar</option>
                                     <option value="notary">Noter</option>
+                                    <option value="Admin">Admin</option>
                                 </select>
                             </div>
                             <div>
@@ -910,6 +931,618 @@
                     </div>
                 </div>
             </div>
+            <!-- Listing Management Section -->
+            <div id="listing-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">İlan Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Tüm ilanları görüntüleyin ve yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Listing Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam İlan</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-listings">0</h3>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-list-ul text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Aktif İlanlar</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="active-listings-count">0</h3>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Onay Bekleyen</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="pending-listings">0</h3>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Reddedilen</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="rejected-listings">0</h3>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">İlan Tipi</label>
+                                <select id="listing-type-filter" aria-label="İlan tipi filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="apartment">Daire</option>
+                                    <option value="house">Ev</option>
+                                    <option value="office">Ofis</option>
+                                    <option value="land">Arsa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                                <select id="listing-status-filter" aria-label="İlan durumu filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="active">Aktif</option>
+                                    <option value="pending">Onay Bekleyen</option>
+                                    <option value="rejected">Reddedilen</option>
+                                    <option value="expired">Süresi Dolmuş</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Şehir</label>
+                                <select id="listing-city-filter" aria-label="Şehir filtresi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tümü</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Arama</label>
+                                <input type="text" id="listing-search" placeholder="İlan ara..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Listings Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İlan ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlık</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tip</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Konum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="listings-table">
+                                    <!-- Listing rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer Management Section -->
+            <div id="offer-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Teklif Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Tüm teklifleri görüntüleyin ve yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Offer Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Teklif</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-offers">0</h3>
+                                </div>
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-handshake text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Bekleyen Teklifler</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="pending-offers">0</h3>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Kabul Edilen</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="accepted-offers">0</h3>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Reddedilen</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="rejected-offers">0</h3>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-times text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Offers Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold text-gray-800">Teklif Listesi</h3>
+                                <div class="flex space-x-2">
+                                    <select id="offer-status-filter" aria-label="Teklif durumu filtresi" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option value="">Tüm Durumlar</option>
+                                        <option value="pending">Bekleyen</option>
+                                        <option value="accepted">Kabul Edilen</option>
+                                        <option value="rejected">Reddedilen</option>
+                                    </select>
+                                    <input type="text" id="offer-search" placeholder="Teklif ara..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teklif ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İlan</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teklif Veren</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teklif Tutarı</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="offers-table">
+                                    <!-- Offer rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Management Section -->
+            <div id="project-management-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Proje Yönetimi</h1>
+                        <p class="text-gray-600 mt-1">Tüm projeleri görüntüleyin ve yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Project Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Proje</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-projects">0</h3>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Devam Eden</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="ongoing-projects">0</h3>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-spinner text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Tamamlanan</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="completed-projects">0</h3>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">İptal Edilen</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="cancelled-projects">0</h3>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-ban text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold text-gray-800">Proje Listesi</h3>
+                                <div class="flex space-x-2">
+                                    <select id="project-status-filter" aria-label="Proje durumu filtresi" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option value="">Tüm Durumlar</option>
+                                        <option value="planning">Planlama</option>
+                                        <option value="ongoing">Devam Eden</option>
+                                        <option value="completed">Tamamlanan</option>
+                                        <option value="cancelled">İptal Edilen</option>
+                                    </select>
+                                    <input type="text" id="project-search" placeholder="Proje ara..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proje ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proje Adı</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müteahhit</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mimar</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlangıç</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitiş</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="projects-table">
+                                    <!-- Project rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal Processes Section -->
+            <div id="legal-processes-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Hukuki Süreçler</h1>
+                        <p class="text-gray-600 mt-1">Hukuki süreçleri ve belgeleri yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Legal Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Süreç</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-legal-processes">0</h3>
+                                </div>
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-gavel text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Devam Eden</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="ongoing-legal">0</h3>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-hourglass-half text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Tamamlanan</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="completed-legal">0</h3>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check-double text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Bekleyen Belgeler</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="pending-documents">0</h3>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-file-signature text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legal Process Types -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                <button onclick="switchLegalTab('contracts')" class="legal-tab active border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600">
+                                    Sözleşmeler
+                                </button>
+                                <button onclick="switchLegalTab('documents')" class="legal-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Belgeler
+                                </button>
+                                <button onclick="switchLegalTab('notary')" class="legal-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Noter İşlemleri
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Contracts Tab -->
+                        <div id="contracts-content" class="legal-tab-panel p-6">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sözleşme ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tür</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taraflar</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="contracts-table">
+                                        <!-- Contract rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Documents Tab -->
+                        <div id="documents-content" class="legal-tab-panel hidden p-6">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Belge ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Belge Türü</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sahibi</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yükleme Tarihi</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="documents-table">
+                                        <!-- Document rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Notary Tab -->
+                        <div id="notary-content" class="legal-tab-panel hidden p-6">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem Türü</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Noter</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Randevu Tarihi</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="notary-table">
+                                        <!-- Notary rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support and Complaints Section -->
+            <div id="support-complaints-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Destek ve Şikayet</h1>
+                        <p class="text-gray-600 mt-1">Destek talepleri ve şikayetleri yönetin.</p>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Support Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Toplam Talep</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-support-requests">0</h3>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Açık Talepler</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="open-support-requests">0</h3>
+                                </div>
+                                <div class="bg-yellow-100 p-3 rounded-lg">
+                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Şikayetler</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="total-complaints">0</h3>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Çözülme Oranı</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-2" id="resolution-rate">0%</h3>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Request Types -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                <button onclick="switchSupportTab('support')" class="support-tab active border-b-2 border-purple-500 py-4 px-1 text-sm font-medium text-purple-600">
+                                    Destek Talepleri
+                                </button>
+                                <button onclick="switchSupportTab('complaints')" class="support-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Şikayetler
+                                </button>
+                                <button onclick="switchSupportTab('feedback')" class="support-tab border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Geri Bildirimler
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Support Requests Tab -->
+                        <div id="support-content" class="support-tab-panel p-6">
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-semibold text-gray-800">Destek Talepleri</h3>
+                                    <div class="flex space-x-2">
+                                        <select id="support-priority-filter" aria-label="Destek öncelik filtresi" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                            <option value="">Tüm Öncelikler</option>
+                                            <option value="high">Yüksek</option>
+                                            <option value="medium">Orta</option>
+                                            <option value="low">Düşük</option>
+                                        </select>
+                                        <input type="text" id="support-search" placeholder="Destek ara..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Talep ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Konu</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Öncelik</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="support-requests-table">
+                                        <!-- Support request rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Complaints Tab -->
+                        <div id="complaints-content" class="support-tab-panel hidden p-6">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şikayet ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şikayet Eden</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şikayet Edilen</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="complaints-table">
+                                        <!-- Complaint rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Tab -->
+                        <div id="feedback-content" class="support-tab-panel hidden p-6">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geri Bildirim ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tür</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puan</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="feedback-table">
+                                        <!-- Feedback rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Settings Section -->
             <div id="settings-section" class="min-h-screen hidden">
                 <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
@@ -1130,6 +1763,45 @@
                 <div class="flex justify-end space-x-2">
                     <button type="button" onclick="closeInquiryModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
                     <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Yanıtı Gönder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Universal View Modal -->
+    <div id="view-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800" id="modal-title">Detay Görüntüleme</h3>
+                <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold" title="Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="space-y-4">
+                <!-- İçerik JavaScript ile doldurulacak -->
+            </div>
+            <div class="flex justify-end mt-6">
+                <button onclick="closeViewModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800" id="edit-modal-title">Düzenleme</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold" title="Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="edit-form" class="space-y-4">
+                <div id="edit-form-content">
+                    <!-- Form alanları JavaScript ile doldurulacak -->
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">İptal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">Kaydet</button>
                 </div>
             </form>
         </div>
