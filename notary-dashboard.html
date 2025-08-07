@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noter Paneli - DönüşümAY</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --accent-warning: #FF8C00;
+            --text-dark: #343a40;
+            --text-medium: #4A4A4A;
+            --text-light: #6c757d;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-primary {
+            background-color: var(--primary);
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .border-primary {
+            border-color: var(--primary);
+        }
+
+        .sidebar-link.active {
+            background-color: #f3e8ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .notification {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification.removing {
+            animation: slideOutRight 0.3s ease-in;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .modal {
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-content {
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div id="notary-container" class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-50 lg:static lg:w-64">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <img src="./LogoSade.png" alt="DönüşümAY Logo" class="w-8 h-10 rounded-lg">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">DönüşümAY</h1>
+                        <p class="text-xs text-gray-500">Noter Paneli</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav id="sidebar-nav" class="p-4 space-y-2">
+                <a href="#" onclick="showSection('dashboard-section')"
+                    class="sidebar-link active flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('projects-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-project-diagram w-5"></i>
+                    <span>Projelerim</span>
+                </a>
+                <a href="#" onclick="showSection('appointments-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-calendar-alt w-5"></i>
+                    <span>Randevularım</span>
+                </a>
+                <a href="#" onclick="showSection('messages-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-comments w-5"></i>
+                    <span>Mesajlar</span>
+                </a>
+                <a href="#" onclick="showSection('profile-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-user-circle w-5"></i>
+                    <span>Profilim</span>
+                </a>
+                <a href="#" onclick="showSection('payments-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-credit-card w-5"></i>
+                    <span>Ödeme ve Raporlama</span>
+                </a>
+                <a href="#" onclick="showSection('support-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-life-ring w-5"></i>
+                    <span>Destek</span>
+                </a>
+                <a href="#" onclick="logout()"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span>Çıkış Yap</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"
+            onclick="closeMobileMenu()"></div>
+
+        <main class="flex-1 lg:ml-0">
+            <button id="mobile-menu-toggle" class="lg:hidden fixed top-4 left-4 z-30 bg-white p-2 rounded-lg shadow-md"
+                onclick="openMobileMenu()" title="Menüyü Aç">
+                <i class="fas fa-bars text-gray-600"></i>
+            </button>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="min-h-screen">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800" id="welcome-message">Hoş Geldiniz</h1>
+                        <p class="text-gray-600 mt-1">Noter panelinize hoş geldiniz.</p>
+                    </div>
+                </header>
+                <div id="dashboard-content" class="p-6">
+                    <!-- Dashboard content will be rendered here by JS -->
+                </div>
+            </div>
+
+            <!-- Projects Section -->
+            <div id="projects-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Projelerim</h1>
+                        <p class="text-gray-600 mt-1">Size atanan veya seçtiğiniz projeleri yönetin.</p>
+                    </div>
+                </header>
+                <div id="projects-list" class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Project cards will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Appointments Section -->
+            <div id="appointments-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0 flex justify-between items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Randevularım</h1>
+                            <p class="text-gray-600 mt-1">Tüm planlanmış randevularınızı görüntüleyin.</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <input type="text" id="appointment-search" placeholder="Müşteri adı veya proje ara..."
+                                    class="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <i
+                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div id="appointments-list" class="p-6">
+                    <!-- Appointments list or calendar will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div id="messages-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Mesajlar</h1>
+                        <p class="text-gray-600 mt-1">Tüm proje yazışmalarınızı buradan yönetin.</p>
+                    </div>
+                </header>
+                <div id="messages-list" class="p-6 space-y-4">
+                    <!-- Messages list will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profile-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Profilim</h1>
+                        <p class="text-gray-600 mt-1">Noterlik ve hesap bilgilerinizi yönetin.</p>
+                    </div>
+                </header>
+                <div class="p-6 max-w-4xl mx-auto space-y-6">
+                    <!-- Location and Notary Selection -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Konum ve Noter Seçimi</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="profile-city" class="block text-sm font-medium text-gray-700">İl</label>
+                                <select id="profile-city" class="mt-1 w-full p-2 border rounded-lg"
+                                    onchange="updateDistricts()">
+                                    <option value="">İl seçiniz</option>
+                                    <option value="İstanbul">İstanbul</option>
+                                    <option value="Ankara">Ankara</option>
+                                    <option value="İzmir">İzmir</option>
+                                    <option value="Bursa">Bursa</option>
+                                    <option value="Antalya">Antalya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="profile-district"
+                                    class="block text-sm font-medium text-gray-700">İlçe</label>
+                                <select id="profile-district" class="mt-1 w-full p-2 border rounded-lg"
+                                    onchange="updateNotaryOffices()">
+                                    <option value="">İlçe seçiniz</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="profile-notary-office" class="block text-sm font-medium text-gray-700">Noter
+                                    Seçimi</label>
+                                <select id="profile-notary-office" class="mt-1 w-full p-2 border rounded-lg">
+                                    <option value="">Noter seçiniz</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notary Info -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Noterlik Bilgileri</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="profile-notary-name"
+                                    class="block text-sm font-medium text-gray-700">Noterlik Adı</label>
+                                <input type="text" id="profile-notary-name" class="mt-1 w-full p-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label for="profile-notary-id" class="block text-sm font-medium text-gray-700">Noter
+                                    Sicil No</label>
+                                <input type="text" id="profile-notary-id"
+                                    class="mt-1 w-full p-2 border rounded-lg bg-gray-100" readonly>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="profile-address"
+                                    class="block text-sm font-medium text-gray-700">Adres</label>
+                                <textarea id="profile-address" rows="3"
+                                    class="mt-1 w-full p-2 border rounded-lg"></textarea>
+                            </div>
+                            <div>
+                                <label for="profile-phone" class="block text-sm font-medium text-gray-700">İş
+                                    Telefonu</label>
+                                <input type="tel" id="profile-phone" class="mt-1 w-full p-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label for="profile-personal-phone"
+                                    class="block text-sm font-medium text-gray-700">Şahsi Telefon (+90 ile
+                                    başlayan)</label>
+                                <input type="tel" id="profile-personal-phone" class="mt-1 w-full p-2 border rounded-lg"
+                                    placeholder="+90 5XX XXX XX XX">
+                            </div>
+                            <div>
+                                <label for="profile-email"
+                                    class="block text-sm font-medium text-gray-700">E-posta</label>
+                                <input type="email" id="profile-email"
+                                    class="mt-1 w-full p-2 border rounded-lg bg-gray-100" readonly>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Gezici Noteriniz var mı?</span>
+                                <button id="mobile-notary-toggle" onclick="toggleMobileNotary()"
+                                    title="Gezici Noter Durumunu Değiştir"
+                                    class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none">
+                                    <span id="mobile-notary-bg"
+                                        class="absolute left-0 w-11 h-6 rounded-full transition-colors"></span>
+                                    <span id="mobile-notary-knob"
+                                        class="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Verification -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Belge Doğrulama</h3>
+                        <p class="text-gray-600 mb-4 text-sm">Noter olduğunuzu kanıtlayan resmi belgelerinizi yükleyin.
+                        </p>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Yüklü Belgeler</label>
+                                <div id="verification-documents-list" class="space-y-2">
+                                    <!-- Documents will be rendered here -->
+                                </div>
+                            </div>
+
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                                <input type="file" id="verification-doc-input" class="hidden"
+                                    accept=".pdf,.jpg,.jpeg,.png" onchange="uploadVerificationDocument(event)">
+                                <label for="verification-doc-input" class="cursor-pointer flex flex-col items-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                    <span class="text-gray-600 font-medium">Belge Yükle</span>
+                                    <span class="text-gray-500 text-sm">PDF, JPG, PNG formatları desteklenir</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Working Calendar -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Çalışma Takvimi</h3>
+                        <p class="text-gray-600 mb-4 text-sm">Çalışma günlerinizi ve saatlerinizi belirleyin. Tatil
+                            günlerinde gezici noter hizmetinizin durumunu ayarlayın.</p>
+
+                        <div id="working-calendar" class="space-y-4">
+                            <!-- Calendar will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button onclick="updateNotaryProfile()"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 shadow-md text-sm transition-colors">Profili
+                            Güncelle</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments and Reporting Section -->
+            <div id="payments-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Ödeme ve Raporlama</h1>
+                        <p class="text-gray-600 mt-1">Ödeme geçmişinizi görüntüleyin ve kazanç raporlarınızı takip edin.
+                        </p>
+                    </div>
+                </header>
+                <div id="payments-content" class="p-6">
+                    <!-- Payment content will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Support Section -->
+            <div id="support-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Destek Merkezi</h1>
+                        <p class="text-gray-600 mt-1">Yardıma mı ihtiyacınız var? Buradan bize ulaşabilirsiniz.</p>
+                    </div>
+                </header>
+                <div id="support-content" class="p-6 max-w-4xl mx-auto space-y-8">
+                    <!-- Support content will be rendered by JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- MODALS -->
+    <!-- Deactivate Service Modal -->
+    <div id="deactivate-service-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('deactivate-service-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Hizmeti Devre Dışı Bırakmayı Onayla</h2>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-600">Dijital noterlik hizmetinizi devre dışı bırakmak istediğinizden emin misiniz?
+                    Bu işlem, yeni proje atamalarını durduracak ve mevcut projeleriniz için randevu talepleri
+                    gönderilmesini engelleyecektir. Mevcut randevularınız ve sözleşme süreçleriniz devam edecektir.</p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('deactivate-service-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" onclick="confirmDeactivateService()"
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">Evet, Devre Dışı Bırak</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre-Chat Modal -->
+    <div id="pre-chat-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('pre-chat-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Canlı Destek</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-gray-600">Lütfen sorunuzu kısaca belirtin, sizi uygun temsilciye yönlendirelim.</p>
+                <div>
+                    <label for="pre-chat-message"
+                        class="block text-sm font-medium text-gray-700 sr-only">Mesajınız</label>
+                    <textarea id="pre-chat-message" rows="4" class="mt-1 w-full p-2 border rounded-lg"
+                        placeholder="Sorunuzu buraya yazın..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="startLiveChat()"
+                    class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark">Sohbeti Başlat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div id="live-chat-modal"
+        class="fixed inset-0 z-[70] hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('live-chat-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl flex flex-col transform transition-all modal-content h-[80vh] max-h-[600px]"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+                <h2 class="text-xl font-bold text-gray-800">Canlı Destek Sohbeti</h2>
+                <button onclick="closeModal('live-chat-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="live-chat-messages" class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
+                <!-- Live chat messages will be rendered here -->
+            </div>
+            <div class="p-4 bg-white border-t flex items-center space-x-2 flex-shrink-0">
+                <input type="file" id="live-chat-file-input" class="hidden" onchange="handleLiveChatFileUpload(event)"
+                    aria-label="Canlı sohbete dosya ekle">
+                <button onclick="document.getElementById('live-chat-file-input').click()"
+                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200" title="Dosya Ekle"><i
+                        class="fas fa-paperclip"></i></button>
+                <input type="text" id="live-chat-input" class="flex-1 w-full p-2 border rounded-lg"
+                    placeholder="Mesajınızı yazın..." onkeydown="if(event.key === 'Enter') sendLiveChatMessage()">
+                <button id="live-chat-send-btn" onclick="sendLiveChatMessage()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg" aria-label="Mesajı Gönder"><i
+                        class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Documents Modal -->
+    <div id="review-documents-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('review-documents-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="review-docs-project-id">
+            <div class="px-6 py-4 border-b">
+                <h2 id="review-docs-modal-title" class="text-xl font-bold text-gray-800">Belgeleri İncele</h2>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto space-y-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700">Müşteri Tarafından Yüklenen Belgeler</h3>
+                    <div id="customer-docs-list" class="mt-2 space-y-2"></div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700">Müteahhit Tarafından Yüklenen Belgeler</h3>
+                    <div id="contractor-docs-list" class="mt-2 space-y-2"></div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('review-documents-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+                <button type="button" onclick="approveDocuments()"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Tüm Belgeleri
+                    Onayla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Appointment Modal -->
+    <div id="schedule-appointment-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('schedule-appointment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="schedule-appointment-project-id">
+            <div class="px-6 py-4 border-b">
+                <h2 id="schedule-appointment-modal-title" class="text-xl font-bold text-gray-800">Randevu Oluştur/Yönet
+                </h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="appointment-date" class="block text-sm font-medium text-gray-700">Randevu Tarihi</label>
+                    <input type="date" id="appointment-date" class="mt-1 w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label for="appointment-time" class="block text-sm font-medium text-gray-700">Randevu Saati</label>
+                    <input type="time" id="appointment-time" class="mt-1 w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label for="appointment-subject" class="block text-sm font-medium text-gray-700">Randevu
+                        Konusu</label>
+                    <input type="text" id="appointment-subject" class="mt-1 w-full p-2 border rounded-lg"
+                        value="Sözleşme İmza Töreni" placeholder="Randevu Konusu">
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <span class="font-medium text-gray-700">SMS Randevu Hatırlatıcısı</span>
+                    <button id="sms-reminder-toggle" onclick="toggleSmsReminder()" title="SMS Hatırlatıcıyı Aç/Kapat"
+                        class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none">
+                        <span id="sms-reminder-bg"
+                            class="absolute left-0 w-11 h-6 rounded-full transition-colors"></span>
+                        <span id="sms-reminder-knob"
+                            class="inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('schedule-appointment-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" onclick="createUpdateAppointment()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Randevuyu Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Notarized Contract Modal -->
+    <div id="upload-notarized-contract-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('upload-notarized-contract-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="upload-contract-project-id">
+            <div class="px-6 py-4 border-b">
+                <h2 id="upload-contract-modal-title" class="text-xl font-bold text-gray-800">Noter Onaylı Sözleşmeyi
+                    Yükle</h2>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-600 mb-4">Lütfen taraflarca imzalanmış ve noter tarafından onaylanmış nihai
+                    sözleşmenin taranmış PDF kopyasını yükleyin.</p>
+                <input type="file" id="notarized-contract-input" class="hidden" accept=".pdf"
+                    onchange="handleNotarizedContractFileChange(event)">
+                <label for="notarized-contract-input"
+                    class="cursor-pointer w-full flex items-center justify-center space-x-2 p-4 border-2 border-dashed rounded-lg text-primary hover:bg-primary/10 transition-colors">
+                    <i class="fas fa-cloud-upload-alt fa-lg"></i>
+                    <span>PDF Dosyası Seç</span>
+                </label>
+                <p id="notarized-contract-file-info" class="text-sm text-gray-600 mt-2 text-center"></p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('upload-notarized-contract-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button id="upload-final-contract-btn" type="button" onclick="uploadNotarizedContract()"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                    disabled>Sözleşmeyi Yükle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Management Modal -->
+    <div id="subscription-management-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('subscription-management-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Abonelik Yönetimi</h2>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Current Plan -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-green-800 mb-2">Mevcut Planınız</h3>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Premium Noter</p>
+                            <p class="text-sm text-green-600">₺299.00/ay</p>
+                        </div>
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Aktif</span>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-3">Ödeme Yöntemi</h3>
+                    <div class="border rounded-lg p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-credit-card text-gray-400 text-xl"></i>
+                            <div>
+                                <p class="font-medium">**** **** **** 1234</p>
+                                <p class="text-sm text-gray-500">Visa - Son kullanma: 12/26</p>
+                            </div>
+                        </div>
+                        <button onclick="updatePaymentMethod()"
+                            class="text-primary hover:text-primary-dark text-sm">Değiştir</button>
+                    </div>
+                </div>
+
+                <!-- Plan Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="pauseSubscription()"
+                        class="w-full bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg hover:bg-yellow-200 text-sm font-medium">
+                        <i class="fas fa-pause mr-2"></i>Aboneliği Duraklat
+                    </button>
+                    <button onclick="cancelSubscription()"
+                        class="w-full bg-red-100 text-red-800 px-4 py-3 rounded-lg hover:bg-red-200 text-sm font-medium">
+                        <i class="fas fa-times mr-2"></i>Aboneliği İptal Et
+                    </button>
+                </div>
+
+                <!-- Billing Info -->
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-3">Fatura Bilgileri</h3>
+                    <div class="space-y-2 text-sm">
+                        <p><strong>Son ödeme:</strong> 15 Ocak 2025 - ₺299.00</p>
+                        <p><strong>Sonraki ödeme:</strong> 15 Şubat 2025</p>
+                        <p><strong>Fatura adresi:</strong> Caferağa Mah. Mühürdar Cad. No:5 D:1, Kadıköy/İstanbul</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('subscription-management-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+                <button type="button" onclick="downloadInvoice()"
+                    class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark">Son Faturayı İndir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription History Modal -->
+    <div id="subscription-history-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('subscription-history-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Abonelik Ödeme Geçmişi</h2>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Açıklama
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fatura</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscription-history-table" class="bg-white divide-y divide-gray-200">
+                            <!-- History will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('subscription-history-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Price Modal -->
+    <div id="set-price-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('set-price-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="set-price-project-id">
+            <div class="px-6 py-4 border-b">
+                <h2 id="set-price-modal-title" class="text-xl font-bold text-gray-800">Noter Ücreti Belirle</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Bilgilendirme:</strong> Belirlediğiniz ücret müşteri ve müteahhit tarafından
+                        görülebilecek ve ödeme sırasında kullanılacaktır.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="notary-price-input" class="block text-sm font-medium text-gray-700 mb-2">Noter Ücreti
+                        (TL)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                        <input type="number" id="notary-price-input" min="0" step="0.01"
+                            class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-lg font-semibold"
+                            placeholder="0.00">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Ondalık sayı girebilirsiniz (örn: 250.50)</p>
+                </div>
+
+                <div>
+                    <label for="price-description" class="block text-sm font-medium text-gray-700 mb-2">Ücret Açıklaması
+                        (Opsiyonel)</label>
+                    <textarea id="price-description" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                        placeholder="Noter işlemleri hakkında ek açıklama yazabilirsiniz..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setQuickPrice(250)"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors">₺250</button>
+                    <button onclick="setQuickPrice(350)"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors">₺350</button>
+                    <button onclick="setQuickPrice(500)"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors">₺500</button>
+                </div>
+
+                <div id="current-price-info" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-3">
+                    <p class="text-sm text-orange-800">
+                        <i class="fas fa-tag mr-2"></i>
+                        <strong>Mevcut Ücret:</strong> <span id="current-price-display">₺0.00</span>
+                    </p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('set-price-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm font-medium transition-colors">İptal</button>
+                <button type="button" onclick="saveNotaryPrice()"
+                    class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 text-sm font-medium transition-colors">
+                    <i class="fas fa-save mr-2"></i>Ücreti Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notary Payment Modal -->
+    <div id="notary-payment-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('notary-payment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="notary-payment-project-id">
+            <div class="px-6 py-4 border-b">
+                <h2 id="notary-payment-modal-title" class="text-xl font-bold text-gray-800">Noter ile Ödeme</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Bilgilendirme:</strong> Müşteri ve müteahhit tarafından yapılacak noter ödemesini
+                        koordine edebilirsiniz.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="contract-type-select" class="block text-sm font-medium text-gray-700 mb-2">Sözleşme
+                        Türü</label>
+                    <select id="contract-type-select"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Sözleşme türü seçiniz</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">İşlem yapılacak sözleşme türünü seçin</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Müşteri Bilgileri</label>
+                        <div class="p-3 bg-gray-50 rounded-lg border">
+                            <p id="customer-name-display" class="font-medium text-gray-800">-</p>
+                            <p id="customer-contact-display" class="text-sm text-gray-600">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Müteahhit Bilgileri</label>
+                        <div class="p-3 bg-gray-50 rounded-lg border">
+                            <p id="contractor-name-display" class="font-medium text-gray-800">-</p>
+                            <p id="contractor-contact-display" class="text-sm text-gray-600">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="price-info-display" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-green-700">Noter Ücreti</p>
+                            <p id="notary-fee-display" class="text-2xl font-bold text-green-800">₺0.00</p>
+                        </div>
+                        <div class="text-right">
+                            <i class="fas fa-money-bill-wave text-3xl text-green-600"></i>
+                        </div>
+                    </div>
+                    <p id="price-description-display" class="text-sm text-green-600 mt-2">-</p>
+                </div>
+
+                <div>
+                    <label for="payment-instructions" class="block text-sm font-medium text-gray-700 mb-2">Ödeme
+                        Talimatları (Opsiyonel)</label>
+                    <textarea id="payment-instructions" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="Müşteri ve müteahhit için ödeme konusunda özel talimatlar..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('notary-payment-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm font-medium transition-colors">İptal</button>
+                <button type="button" onclick="sendPaymentInstructions()"
+                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 text-sm font-medium transition-colors">
+                    <i class="fas fa-paper-plane mr-2"></i>Ödeme Bilgilerini Gönder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Chat Modal -->
+    <div id="project-chat-modal"
+        class="fixed inset-0 z-[60] hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('project-chat-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl flex flex-col transform transition-all modal-content h-[70vh]"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="project-chat-id">
+            <div class="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+                <h2 id="project-chat-modal-title" class="text-xl font-bold text-gray-800">Proje Mesajlaşması</h2>
+                <button onclick="closeModal('project-chat-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="project-chat-messages" class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
+                <!-- Project chat messages will be rendered here -->
+            </div>
+            <div class="p-4 bg-white border-t flex items-center space-x-2 flex-shrink-0">
+                <input type="file" id="project-chat-file-input" class="hidden" onchange="sendProjectFile(event)"
+                    aria-label="Proje sohbetine dosya ekle">
+                <button onclick="document.getElementById('project-chat-file-input').click()"
+                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200" title="Dosya Gönder"><i
+                        class="fas fa-paperclip"></i></button>
+                <input type="text" id="project-chat-input" class="flex-1 w-full p-2 border rounded-lg"
+                    placeholder="Mesajınızı yazın..." onkeydown="if(event.key === 'Enter') sendMessageToParties()">
+                <button id="project-chat-send-btn" onclick="sendMessageToParties()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg" aria-label="Mesajı Gönder"><i
+                        class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/notary-dashboard.js"></script>
+</body>
+
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

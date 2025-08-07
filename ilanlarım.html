@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - İlanlarım</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .listing-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg"
+                        style="width: 11rem;">
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex space-x-4">
+                    <a href="contractor-dashboard.html"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Panele Dön
+                    </a>
+                    <a href="ilanlar.html"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-2"></i>İlanlar
+                    </a>
+                    <a href="ilanlarim.html"
+                        class="text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-user-tag mr-2"></i>İlanlarım
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">İlanlarım</h1>
+            <p class="mt-2 text-sm text-gray-600">Yayınladığınız tüm ilanları buradan yönetebilirsiniz.</p>
+        </div>
+
+        <!-- Listing Categories -->
+        <div class="mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8" aria-label="Tabs">
+                    <button onclick="switchListingTab('apartment')"
+                        class="listing-tab border-primary text-primary whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                        Daire İlanları
+                    </button>
+                    <button onclick="switchListingTab('design')"
+                        class="listing-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                        Proje Çizim İlanları
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Apartment Listings -->
+        <div id="apartment-listings">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Daire İlanları</h2>
+                <button onclick="openNewApartmentListingModal()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark text-sm font-medium">
+                    <i class="fas fa-plus mr-2"></i>Yeni Daire İlanı
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Apartment listing cards will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Design Project Listings -->
+        <div id="design-listings" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Proje Çizim İlanları</h2>
+                <button onclick="openNewDesignListingModal()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark text-sm font-medium">
+                    <i class="fas fa-plus mr-2"></i>Yeni Çizim İlanı
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Design project listing cards will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Edit Apartment Listing Modal -->
+        <div id="edit-apartment-modal"
+            class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto"
+                onclick="event.stopPropagation()">
+                <div class="p-6 border-b">
+                    <h3 class="text-xl font-bold text-gray-800">Daire İlanını Düzenle</h3>
+                    <p class="text-gray-600 mt-1">Dairenizin tüm bilgilerini detaylı şekilde güncelleyin.</p>
+                </div>
+                <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                    <input type="hidden" id="edit-apartment-id">
+
+                    <!-- İlan Durumu -->
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">İlan Durumu</h4>
+                        <div>
+                            <label for="edit-apartment-status"
+                                class="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                            <select id="edit-apartment-status"
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="active">Aktif</option>
+                                <option value="sold">Satıldı</option>
+                                <option value="reserved">Rezerve Edildi</option>
+                                <option value="inactive">Pasif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Temel Bilgiler -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Temel Bilgiler</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="edit-apartment-title"
+                                    class="block text-sm font-medium text-gray-700 mb-1">İlan Başlığı</label>
+                                <input type="text" id="edit-apartment-title"
+                                    placeholder="Örn: Kadıköy Merkez'de Satılık 3+1 Daire"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-apartment-number"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Daire Numarası / Blok</label>
+                                <input type="text" id="edit-apartment-number" placeholder="Örn: A Blok, No: 12"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-apartment-rooms"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Oda Sayısı</label>
+                                <select id="edit-apartment-rooms"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    title="Oda sayısı seçin">
+                                    <option value="">Seçiniz</option>
+                                    <option value="1+0">1+0</option>
+                                    <option value="1+1">1+1</option>
+                                    <option value="2+1">2+1</option>
+                                    <option value="3+1">3+1</option>
+                                    <option value="4+1">4+1</option>
+                                    <option value="5+1">5+1</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-apartment-price"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Satış Fiyatı (₺)</label>
+                                <input type="text" id="edit-apartment-price" placeholder="2.500.000"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    oninput="formatPriceInput(this)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Konum Bilgileri -->
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Konum Bilgileri</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="edit-location-city"
+                                    class="block text-sm font-medium text-gray-700 mb-1">İl</label>
+                                <select id="edit-location-city"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    onchange="updateEditDistricts()">
+                                    <option value="">İl seçiniz</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                    <option value="bursa">Bursa</option>
+                                    <option value="antalya">Antalya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-location-district"
+                                    class="block text-sm font-medium text-gray-700 mb-1">İlçe</label>
+                                <select id="edit-location-district"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    onchange="updateEditNeighborhoods()">
+                                    <option value="">Önce il seçiniz</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-location-neighborhood"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Mahalle</label>
+                                <select id="edit-location-neighborhood"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Önce ilçe seçiniz</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-3">
+                                <label for="edit-location-address"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Detay Adres</label>
+                                <input type="text" id="edit-location-address"
+                                    placeholder="Örn: Atatürk Caddesi No:123, Daire:5"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-location-metro" class="block text-sm font-medium text-gray-700 mb-1">En
+                                    Yakın Metro/Tramvay</label>
+                                <input type="text" id="edit-location-metro" placeholder="Örn: Kadıköy İskele (300m)"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-location-bus" class="block text-sm font-medium text-gray-700 mb-1">En
+                                    Yakın Otobüs Durağı</label>
+                                <input type="text" id="edit-location-bus" placeholder="Örn: Merkez Durağı (100m)"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-location-amenities"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Yakın Yerler</label>
+                                <input type="text" id="edit-location-amenities"
+                                    placeholder="Örn: AVM (600m), Hastane (1.5km)"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alan Bilgileri -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Alan Bilgileri</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="edit-net-area" class="block text-sm font-medium text-gray-700 mb-1">Net Alan
+                                    (m²)</label>
+                                <input type="number" id="edit-net-area" placeholder="125"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-gross-area" class="block text-sm font-medium text-gray-700 mb-1">Brüt
+                                    Alan (m²)</label>
+                                <input type="number" id="edit-gross-area" placeholder="140"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-room-count" class="block text-sm font-medium text-gray-700 mb-1">Oda
+                                    Sayısı (Sayısal)</label>
+                                <input type="number" id="edit-room-count" placeholder="3" min="1"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-bathroom" class="block text-sm font-medium text-gray-700 mb-1">Banyo
+                                    Sayısı</label>
+                                <select id="edit-bathroom"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    title="Banyo sayısı seçin">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-balcony" class="block text-sm font-medium text-gray-700 mb-1">Balkon
+                                    Sayısı</label>
+                                <select id="edit-balcony"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="0">Yok</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-floor" class="block text-sm font-medium text-gray-700 mb-1">Bulunduğu
+                                    Kat</label>
+                                <input type="number" id="edit-floor" placeholder="5" min="0"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bina Bilgileri -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Bina Bilgileri</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="edit-building-age" class="block text-sm font-medium text-gray-700 mb-1">Bina
+                                    Yaşı</label>
+                                <select id="edit-building-age"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="0">0 (Sıfır Bina)</option>
+                                    <option value="1-5">1-5 Yıl</option>
+                                    <option value="6-10">6-10 Yıl</option>
+                                    <option value="11-15">11-15 Yıl</option>
+                                    <option value="16-20">16-20 Yıl</option>
+                                    <option value="21-30">21-30 Yıl</option>
+                                    <option value="30+">30+ Yıl</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-building-floors"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Bina Kat Sayısı</label>
+                                <input type="number" id="edit-building-floors" placeholder="8" min="1"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit-elevator"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Asansör</label>
+                                <select id="edit-elevator"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="var">Var</option>
+                                    <option value="yok">Yok</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-parking"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Otopark</label>
+                                <select id="edit-parking"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Seçiniz</option>
+                                    <option value="kapali">Kapalı Otopark</option>
+                                    <option value="acik">Açık Otopark</option>
+                                    <option value="yok">Otopark Yok</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-heating" class="block text-sm font-medium text-gray-700 mb-1">Isıtma
+                                    Sistemi</label>
+                                <select id="edit-heating"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Seçiniz</option>
+                                    <option value="kombi">Kombi (Doğalgaz)</option>
+                                    <option value="merkezi">Merkezi Sistem</option>
+                                    <option value="klima">Klima</option>
+                                    <option value="soba">Soba</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Özellikler -->
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Daire Özellikleri</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-sea-view" class="edit-apartment-feature">
+                                <span class="text-sm">Deniz Manzarası</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-city-view" class="edit-apartment-feature">
+                                <span class="text-sm">Şehir Manzarası</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-park-view" class="edit-apartment-feature">
+                                <span class="text-sm">Park Manzarası</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-furnished" class="edit-apartment-feature">
+                                <span class="text-sm">Eşyalı</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-american-kitchen"
+                                    class="edit-apartment-feature">
+                                <span class="text-sm">Amerikan Mutfak</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-separate-kitchen"
+                                    class="edit-apartment-feature">
+                                <span class="text-sm">Ayrı Mutfak</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-ac" class="edit-apartment-feature">
+                                <span class="text-sm">Klima</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-security" class="edit-apartment-feature">
+                                <span class="text-sm">24 Saat Güvenlik</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-internet" class="edit-apartment-feature">
+                                <span class="text-sm">İnternet Alt Yapısı</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-satellite" class="edit-apartment-feature">
+                                <span class="text-sm">Uydu TV</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-pool" class="edit-apartment-feature">
+                                <span class="text-sm">Yüzme Havuzu</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="edit-feature-gym" class="edit-apartment-feature">
+                                <span class="text-sm">Spor Salonu</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div>
+                        <label for="edit-apartment-description"
+                            class="block text-sm font-medium text-gray-700 mb-2">Detaylı Açıklama</label>
+                        <textarea id="edit-apartment-description" rows="5"
+                            placeholder="Dairenin özelliklerini, konumunu, avantajlarını detaylı şekilde belirtin..."
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                    </div>
+
+                    <!-- Görseller -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Daire Görselleri</label>
+                        <div id="apartment-images-preview" class="mt-2 grid grid-cols-3 gap-4 mb-4">
+                            <!-- Image previews will be rendered here -->
+                        </div>
+                        <input type="file" id="apartment-images-input" multiple accept="image/*" class="hidden">
+                        <button onclick="document.getElementById('apartment-images-input').click()"
+                            class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 text-sm font-medium">
+                            <i class="fas fa-camera mr-2"></i>Görsel Ekle
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">En fazla 10 görsel yükleyebilirsiniz. (JPG, PNG)</p>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-2">
+                    <button onclick="closeModal('edit-apartment-modal')"
+                        class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                    <button onclick="saveApartmentChanges()"
+                        class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark"
+                        style="background-color: #5A00A8;">Değişiklikleri Kaydet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Design Project Modal -->
+        <div id="edit-design-modal"
+            class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-y-auto"
+                onclick="event.stopPropagation()">
+                <div class="p-6 border-b">
+                    <h3 class="text-xl font-bold text-gray-800">Proje Çizim İlanını Düzenle</h3>
+                    <p class="text-gray-600 mt-1">Proje çizim ilanınızın tüm bilgilerini güncelleyin.</p>
+                </div>
+                <div class="p-6 space-y-6">
+                    <input type="hidden" id="edit-design-id">
+
+                    <!-- İlan Durumu -->
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">İlan Durumu</h4>
+                        <div>
+                            <label for="edit-design-status"
+                                class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                            <select id="edit-design-status"
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="active">Aktif</option>
+                                <option value="assigned">Mimar Atandı</option>
+                                <option value="completed">Tamamlandı</option>
+                                <option value="inactive">Pasif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Temel Bilgiler -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Temel Bilgiler</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="edit-design-title" class="block text-sm font-medium text-gray-700 mb-2">İlan
+                                    Başlığı</label>
+                                <input type="text" id="edit-design-title"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-design-type" class="block text-sm font-medium text-gray-700 mb-2">Proje
+                                    Tipi</label>
+                                <select id="edit-design-type"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <option value="avan">Tasarım (Avan) Projesi</option>
+                                    <option value="uygulama">Uygulama Projesi</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-design-area" class="block text-sm font-medium text-gray-700 mb-2">Proje
+                                    Alanı (m²)</label>
+                                <input type="number" id="edit-design-area" placeholder="1500" min="1"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-design-deadline"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Teslim Süresi (Gün)</label>
+                                <input type="number" id="edit-design-deadline"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Konum Bilgileri -->
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Konum Bilgileri</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="edit-design-city"
+                                    class="block text-sm font-medium text-gray-700 mb-2">İl</label>
+                                <select id="edit-design-city"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    onchange="updateEditDesignDistricts()">
+                                    <option value="">İl seçiniz</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                    <option value="bursa">Bursa</option>
+                                    <option value="antalya">Antalya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-design-district"
+                                    class="block text-sm font-medium text-gray-700 mb-2">İlçe</label>
+                                <select id="edit-design-district"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    onchange="updateEditDesignNeighborhoods()">
+                                    <option value="">Önce il seçiniz</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-design-neighborhood"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Mahalle</label>
+                                <select id="edit-design-neighborhood"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Önce ilçe seçiniz</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-3">
+                                <label for="edit-design-address"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Detay Adres</label>
+                                <input type="text" id="edit-design-address" placeholder="Örn: Atatürk Caddesi No:123"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ada ve Parsel Bilgileri -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Ada ve Parsel Bilgileri</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="edit-design-ada"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Ada</label>
+                                <input type="number" id="edit-design-ada" placeholder="123" min="1"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-design-parsel"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Parsel</label>
+                                <input type="number" id="edit-design-parsel" placeholder="45" min="1"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-design-pafta"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Pafta (Opsiyonel)</label>
+                                <input type="text" id="edit-design-pafta" placeholder="K23d4b"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <button type="button" onclick="queryEditParcel()"
+                                    class="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-search mr-2"></i>Parsel Sorgula
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Not:</strong> Ada ve parsel bilgileri doğru girilmelidir. Parsel sorgulaması ile
+                                bilgileri doğrulayabilirsiniz.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Açıklama</h4>
+                        <div>
+                            <label for="edit-design-description"
+                                class="block text-sm font-medium text-gray-700 mb-2">İlan Açıklaması</label>
+                            <textarea id="edit-design-description" rows="4"
+                                placeholder="Projenin detaylarını, özel isteklerinizi ve gereksinimlerinizi belirtin..."
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Gereksinimler -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Gereksinimler</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            <button type="button" onclick="toggleEditRequirement('3d-cizim')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="3d-cizim">
+                                <i class="fas fa-cube mr-2"></i>
+                                <span>3D Çizim</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('mimari-bilgiler')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="mimari-bilgiler">
+                                <i class="fas fa-building mr-2"></i>
+                                <span>Mimari Bilgiler</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('statik-proje')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="statik-proje">
+                                <i class="fas fa-hammer mr-2"></i>
+                                <span>Statik Proje</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('mekanik-proje')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="mekanik-proje">
+                                <i class="fas fa-cogs mr-2"></i>
+                                <span>Mekanik Proje</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('elektrik-projesi')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="elektrik-projesi">
+                                <i class="fas fa-bolt mr-2"></i>
+                                <span>Elektrik Projesi</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('zemin-etudu')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="zemin-etudu">
+                                <i class="fas fa-mountain mr-2"></i>
+                                <span>Zemin Etüdü</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('ic-mimari')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="ic-mimari">
+                                <i class="fas fa-couch mr-2"></i>
+                                <span>İç Mimari</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('peyzaj-tasarimi')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="peyzaj-tasarimi">
+                                <i class="fas fa-tree mr-2"></i>
+                                <span>Peyzaj Tasarımı</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('enerji-kimlik')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="enerji-kimlik">
+                                <i class="fas fa-leaf mr-2"></i>
+                                <span>Enerji Kimlik Belgesi</span>
+                            </button>
+                            <button type="button" onclick="toggleEditRequirement('yangin-projesi')"
+                                class="edit-requirement-btn flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                                data-requirement="yangin-projesi">
+                                <i class="fas fa-fire-extinguisher mr-2"></i>
+                                <span>Yangın Projesi</span>
+                            </button>
+                        </div>
+
+                        <!-- Seçilen Gereksinimler -->
+                        <div id="edit-selected-requirements" class="hidden">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Seçilen Gereksinimler:</h4>
+                            <div id="edit-selected-requirements-list" class="flex flex-wrap gap-2 mb-3">
+                                <!-- Seçilen gereksinimler burada görünecek -->
+                            </div>
+                        </div>
+
+                        <!-- Ek Notlar -->
+                        <div>
+                            <label for="edit-additional-notes" class="block text-sm font-medium text-gray-700 mb-2">Ek
+                                Notlar (Opsiyonel)</label>
+                            <textarea id="edit-additional-notes" rows="2"
+                                placeholder="Eklemek istediğiniz özel talepler veya detaylar..."
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Dosya Yükleme -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dosya Yükleme</label>
+                        <div
+                            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
+                            <input type="file" id="edit-design-files" multiple
+                                accept=".pdf,.jpg,.jpeg,.png,.dwg,.doc,.docx" class="hidden"
+                                title="Proje dosyalarını yükle">
+                            <div onclick="document.getElementById('edit-design-files').click()" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600 mb-1">Dosyalarınızı buraya sürükleyin veya seçmek için tıklayın
+                                </p>
+                                <p class="text-xs text-gray-500">PDF, Görsel, DWG, Word dosyaları kabul edilir</p>
+                            </div>
+                        </div>
+                        <div id="edit-uploaded-files-preview" class="mt-2 space-y-2">
+                            <!-- Yüklenen dosyalar burada görünecek -->
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Not:</strong> İmar Çapı, arsa ile ilgili DVG veya görselleri yüklemeniz işinizin
+                                hızlanması için faydalı olacaktır.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bütçe Hesaplama Bölümü -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Bütçe Hesaplama</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="edit-apartment-count"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Daire Sayısı</label>
+                                <input type="number" id="edit-apartment-count" min="1" placeholder="24"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="edit-price-per-apartment"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Daire Başı Fiyat (₺)</label>
+                                <input type="number" id="edit-price-per-apartment" placeholder="5000" min="0"
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    oninput="calculateEditTotalBudget()">
+                            </div>
+                            <div>
+                                <label for="edit-total-budget"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Toplam Tutar (₺)</label>
+                                <input type="number" id="edit-total-budget" readonly
+                                    class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-bold text-green-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-2">
+                    <button onclick="closeModal('edit-design-modal')"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                    <button onclick="saveDesignChanges()"
+                        class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
+                        style="background-color: #5A00A8;">Değişiklikleri Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="./js/ilanlarim.js"></script>
+</body>
+
+</html>

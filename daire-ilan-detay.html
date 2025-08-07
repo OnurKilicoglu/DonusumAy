@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Daire İlan Detayı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+        }
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 0.5rem;
+            height: 400px;
+        }
+        
+        .main-image {
+            grid-row: 1 / 3;
+        }
+        
+        .thumbnail {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .thumbnail:hover {
+            opacity: 0.8;
+        }
+        
+        .feature-tag {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg" style="width: 11rem;">
+                    <div class="ml-3">
+                        <p class="text-sm text-gray-600">Daire İlan Detayı</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="favorilerim.html" class="hidden md:block text-gray-700 hover:text-purple-600 transition-colors duration-200">
+                        <i class="fas fa-heart"></i>
+                    </a>
+                    <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                        İlan Ver
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-6">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="#" id="home-link" class="hover:text-purple-600">Ana Sayfa</a></li>
+                <li><i class="fas fa-chevron-right"></i></li>
+                <li><a href="daire-ilanlari.html?from=customer" class="hover:text-purple-600">Daire İlanları</a></li>
+                <li><i class="fas fa-chevron-right"></i></li>
+                <li class="text-gray-800 font-medium">Daire Detayı</li>
+            </ol>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                <!-- Image Gallery -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="image-gallery p-4">
+                        <img id="main-image" src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=600&auto=format&fit=crop" alt="Ana Görsel" class="main-image w-full h-full object-cover rounded-lg">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop" alt="Görsel 2" class="thumbnail w-full h-full object-cover rounded-lg" onclick="changeMainImage(this.src)">
+                        <img src="https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?q=80&w=300&auto=format&fit=crop" alt="Görsel 3" class="thumbnail w-full h-full object-cover rounded-lg" onclick="changeMainImage(this.src)">
+                    </div>
+                </div>
+
+                <!-- Property Details -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-2" id="property-title">Kadıköy Merkez'de Satılık 3+1 Daire</h1>
+                            <p class="text-gray-600 flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                <span id="property-location">Kadıköy, İstanbul</span>
+                            </p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <span class="feature-tag text-white px-3 py-1 rounded-full text-sm font-medium" id="apartment-type">3+1</span>
+                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">Satılık</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6" id="property-description">
+                        Deniz manzaralı, asansörlü binada, merkezi konumda 3+1 daire. Modern yaşamın tüm konforlarını sunan bu daire ile hayalinizdeki eve kavuşun.
+                    </p>
+
+                    <!-- Key Info Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600 mb-1" id="price-display">2.850.000</div>
+                            <div class="text-sm text-gray-600">Fiyat (₺)</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600 mb-1" id="sqm-display">125</div>
+                            <div class="text-sm text-gray-600">Metrekare (m²)</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600 mb-1" id="rooms-display">3</div>
+                            <div class="text-sm text-gray-600">Oda Sayısı</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600 mb-1" id="floor-display">5</div>
+                            <div class="text-sm text-gray-600">Kat</div>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Özellikler</h3>
+                        <div class="flex flex-wrap gap-2" id="features-container">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Deniz Manzarası</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Asansör</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Balkon</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Otopark</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Doğalgaz</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Klima</span>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Daire Bilgileri</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Brüt Alan:</span>
+                                    <span class="font-medium">140 m²</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Net Alan:</span>
+                                    <span class="font-medium">125 m²</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Oda Sayısı:</span>
+                                    <span class="font-medium">3+1</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Banyo:</span>
+                                    <span class="font-medium">2</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Balkon:</span>
+                                    <span class="font-medium">2</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Yaş:</span>
+                                    <span class="font-medium">5 yıl</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Bina Bilgileri</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Bina Yaşı:</span>
+                                    <span class="font-medium">5 yıl</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Kat Sayısı:</span>
+                                    <span class="font-medium">8</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Bulunduğu Kat:</span>
+                                    <span class="font-medium">5</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Asansör:</span>
+                                    <span class="font-medium">Var</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Otopark:</span>
+                                    <span class="font-medium">Kapalı</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Isıtma:</span>
+                                    <span class="font-medium">Kombi (Doğalgaz)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Description -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Detaylı Açıklama</h3>
+                        <div class="text-gray-600 space-y-3">
+                            <p>Kadıköy'ün kalbinde yer alan bu muhteşem 3+1 daire, modern yaşamın tüm konforlarını sizlere sunuyor. 125 m² net kullanım alanına sahip dairemiz, geniş ve ferah odaları ile ailenizin rahat yaşaması için tasarlandı.</p>
+                            <p>Deniz manzaralı salon ve ana yatak odası, sabah kahvenizi içerken ve akşam dinlenirken size huzurlu anlar yaşatacak. 2 balkonlu dairemizde taze hava alabilir, güzel manzaranın tadını çıkarabilirsiniz.</p>
+                            <p>Bina son teknoloji güvenlik sistemleri ile donatılmış olup, 24 saat güvenlik hizmeti bulunmaktadır. Kapalı otopark sayesinde aracınızı güven altında park edebilirsiniz.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Map -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Konum ve Ulaşım</h3>
+                    <div class="mb-4">
+                        <p class="text-gray-600 mb-2">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            Kadıköy Merkez, İstanbul
+                        </p>
+                        <div class="text-sm text-gray-500 space-y-1">
+                            <p><i class="fas fa-subway mr-2"></i> Metro: 300m (Kadıköy İskele)</p>
+                            <p><i class="fas fa-bus mr-2"></i> Otobüs durağı: 100m</p>
+                            <p><i class="fas fa-ship mr-2"></i> İskele: 400m</p>
+                            <p><i class="fas fa-shopping-cart mr-2"></i> AVM: 600m</p>
+                            <p><i class="fas fa-hospital mr-2"></i> Hastane: 1.5km</p>
+                            <p><i class="fas fa-graduation-cap mr-2"></i> Okul: 500m</p>
+                        </div>
+                    </div>
+                    <div id="map" class="h-64 rounded-lg"></div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Property Stats -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">İlan Bilgileri</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">İlan Tarihi:</span>
+                            <span class="font-medium">15 Aralık 2024</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">İlan No:</span>
+                            <span class="font-medium">#APT2024001</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">İlan Durumu:</span>
+                            <span class="text-green-600 font-medium">Aktif</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Görüntülenme:</span>
+                            <span class="font-medium">156 kez</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">M² Fiyatı:</span>
+                            <span class="font-medium text-purple-600">22.800 ₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase Offer Form -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm border border-green-200 p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
+                        Satın Alma Teklifi Ver
+                    </h3>
+                    
+                    <!-- Daire Fiyat Bilgisi -->
+                    <div class="bg-white rounded-lg p-4 mb-4 border border-green-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600 text-sm">Daire Fiyatı:</span>
+                            <span class="text-2xl font-bold text-green-600" id="apartment-price">2.850.000 ₺</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-sm">M² Fiyatı:</span>
+                            <span class="text-gray-800 font-medium" id="price-per-sqm">22.800 ₺/m²</span>
+                        </div>
+                    </div>
+                    
+                    <form onsubmit="submitPurchaseOffer(event)" class="space-y-4">
+                        <!-- Peşin Ödeme -->
+                        <div>
+                            <label for="down-payment" class="block text-sm font-medium text-gray-700 mb-2">
+                                Peşin Ödeyeceğiniz Tutar (₺)
+                            </label>
+                            <input type="text" id="down-payment" required 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Örn: 2.000.000"
+                                oninput="formatCurrencyInput(this); calculatePaymentPlan()">
+                            <p class="text-xs text-gray-500 mt-1">Minimum %30 peşin ödeme gereklidir</p>
+                        </div>
+                        
+                        <!-- Kalan Tutar (Otomatik Hesaplanan) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kalan Tutar</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
+                                <span id="remaining-amount" class="text-lg font-semibold text-red-600">850.000 ₺</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Taksit Seçenekleri -->
+                        <div>
+                            <label for="installment-count" class="block text-sm font-medium text-gray-700 mb-2">
+                                Taksit Sayısı
+                            </label>
+                            <select id="installment-count" onchange="calculatePaymentPlan()" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Taksit sayısı seçin</option>
+                                <option value="6">6 Ay</option>
+                                <option value="12">12 Ay</option>
+                                <option value="24">24 Ay</option>
+                                <option value="36">36 Ay</option>
+                                <option value="48">48 Ay</option>
+                                <option value="60">60 Ay</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Aylık Taksit Tutarı (Otomatik Hesaplanan) -->
+                        <div id="monthly-payment-section" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Aylık Taksit Tutarı</label>
+                            <div class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-blue-50">
+                                <span id="monthly-payment" class="text-lg font-semibold text-blue-600">0 ₺</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Ödeme Planı Özeti -->
+                        <div id="payment-summary" class="hidden bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-semibold text-gray-800 mb-3">Ödeme Planı Özeti</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Peşin Ödeme:</span>
+                                    <span class="font-medium" id="summary-down-payment">0 ₺</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Kalan Tutar:</span>
+                                    <span class="font-medium" id="summary-remaining">0 ₺</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Taksit Sayısı:</span>
+                                    <span class="font-medium" id="summary-installments">0 Ay</span>
+                                </div>
+                                <div class="flex justify-between border-t pt-2">
+                                    <span class="text-gray-600">Aylık Ödeme:</span>
+                                    <span class="font-semibold text-blue-600" id="summary-monthly">0 ₺</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Kişisel Bilgiler -->
+                        <div class="border-t pt-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">İletişim Bilgileriniz</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="buyer-name" class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                                    <input type="text" id="buyer-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                </div>
+                                <div>
+                                    <label for="buyer-phone" class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="buyer-phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                </div>
+                                <div>
+                                    <label for="buyer-email" class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="buyer-email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ek Notlar -->
+                        <div>
+                            <label for="offer-notes" class="block text-sm font-medium text-gray-700 mb-2">Ek Notlar (İsteğe Bağlı)</label>
+                            <textarea id="offer-notes" rows="3" 
+                                placeholder="Teklifinizle ilgili ek açıklamalarınızı yazabilirsiniz..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                        </div>
+                        
+                        <button type="submit" id="submit-offer-btn" disabled
+                            class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <i class="fas fa-handshake"></i>
+                            <span>Satın Alma Teklifini Gönder</span>
+                        </button>
+                        
+                        <p class="text-xs text-gray-500 text-center">
+                            Teklifiniz ilanı veren kişiye iletilecek ve size geri dönüş yapılacaktır.
+                        </p>
+                    </form>
+                </div>
+
+                <!-- Share and Favorite -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Paylaş & Kaydet</h3>
+                    <div class="space-y-4">
+                        <!-- Favorite Button -->
+                        <button onclick="toggleFavorite()" id="favorite-btn" class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-heart mr-2"></i>
+                            <span id="favorite-text">Favorilere Ekle</span>
+                        </button>
+                        <!-- Share Buttons -->
+                        <div class="flex space-x-3">
+                            <button onclick="shareOn('facebook')" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors duration-200">
+                                <i class="fab fa-facebook-f mr-1"></i> Facebook
+                            </button>
+                            <button onclick="shareOn('twitter')" class="flex-1 bg-blue-400 text-white py-2 rounded-lg text-sm hover:bg-blue-500 transition-colors duration-200">
+                                <i class="fab fa-twitter mr-1"></i> Twitter
+                            </button>
+                            <button onclick="shareOn('whatsapp')" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200">
+                                <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Ana Footer İçeriği -->
+            <div class="py-12 lg:py-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                    
+                    <!-- Şirket Bilgileri -->
+                    <div class="lg:col-span-1">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span class="text-xl font-bold">DönüşümAY</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri buluşturan köprü.
+                        </p>
+                        
+                        <!-- Sosyal Medya -->
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Hızlı Linkler -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                        <ul class="space-y-3">
+                            <li><a href="index.html" class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
+                            <li><a href="about.html" class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a></li>
+                            <li><a href="nasilcalisir.html" class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl Çalışır?</a></li>
+                            <li><a href="projeler.html" class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a></li>
+                            <li><a href="contact.html" class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Hizmetlerimiz -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina Yenileme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat Karşılığı Projeler</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- İletişim ve Newsletter -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                <div class="text-gray-300">
+                                    <p class="text-sm">Maslak Mahallesi,</p>
+                                    <p class="text-sm">Büyükdere Cad. No:123</p>
+                                    <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-phone text-primary"></i>
+                                <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Newsletter -->
+                        <div>
+                            <h4 class="font-medium mb-3">Newsletter</h4>
+                            <div class="flex">
+                                <input type="email" placeholder="E-posta adresiniz" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                <button title="Newsletter'a Abone Ol" class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alt Footer -->
+            <div class="border-t border-gray-800 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-sm text-gray-400">
+                        &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik Politikası</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım Şartları</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Çerez Politikası</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="./js/daire-ilan-detay.js"></script>
+
+</body>
+<<<<<<< HEAD
+</html> 
+=======
+</html> 
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

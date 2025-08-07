@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - İlanlar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Slider Styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .slider {
+            position: relative;
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .slider img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .slider-nav {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .slider-dot:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .slider-dot.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            opacity: 0;
+        }
+
+        .slider-container:hover .slider-arrow {
+            opacity: 1;
+        }
+
+        .slider-arrow:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slider-arrow.prev {
+            left: 15px;
+        }
+
+        .slider-arrow.next {
+            right: 15px;
+        }
+
+        /* Property Card Hover Effect */
+        .property-card:hover .slider-arrow {
+            opacity: 1;
+        }
+
+        .filter-sidebar {
+            position: sticky;
+            top: 100px;
+            /* Header yüksekliği + padding */
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #f1f1f1;
+        }
+
+        /* Webkit tarayıcılar için scrollbar stilini özelleştirme */
+        .filter-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .property-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .property-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .checkbox-custom {
+            position: relative;
+        }
+
+        .checkbox-custom input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .checkbox-custom label {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding-left: 2rem;
+        }
+
+        .checkbox-custom label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-custom input[type="checkbox"]:checked+label:before {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom input[type="checkbox"]:checked+label:after {
+            content: '\2713';
+            position: absolute;
+            left: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg"
+                        style="width: 11rem;">
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex space-x-4">
+                    <a href="#" id="back-to-dashboard"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Panele Dön
+                    </a>
+                    <a href="ilanlar.html"
+                        class="text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-2"></i>İlanlar
+                    </a>
+                    <a href="daire-ilanlari.html" id="apartment-listings-link"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-building mr-2"></i>Daire İlanları
+                    </a>
+                    <a href="ilanlarim.html" id="my-listings-link"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-user-tag mr-2"></i>İlanlarım
+                    </a>
+                    <a href="proje-cizim-ilanlari.html" id="project-design-link"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium hidden">
+                        <i class="fas fa-drafting-compass mr-2"></i>Proje Çizim İlanları
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Filter Sidebar -->
+            <aside class="lg:w-1/4 relative">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 filter-sidebar">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Filtrele</h2>
+
+                    <!-- Konum Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Konum</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-2">İl</label>
+                                <select id="city"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tüm İller</option>
+                                    <option value="istanbul">İstanbul</option>
+                                    <option value="ankara">Ankara</option>
+                                    <option value="izmir">İzmir</option>
+                                    <option value="bursa">Bursa</option>
+                                    <option value="antalya">Antalya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="district" class="block text-sm font-medium text-gray-700 mb-2">İlçe</label>
+                                <select id="district"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Tüm İlçeler</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Proje Tipi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Proje Tipi</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="kentsel-donusum" value="kentsel-donusum">
+                                <label for="kentsel-donusum" class="text-sm text-gray-700">Kentsel Dönüşüm</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="arsa-degerlendirme" value="arsa-degerlendirme">
+                                <label for="arsa-degerlendirme" class="text-sm text-gray-700">Arsa Değerlendirme</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="bina-yenileme" value="bina-yenileme">
+                                <label for="bina-yenileme" class="text-sm text-gray-700">Bina Yenileme</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="kat-karsiligi" value="kat-karsiligi">
+                                <label for="kat-karsiligi" class="text-sm text-gray-700">Kat Karşılığı</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arsa Alanı -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Arsa Alanı (m²)</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Min: <span id="min-area-value">0</span> m²</span>
+                                    <span>Max: <span id="max-area-value">5000</span> m²</span>
+                                </div>
+                                <input type="range" id="min-area" min="0" max="5000" value="0" step="100"
+                                    class="range-slider mb-2">
+                                <input type="range" id="max-area" min="0" max="5000" value="5000" step="100"
+                                    class="range-slider">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Beklenen Daire Sayısı -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Beklenen Daire Sayısı</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="units-1-5" value="1-5">
+                                <label for="units-1-5" class="text-sm text-gray-700">1-5 Daire</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="units-6-15" value="6-15">
+                                <label for="units-6-15" class="text-sm text-gray-700">6-15 Daire</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="units-16-30" value="16-30">
+                                <label for="units-16-30" class="text-sm text-gray-700">16-30 Daire</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="units-30plus" value="30+">
+                                <label for="units-30plus" class="text-sm text-gray-700">30+ Daire</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Talep Durumu -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Talep Durumu</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="status-open" value="open" checked>
+                                <label for="status-open" class="text-sm text-gray-700">Açık</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="status-bidding" value="bidding">
+                                <label for="status-bidding" class="text-sm text-gray-700">Teklif Alınıyor</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="status-closed" value="closed">
+                                <label for="status-closed" class="text-sm text-gray-700">Kapalı</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarih Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">İlan Tarihi</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="date-today" value="today">
+                                <label for="date-today" class="text-sm text-gray-700">Bugün</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="date-week" value="week">
+                                <label for="date-week" class="text-sm text-gray-700">Son 1 Hafta</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="date-month" value="month">
+                                <label for="date-month" class="text-sm text-gray-700">Son 1 Ay</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="pt-6">
+                        <button onclick="applyFilters()"
+                            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 mb-3">
+                            Filtrele
+                        </button>
+                        <button onclick="clearAllFilters()"
+                            class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                            Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:w-3/4">
+                <!-- Results Header -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-2">İlanlar</h1>
+                            <p class="text-gray-600">Toplam <span id="total-listings">0</span> ilan bulundu</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <select id="sort-by"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="date-desc">En Yeni</option>
+                                <option value="date-asc">En Eski</option>
+                                <option value="area-desc">Alan (Büyük → Küçük)</option>
+                                <option value="area-asc">Alan (Küçük → Büyük)</option>
+                                <option value="units-desc">Daire Sayısı (↓)</option>
+                                <option value="units-asc">Daire Sayısı (↑)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Listings Grid -->
+                <div id="listings-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Kartlar burada dinamik olarak oluşturulacak -->
+                </div>
+
+
+                <!-- Pagination -->
+                <div id="pagination" class="mt-8 flex justify-center">
+                    <!-- Pagination will be rendered here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Ana Footer İçeriği -->
+            <div class="py-12 lg:py-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+
+                    <!-- Şirket Bilgileri -->
+                    <div class="lg:col-span-1">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span class="text-xl font-bold">DönüşümAY</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri
+                            buluşturan köprü.
+                        </p>
+
+                        <!-- Sosyal Medya -->
+                        <div class="flex space-x-4">
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hızlı Linkler -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                        <ul class="space-y-3">
+                            <li><a href="index.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a>
+                            </li>
+                            <li><a href="about.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a>
+                            </li>
+                            <li><a href="nasilcalisir.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl
+                                    Çalışır?</a></li>
+                            <li><a href="projeler.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a>
+                            </li>
+                            <li><a href="contact.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Hizmetlerimiz -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel
+                                    Dönüşüm</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa
+                                    Değerlendirme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina
+                                    Yenileme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat
+                                    Karşılığı Projeler</a></li>
+                            <li><a href="#"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- İletişim ve Newsletter -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                <div class="text-gray-300">
+                                    <p class="text-sm">Maslak Mahallesi,</p>
+                                    <p class="text-sm">Büyükdere Cad. No:123</p>
+                                    <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-phone text-primary"></i>
+                                <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                            </div>
+                        </div>
+
+                        <!-- Newsletter -->
+                        <div>
+                            <h4 class="font-medium mb-3">Newsletter</h4>
+                            <div class="flex">
+                                <input type="email" placeholder="E-posta adresiniz"
+                                    class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                <button title="Newsletter'a Abone Ol"
+                                    class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt Footer -->
+            <div class="border-t border-gray-800 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-sm text-gray-400">
+                        &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <button onclick="openPrivacyModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik
+                            Politikası</button>
+                        <button onclick="openTermsModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım
+                            Şartları</button>
+                        <button onclick="openCookieModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Çerez
+                            Politikası</button>
+                        <button onclick="openKvkkModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="./js/ilanlar.js"></script>
+</body>
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

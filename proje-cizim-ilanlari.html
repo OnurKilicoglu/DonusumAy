@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Proje Çizim İlanları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-sidebar {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #f1f1f1;
+        }
+
+        .filter-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .filter-sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .project-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .checkbox-custom {
+            position: relative;
+        }
+
+        .checkbox-custom input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .checkbox-custom label {
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding-left: 2rem;
+        }
+
+        .checkbox-custom label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-custom input[type="checkbox"]:checked+label:before {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom input[type="checkbox"]:checked+label:after {
+            content: '\2713';
+            position: absolute;
+            left: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .notification {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification.removing {
+            animation: slideOutRight 0.3s ease-in;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg"
+                        style="width: 11rem;">
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex space-x-4">
+                    <a href="architect-dashboard.html"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Panele Dön
+                    </a>
+                    <a href="ilanlar.html"
+                        class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-2"></i>İlanlar
+                    </a>
+                    <a href="proje-cizim-ilanlari.html"
+                        class="text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-drafting-compass mr-2"></i>Proje Çizim İlanları
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Filter Sidebar -->
+            <aside class="lg:w-1/4 relative">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 filter-sidebar">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Filtrele</h2>
+
+                    <!-- Proje Tipi Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Proje Tipi</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="avan" value="avan">
+                                <label for="avan" class="text-sm text-gray-700">Tasarım (Avan) Projesi</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="uygulama" value="uygulama">
+                                <label for="uygulama" class="text-sm text-gray-700">Uygulama Projesi</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bütçe Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Bütçe Aralığı</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="min-budget" class="block text-sm font-medium text-gray-700 mb-2">Min Bütçe
+                                    (₺)</label>
+                                <input type="number" id="min-budget" placeholder="0"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label for="max-budget" class="block text-sm font-medium text-gray-700 mb-2">Max Bütçe
+                                    (₺)</label>
+                                <input type="number" id="max-budget" placeholder="1000000"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teslim Süresi Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Teslim Süresi</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="urgent" value="1-15">
+                                <label for="urgent" class="text-sm text-gray-700">1-15 Gün (Acil)</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="short" value="16-30">
+                                <label for="short" class="text-sm text-gray-700">16-30 Gün</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="medium" value="31-60">
+                                <label for="medium" class="text-sm text-gray-700">31-60 Gün</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="long" value="60+">
+                                <label for="long" class="text-sm text-gray-700">60+ Gün</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Durum Filtresi -->
+                    <div class="filter-section">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">İlan Durumu</h3>
+                        <div class="space-y-2">
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="active" value="active" checked>
+                                <label for="active" class="text-sm text-gray-700">Aktif</label>
+                            </div>
+                            <div class="checkbox-custom">
+                                <input type="checkbox" id="urgent-status" value="urgent">
+                                <label for="urgent-status" class="text-sm text-gray-700">Acil</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtre Butonları -->
+                    <div class="mt-6 space-y-3">
+                        <button onclick="applyFilters()"
+                            class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors font-medium">
+                            Filtrele
+                        </button>
+                        <button onclick="clearFilters()"
+                            class="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                            Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:w-3/4">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Proje Çizim İlanları</h1>
+                    <p class="text-gray-600">Müteahhitler tarafından verilen proje çizim ilanlarını görüntüleyin ve
+                        teklif verin.</p>
+                </div>
+
+                <!-- Results Summary -->
+                <div class="flex justify-between items-center mb-6">
+                    <div class="text-gray-600">
+                        <span id="results-count">0</span> ilan bulundu
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label for="sort-select" class="text-sm font-medium text-gray-700">Sırala:</label>
+                        <select id="sort-select" onchange="sortProjects()"
+                            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                            <option value="newest">En Yeni</option>
+                            <option value="deadline">Teslim Tarihine Göre</option>
+                            <option value="budget-high">Bütçe (Yüksek-Düşük)</option>
+                            <option value="budget-low">Bütçe (Düşük-Yüksek)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Project Cards Grid -->
+                <div id="project-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Project cards will be rendered here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="text-center py-12 hidden">
+                    <i class="fas fa-drafting-compass fa-4x text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Henüz proje ilanı bulunmuyor</h3>
+                    <p class="text-gray-500">Filtreleri değiştirerek farklı sonuçlar görebilirsiniz.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="mt-8 flex justify-center">
+                    <!-- Pagination will be rendered here if needed -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Notifications will be dynamically added here -->
+    </div>
+
+    <!-- Offer Modal -->
+    <div id="offer-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('offer-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Proje Teklifi Ver</h2>
+                <button onclick="closeModal('offer-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <input type="hidden" id="selected-project-id">
+
+                <!-- Proje Bilgileri -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                    <h3 class="font-semibold text-gray-800 mb-2">Proje Detayları</h3>
+                    <div id="project-details">
+                        <!-- Project details will be filled here -->
+                    </div>
+                </div>
+
+                <!-- Teklif Formu -->
+                <div class="space-y-4">
+                    <!-- Bütçe Hesaplama -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-4">Bütçe Hesaplama</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="offer-apartment-count"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Daire Sayısı</label>
+                                <input type="number" id="offer-apartment-count"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    readonly>
+                            </div>
+                            <div>
+                                <label for="offer-price-per-apartment"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Daire Başı Fiyat (₺)</label>
+                                <input type="number" id="offer-price-per-apartment"
+                                    placeholder="Daire başı fiyatınızı girin"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    oninput="calculateOfferTotal()">
+                            </div>
+                            <div>
+                                <label for="offer-total-price"
+                                    class="block text-sm font-medium text-gray-700 mb-2">Toplam Fiyat (₺)</label>
+                                <input type="number" id="offer-total-price"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="offer-price" class="block text-sm font-medium text-gray-700 mb-2">Nihai Teklif
+                            Fiyatı (₺)</label>
+                        <input type="number" id="offer-price" placeholder="Toplam teklif fiyatınızı onaylayın"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div>
+                        <label for="offer-deadline" class="block text-sm font-medium text-gray-700 mb-2">Teslim Süresi
+                            (Gün)</label>
+                        <input type="number" id="offer-deadline" placeholder="Kaç günde teslim edebilirsiniz?"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div>
+                        <label for="offer-message" class="block text-sm font-medium text-gray-700 mb-2">Teklif
+                            Mesajı</label>
+                        <textarea id="offer-message" rows="4"
+                            placeholder="Teklifiniz hakkında detaylar, deneyiminiz ve yaklaşımınızı paylaşın..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="portfolio-link"
+                            class="block text-sm font-medium text-gray-700 mb-2">Portfolyo/Referans Linki
+                            (Opsiyonel)</label>
+                        <input type="url" id="portfolio-link" placeholder="https://..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button onclick="closeModal('offer-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button onclick="submitOffer()" style="background-color: #6b46c1;"
+                    class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark">Teklif Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="project-detail-modal"
+        class="fixed inset-0 z-[60] hidden bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('project-detail-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="detail-modal-title" class="text-xl font-bold text-gray-800">Proje Detayları</h2>
+                <button onclick="closeModal('project-detail-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="detail-modal-body" class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Project details will be rendered here -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button onclick="closeModal('project-detail-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+                <button onclick="openOfferModalFromDetail()" style="background-color: #6b46c1;"
+                    class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark">Teklif Ver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Preview Modal -->
+    <div id="file-preview-modal"
+        class="fixed inset-0 z-[100] hidden bg-black bg-opacity-80 flex items-center justify-center"
+        onclick="closeModal('file-preview-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transform transition-all"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="preview-modal-title" class="text-xl font-bold text-gray-800">Dosya Önizleme</h2>
+                <div class="flex items-center space-x-3">
+                    <button id="preview-download-btn" class="text-green-600 hover:text-green-800">
+                        <i class="fas fa-download mr-2"></i>İndir
+                    </button>
+                    <button onclick="closeModal('file-preview-modal')"
+                        class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+            </div>
+            <div id="preview-modal-body" class="flex items-center justify-center bg-gray-50" style="height: 600px;">
+                <!-- File preview will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/proje-cizim-ilanlari.js"></script>
+</body>
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

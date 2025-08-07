@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Müşteri Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Mevcut DönüşümAY stilleri */
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --accent-warning: #FF8C00;
+            --text-dark: #343a40;
+            --text-medium: #4A4A4A;
+            --text-light: #6c757d;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        /* ... mevcut stiller ... */
+
+        /* Yeni Takvim ve Randevu Modal Stilleri */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .calendar-day-name {
+            font-weight: bold;
+            padding: 0.5rem;
+            color: var(--text-medium);
+        }
+
+        .calendar-day {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .calendar-day.current-month {
+            background-color: #e5e7eb;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots {
+            cursor: pointer;
+            background-color: #d1fae5;
+            font-weight: 500;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots:hover {
+            background-color: #a7f3d0;
+        }
+
+        .calendar-day.selected-day {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .calendar-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .calendar-slot {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #e0f2fe;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .calendar-slot:hover {
+            background-color: #bae6fd;
+        }
+
+        .calendar-slot.selected {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem;
+        }
+
+        .calendar-day {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .calendar-day.current-month {
+            background-color: #e5e7eb;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots {
+            cursor: pointer;
+            background-color: #d1fae5;
+            font-weight: 500;
+            opacity: 1;
+        }
+
+        .calendar-day.has-slots:hover {
+            background-color: #a7f3d0;
+        }
+
+        .calendar-day.selected-day {
+            background-color: #34d399;
+            color: white;
+        }
+
+        .calendar-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            justify-content: center;
+        }
+
+        .calendar-slot {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #e0f2fe;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .calendar-slot:hover {
+            background-color: #bae6fd;
+        }
+
+        .calendar-slot.selected {
+            background-color: #0ea5e9;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div id="customer-container" class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-50 lg:static lg:w-64">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <img src="./LogoSade.png" alt="DönüşümAY Logo" class="w-8 h-10 rounded-lg">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">DönüşümAY</h1>
+                        <p class="text-xs text-gray-500">Müşteri Paneli</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav id="sidebar-nav" class="p-4 space-y-2">
+                <a href="#" onclick="showSection('customer-dashboard-section')"
+                    class="sidebar-link active flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-home w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('my-listings-section')" id="my-listings-nav"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-bullhorn w-5"></i>
+                    <span>İlanlarım</span>
+                </a>
+                <a href="ilanlar.html?from=customer"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-clipboard-list w-5"></i>
+                    <span>Tüm İlanları Görüntüle</span>
+                </a>
+                <a href="#" onclick="showSection('offers-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-hand-holding-usd w-5"></i>
+                    <span>Teklifler</span>
+                </a>
+                <a href="#" onclick="showSection('customer-projects-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-drafting-compass w-5"></i>
+                    <span>Projelerim</span>
+                </a>
+                <a href="#" onclick="showSection('legal-processes-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-gavel w-5"></i>
+                    <span>Hukuki Süreçler</span>
+                </a>
+                <a href="#" onclick="showSection('profile-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-user-circle w-5"></i>
+                    <span>Profilim</span>
+                </a>
+                <a href="#" onclick="showSection('support-section')"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-life-ring w-5"></i>
+                    <span>Destek</span>
+                </a>
+                <a href="#" onclick="logout()"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span>Çıkış Yap</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"
+            onclick="closeMobileMenu()"></div>
+
+        <main class="flex-1 lg:ml-0">
+            <button id="mobile-menu-toggle" class="lg:hidden fixed top-4 left-4 z-30 bg-white p-2 rounded-lg shadow-md"
+                onclick="openMobileMenu()" title="Menüyü Aç">
+                <i class="fas fa-bars text-gray-600"></i>
+            </button>
+
+            <div id="customer-dashboard-section" class="min-h-screen">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Hoş Geldiniz, Ali Veli</h1>
+                        <p class="text-gray-600 mt-1">Müşteri panelinize hoş geldiniz.</p>
+                    </div>
+                </header>
+                <div id="customer-dashboard-content" class="p-6">
+                    <!-- Dashboard content will be rendered here by JS -->
+                </div>
+            </div>
+
+            <div id="my-listings-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 relative">
+                    <div class="ml-16 lg:ml-0 flex justify-between items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">İlanlarım</h1>
+                            <p class="text-gray-600 mt-1">Mevcut ilanlarınızı yönetin veya yeni bir ilan oluşturun.</p>
+                        </div>
+                        <!-- Masaüstü Butonu: md ve üzeri için göster -->
+                        <button onclick="openCreateListingModal()"
+                            class="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-dark shadow-md hover:shadow-lg transition-all duration-200 flex items-center space-x-2 hidden md:flex"
+                            style="background-color: blue;">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Yeni İlan Oluştur</span>
+                        </button>
+                    </div>
+                </header>
+                <div id="customer-listings-list" class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Customer listings will be rendered here -->
+                </div>
+                <!-- Mobil FAB: sadece mobilde göster -->
+                <button onclick="openCreateListingModal()"
+                    class="fixed bottom-6 right-6 z-50 bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center shadow-xl md:hidden hover:bg-primary-dark transition"
+                    style="background-color: blue;" title="Yeni İlan Oluştur">
+                    <i class="fas fa-plus fa-2x" aria-hidden="true"></i>
+                    <span class="sr-only">Yeni İlan Oluştur</span>
+                </button>
+            </div>
+
+
+            <div id="offers-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Tekliflerim</h1>
+                        <p class="text-gray-600 mt-1">Gelen teklifleri ve verdiğiniz teklifleri yönetin.</p>
+                    </div>
+                </header>
+
+                <!-- Tab Navigation -->
+                <div class="bg-white border-b border-gray-200 px-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="incoming-offers-tab" onclick="switchOffersTab('incoming')"
+                            class="offers-tab-button-active py-4 px-1 border-b-2 font-medium text-sm border-purple-500 text-purple-600">
+                            Gelen Teklifler
+                        </button>
+                        <button id="my-offers-tab" onclick="switchOffersTab('my')"
+                            class="offers-tab-button py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Verdiğim Teklifler
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Gelen Teklifler Content -->
+                    <div id="incoming-offers-content">
+                        <div class="mb-4">
+                            <p class="text-gray-600">İlanlarınıza gelen müteahhit tekliflerini değerlendirin.</p>
+                        </div>
+                        <div id="offers-content">
+                            <!-- Incoming offers will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Verdiğim Teklifler Content -->
+                    <div id="my-offers-content" class="hidden">
+                        <div class="mb-4">
+                            <p class="text-gray-600">Daire satın alma tekliflerinizin durumunu takip edin.</p>
+                        </div>
+                        <div id="my-offers-list">
+                            <!-- My offers will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="customer-projects-section" class="min-h-screen hidden">
+                <div class="flex flex-col md:flex-row h-full">
+                    <!-- Sol Sütun: Tasarım Projelerim -->
+                    <div class="flex-1 w-full md:w-1/2 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Tasarım Projelerim</h2>
+                        <div class="flex justify-end mb-6">
+                            <button onclick="openNewDesignRequestModal()"
+                                class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 flex items-center space-x-2">
+                                <i class="fas fa-plus"></i>
+                                <span>Yeni Tasarım Projesi Talep Et</span>
+                            </button>
+                        </div>
+                        <div class="border-b border-gray-200 mb-6">
+                            <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                                <button id="ongoing-tab" onclick="switchDesignTab('ongoing')"
+                                    class="tab-button-active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Devam Eden Tasarımlar
+                                </button>
+                                <button id="completed-tab" onclick="switchDesignTab('completed')"
+                                    class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Tamamlanan Tasarımlar
+                                </button>
+                            </nav>
+                        </div>
+                        <div>
+                            <div id="ongoing-projects-container" class="grid grid-cols-1 gap-6"></div>
+                            <div id="completed-projects-container" class="hidden grid grid-cols-1 gap-6"></div>
+                        </div>
+                    </div>
+                    <!-- Ayırıcı Çizgi -->
+                    <div class="hidden md:block w-px bg-gray-200 mx-2"></div>
+                    <!-- Sağ Sütun: Uygulama Projelerim -->
+                    <div class="flex-1 w-full md:w-1/2 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Uygulama Projelerim</h2>
+                        <div id="application-projects-container" class="grid grid-cols-1 gap-6"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="legal-processes-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Hukuki Süreçler</h1>
+                        <p class="text-gray-600 mt-1">Sözleşme ve noter süreçlerinizi buradan yönetin.</p>
+                    </div>
+                </header>
+                <div id="legal-processes-list" class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Legal process cards will be rendered here by JS -->
+                </div>
+            </div>
+
+            <!-- Other hidden sections like Profile, Support -->
+            <div id="profile-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0 flex justify-between items-start">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Profilim</h1>
+                            <p class="text-gray-600 mt-1">Hesap ayarlarınızı, güvenlik tercihlerinizi ve bilgilerinizi
+                                yönetin.</p>
+                        </div>
+                        <button onclick="openEditProfileModal()"
+                            class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors duration-200 font-medium">
+                            <i class="fas fa-edit mr-2"></i>
+                            Profili Düzenle
+                        </button>
+                    </div>
+                </header>
+
+                <div class="p-6">
+                    <!-- Profil Özet Kartı -->
+                    <div id="profile-summary-card"
+                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                        <div
+                            class="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
+                            <!-- Profil Fotoğrafı -->
+                            <div class="flex-shrink-0 relative">
+                                <img id="profile-picture-preview" src="" alt="Profil Fotoğrafı"
+                                    class="w-32 h-32 rounded-full object-cover border-4 border-purple-100">
+                                <button onclick="changeProfilePhoto()"
+                                    class="absolute bottom-0 right-0 bg-purple-600 text-white p-2 rounded-full text-sm hover:bg-purple-700 transition-colors duration-200"
+                                    title="Fotoğrafı Değiştir">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+
+                            <!-- Profil Bilgileri -->
+                            <div class="flex-1">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2" id="profile-full-name">Ad Soyad</h2>
+                                <p class="text-lg text-purple-600 font-medium mb-3" id="profile-title">Müşteri</p>
+
+                                <!-- İletişim Bilgileri -->
+                                <div class="flex flex-wrap items-center gap-4 mb-4">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        <span id="profile-email-display">email@example.com</span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-phone mr-2"></i>
+                                        <span id="profile-phone-display">+90 555 555 55 55</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Güvenlik Ayarları -->
+                        <div id="security-settings-section"
+                            class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Güvenlik ve Hesap Ayarları</h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-1 gap-6">
+                                    <!-- Şifre Değiştirme -->
+                                    <div class="space-y-3">
+                                        <h4 class="text-md font-medium text-gray-800">Şifre Yönetimi</h4>
+                                        <button onclick="openChangePasswordModal()"
+                                            class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                            <i class="fas fa-key mr-2"></i>
+                                            Şifre Değiştir
+                                        </button>
+                                    </div>
+
+                                    <!-- 2FA Toggle -->
+                                    <div class="space-y-3">
+                                        <h4 class="text-md font-medium text-gray-800">İki Faktörlü Kimlik Doğrulama</h4>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-gray-600">2FA Durumu:</span>
+                                            <div class="flex items-center space-x-2">
+                                                <span id="2fa-status" class="text-sm font-medium"></span>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" id="2fa-toggle" class="sr-only peer"
+                                                        onchange="toggle2FA()"
+                                                        aria-label="İki Faktörlü Kimlik Doğrulama Açma/Kapama">
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600">
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email Doğrulama -->
+                                    <div class="space-y-3">
+                                        <h4 class="text-md font-medium text-gray-800">E-posta Doğrulama</h4>
+                                        <div class="flex items-center justify-between">
+                                            <span id="email-display" class="text-sm text-gray-600"></span>
+                                            <button onclick="openVerifyEmailModal()"
+                                                class="px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200">
+                                                <span id="email-verify-btn">Doğrula</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Telefon Doğrulama -->
+                                    <div class="space-y-3">
+                                        <h4 class="text-md font-medium text-gray-800">Telefon Doğrulama</h4>
+                                        <div class="flex items-center justify-between">
+                                            <span id="phone-display" class="text-sm text-gray-600"></span>
+                                            <button onclick="openVerifyPhoneModal()"
+                                                class="px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 transition-colors duration-200">
+                                                <span id="phone-verify-btn">Doğrula</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Abonelik Bilgileri -->
+                        <div id="subscription-section" class="bg-white rounded-xl shadow-sm border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800">Abonelik Bilgileri</h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="current-plan"
+                                    class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-semibold text-purple-800">Mevcut Paket</h4>
+                                            <p class="text-purple-600 mt-1" id="current-plan-name">Standart Paket</p>
+                                        </div>
+                                        <span
+                                            class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">Aktif</span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h4 class="font-medium text-gray-800">Paket Özellikleri</h4>
+                                    <ul class="space-y-2" id="plan-features">
+                                        <!-- Özellikler buraya dinamik olarak eklenecek -->
+                                    </ul>
+                                </div>
+
+                                <button onclick="showUpgradeModal()"
+                                    class="w-full mt-6 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                    <i class="fas fa-arrow-up mr-2"></i>
+                                    Paketi Yükselt
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="support-section" class="min-h-screen hidden">
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="ml-16 lg:ml-0">
+                        <h1 class="text-2xl font-bold text-gray-800">Destek Merkezi</h1>
+                        <p class="text-gray-600 mt-1">Yardıma mı ihtiyacınız var? Sıkça sorulan sorulara göz atın veya
+                            bizimle iletişime geçin.</p>
+                    </div>
+                </header>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Sol Sütun: SSS -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Sıkça Sorulan Sorular</h3>
+                                <div id="faq-container" class="space-y-3">
+                                    <!-- SSS Öğeleri buraya render edilecek -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sağ Sütun: Canlı Destek -->
+                        <div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-4">Canlı Destek</h2>
+                                <p class="text-sm text-gray-600 mb-4">Müşteri temsilcinizle canlı sohbet başlatın.</p>
+                                <button onclick="openPreChatModal()"
+                                    class="w-full bg-blue text-white px-5 py-3 rounded-lg hover:bg-blue-dark shadow-md flex items-center justify-center space-x-2 transition-colors"
+                                    style="background-color: blue;">
+                                    <i class="fas fa-comment-dots"></i>
+                                    <span>Sohbeti Başlat</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Alt Bölüm: Hesap Yönetimi -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Hesap Yönetimi</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Hesabı Dondur Kartı -->
+                            <div
+                                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center space-x-4">
+                                <div
+                                    class="flex-shrink-0 w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-pause-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Hesabı Dondur</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Hesabınızı geçici olarak devre dışı bırakın.
+                                    </p>
+                                    <button onclick="openAccountActionModal('freeze')"
+                                        class="mt-3 text-sm font-semibold text-orange-600 hover:underline">İşleme Devam
+                                        Et &rarr;</button>
+                                </div>
+                            </div>
+                            <!-- Hesabı Sil Kartı -->
+                            <div
+                                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center space-x-4">
+                                <div
+                                    class="flex-shrink-0 w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Hesabı Sil</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Hesabınızı kalıcı olarak silin. Bu işlem geri
+                                        alınamaz.</p>
+                                    <button onclick="openAccountActionModal('delete')"
+                                        class="mt-3 text-sm font-semibold text-red-600 hover:underline">İşleme Devam Et
+                                        &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- MODALS -->
+    <!-- Create/Edit Listing Modal -->
+    <div id="create-listing-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('create-listing-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="listing-modal-title" class="text-xl font-bold text-gray-800">Yeni İlan Oluştur</h2>
+                <button onclick="closeModal('create-listing-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 max-h-[80vh] overflow-y-auto">
+                <form id="listing-form" class="space-y-6">
+                    <input type="hidden" id="listing-id-input">
+
+                    <!-- Parcel Query Section -->
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">1. Adım: Tapu Bilgileri (Parsel Sorgu)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Dolandırıcılığı önlemek ve bilgilerin doğruluğunu sağlamak
+                            için tapu bilgilerinizi girerek başlayın.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                            <input type="text" id="parcel-il" placeholder="İl" class="p-2 border rounded-lg"
+                                aria-label="İl">
+                            <input type="text" id="parcel-ilce" placeholder="İlçe" class="p-2 border rounded-lg"
+                                aria-label="İlçe">
+                            <input type="text" id="parcel-mahalle" placeholder="Mahalle" class="p-2 border rounded-lg"
+                                aria-label="Mahalle">
+                            <input type="text" id="parcel-ada" placeholder="Ada" class="p-2 border rounded-lg"
+                                aria-label="Ada">
+                            <input type="text" id="parcel-parsel" placeholder="Parsel" class="p-2 border rounded-lg"
+                                aria-label="Parsel">
+                            <button type="button" id="query-parcel-button" onclick="queryParcel()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all h-full">
+                                <i class="fas fa-search mr-2"></i>Parsel Sorgula
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Listing Details Section -->
+                    <div class="p-4 border rounded-lg">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">2. Adım: İlan Detayları</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="listing-title" class="block text-sm font-medium text-gray-700">İlan
+                                    Başlığı</label>
+                                <input type="text" id="listing-title" class="mt-1 w-full p-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label for="listing-area" class="block text-sm font-medium text-gray-700">Arsa Alanı
+                                    (m²)</label>
+                                <input type="number" id="listing-area"
+                                    class="mt-1 w-full p-2 border rounded-lg bg-gray-100" readonly>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="listing-description"
+                                    class="block text-sm font-medium text-gray-700">Açıklama</label>
+                                <textarea id="listing-description" rows="3"
+                                    class="mt-1 w-full p-2 border rounded-lg"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload Section -->
+                    <div class="p-4 border rounded-lg">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">3. Adım: Görsel Yükleme</h3>
+                        <div class="p-4 border-2 border-dashed rounded-lg text-center">
+                            <input type="file" id="listing-image-upload" accept="image/*" multiple
+                                onchange="handleImageUpload(event)" class="hidden">
+                            <label for="listing-image-upload" class="cursor-pointer text-primary hover:underline">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                <p>Görselleri buraya sürükleyin veya seçmek için tıklayın</p>
+                            </label>
+                        </div>
+                        <div id="image-preview-container"
+                            class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <!-- Image previews will be shown here -->
+                        </div>
+                    </div>
+
+                    <!-- Co-owners Section -->
+                    <div class="p-4 border rounded-lg">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-700">4. Adım: Hak Sahipleri</h3>
+                        <div class="flex items-center space-x-4">
+                            <label for="co-owner-count" class="block text-sm font-medium text-gray-700">Toplam Hak
+                                Sahibi Sayısı:</label>
+                            <input type="number" id="co-owner-count" value="1" min="1"
+                                class="w-20 p-2 border rounded-lg" onchange="handleCoOwnerCountChange()">
+                        </div>
+                        <div id="co-owner-invites-container" class="mt-4 space-y-4">
+                            <!-- Co-owner invite fields will be dynamically added here -->
+                        </div>
+                        <div id="add-co-owner-button-container" class="mt-4 hidden">
+                            <button type="button" onclick="addCoOwnerInput()"
+                                class="w-full flex items-center justify-center space-x-2 p-2 border-2 border-dashed rounded-lg text-primary hover:bg-primary/10 transition-colors">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Yeni Hak Sahibi Ekle</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('create-listing-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" id="save-listing-button" onclick="createOrUpdateListing()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:opacity-90">İlanı Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listing Details Modal -->
+    <div id="listing-details-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('listing-details-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 id="details-modal-title" class="text-xl font-bold text-gray-800">İlan Detayları</h2>
+            </div>
+            <div id="details-modal-body" class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Details will be rendered here -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('listing-details-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Listing Modal -->
+    <div id="cancel-listing-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('cancel-listing-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="cancel-listing-id-input">
+            <h3 class="text-lg font-semibold text-gray-800">İlanı İptal Et</h3>
+            <p class="text-gray-600 mt-2">Bu ilanı iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve
+                ilana gelen tüm teklifler geçersiz olacaktır.</p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeModal('cancel-listing-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Vazgeç</button>
+                <button onclick="confirmCancelListing()"
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Evet, İptal Et</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offer Details Modal -->
+    <div id="offer-details-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('offer-details-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h2 id="offer-modal-title" class="text-xl font-bold text-gray-800">Teklif Detayları</h2>
+                <button onclick="closeModal('offer-details-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="offer-modal-body" class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Details will be rendered here -->
+            </div>
+            <div id="offer-modal-footer" class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <!-- Buttons will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Accept Offer Modal -->
+    <div id="accept-offer-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('accept-offer-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="accept-offer-id-input">
+            <h3 class="text-lg font-semibold text-gray-800">Teklifi Kabul Et</h3>
+            <div id="accept-offer-body" class="text-gray-600 mt-4 space-y-4">
+                <!-- Content will be injected by JS -->
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeModal('accept-offer-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button id="confirm-accept-button" onclick="confirmAcceptOffer()"
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">Evet,
+                    Kabul Et</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Offer Modal -->
+    <div id="reject-offer-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('reject-offer-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="reject-offer-id-input">
+            <h3 class="text-lg font-semibold text-gray-800">Teklifi Reddet</h3>
+            <p class="text-gray-600 mt-2">Bu teklifi reddetmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeModal('reject-offer-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Vazgeç</button>
+                <button onclick="confirmRejectOffer()"
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Evet, Reddet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- #region DESIGN PROJECT MODALS -->
+    <!-- New Design Request Modal -->
+    <div id="new-design-request-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('new-design-request-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Yeni Tasarım Projesi Talep Et</h2>
+            </div>
+            <div class="p-6 max-h-[80vh] overflow-y-auto space-y-6">
+                <!-- Step 1: Select Listing -->
+                <div class="p-4 border rounded-lg">
+                    <h3 class="font-semibold text-lg text-gray-700 mb-3">1. Adım: İlan Seçimi</h3>
+                    <label for="new-project-listing-select" class="sr-only">İlan Seçimi</label>
+                    <select id="new-project-listing-select" class="w-full p-2 border rounded-lg"></select>
+                </div>
+                <!-- Step 2: Select Architect -->
+                <div class="p-4 border rounded-lg">
+                    <h3 class="font-semibold text-lg text-gray-700 mb-3">2. Adım: Mimar Seçimi</h3>
+                    <div id="new-project-architect-list" class="space-y-3 max-h-60 overflow-y-auto">
+                        <!-- Architect options will be rendered here -->
+                    </div>
+                </div>
+                <!-- Step 3: Design Details -->
+                <div class="p-4 border rounded-lg">
+                    <h3 class="font-semibold text-lg text-gray-700 mb-3">3. Adım: Tasarım Detayları</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="number" id="design-floors" placeholder="Kat Sayısı" class="p-2 border rounded-lg"
+                            aria-label="Kat Sayısı">
+                        <input type="number" id="design-apartments" placeholder="Toplam Daire Sayısı"
+                            class="p-2 border rounded-lg" aria-label="Daire Sayısı">
+                        <input type="number" id="design-apartments-per-floor" placeholder="1 Katta Daire Sayısı"
+                            class="p-2 border rounded-lg" aria-label="1 Katta Daire Sayısı">
+                        <select id="design-apartment-types" class="p-2 border rounded-lg md:col-span-2"
+                            aria-label="Daire Tipi">
+                            <option value="">Daire Tipi Seçin...</option>
+                            <option value="1+1">1+1</option>
+                            <option value="2+1">2+1</option>
+                            <option value="3+1">3+1</option>
+                            <option value="4+1">4+1</option>
+                            <option value="dublex">Dublex</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Step 4: Payment -->
+                <div class="p-4 border rounded-lg bg-green-50 text-green-800">
+                    <p>Tasarım ücreti <span class="font-bold">75,000 TL</span> karşılığında seçilen mimara ödenecektir.
+                        Bu ücretlendirme temsilidir.</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('new-design-request-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" onclick="submitNewDesignRequest()"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Tasarım Talep Et ve
+                    Öde</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design Project Details Modal -->
+    <div id="design-project-details-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center">
+        <!-- Modal content will be injected dynamically -->
+    </div>
+
+    <!-- Revision Request Modal -->
+    <div id="revision-request-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('revision-request-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <input type="hidden" id="revision-project-id-input">
+            <div class="px-6 py-4 border-b">
+                <h2 id="revision-modal-title" class="text-xl font-bold text-gray-800">Revizyon Talep Et</h2>
+            </div>
+            <div class="p-6">
+                <textarea id="revision-details-textarea" rows="5" class="w-full p-2 border rounded-lg"
+                    placeholder="Lütfen talep ettiğiniz değişiklikleri detaylı olarak açıklayın..."></textarea>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('revision-request-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" onclick="submitRevisionRequest()"
+                    class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">Revizyon Talebini
+                    Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Documents Modal -->
+    <div id="view-documents-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('view-documents-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 id="documents-modal-title" class="text-xl font-bold text-gray-800">Proje Belgeleri</h2>
+            </div>
+            <div id="documents-modal-body" class="p-6 max-h-[70vh] overflow-y-auto space-y-3">
+                <!-- Documents will be rendered here -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('view-documents-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal (Simplified) -->
+    <div id="chat-modal" class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('chat-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl transform transition-all modal-content flex flex-col"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b flex items-center justify-between">
+                <h2 id="chat-modal-title" class="text-xl font-bold text-gray-800">Mesajlaşma</h2>
+                <button onclick="closeModal('chat-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="chat-modal-body" class="flex-1 p-6 h-96 overflow-y-auto bg-gray-50">
+                <!-- Messages will be rendered here -->
+            </div>
+            <div class="p-4 bg-white border-t flex items-center space-x-2">
+                <input type="file" id="chat-file-input" class="hidden" onchange="handleChatFileUpload(event)"
+                    title="Dosya seç">
+                <button onclick="document.getElementById('chat-file-input').click()"
+                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200" title="Dosya Gönder"><i
+                        class="fas fa-paperclip"></i></button>
+                <input type="text" id="chat-message-input" class="w-full p-2 border rounded-lg"
+                    placeholder="Mesajınızı yazın...">
+                <button id="chat-send-btn" class="bg-primary text-white px-4 rounded-lg" aria-label="Mesajı Gönder"><i
+                        class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <!-- #endregion -->
+
+    <!-- #region PAYMENT MODAL -->
+    <div id="payment-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('payment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Ödeme Yap</h2>
+            </div>
+            <div id="payment-options-body" class="p-6 space-y-4">
+                <button onclick="showPaymentMethod('card')"
+                    class="w-full text-left p-4 border rounded-lg hover:bg-gray-50 flex justify-between items-center">
+                    <span>Kredi/Banka Kartı ile Öde</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button onclick="showPaymentMethod('eft')"
+                    class="w-full text-left p-4 border rounded-lg hover:bg-gray-50 flex justify-between items-center">
+                    <span>EFT/Havale ile Öde</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div id="payment-card-body" class="p-6 space-y-4 hidden">
+                <input type="text" id="card-number" placeholder="Kart Numarası (örn: 1234 5678 9012 3456)"
+                    class="p-2 border rounded-lg w-full">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="card-expiry" placeholder="Son Kullanma Tarihi (AA/YY)"
+                        class="p-2 border rounded-lg w-full">
+                    <input type="text" id="card-cvv" placeholder="CVV" class="p-2 border rounded-lg w-full">
+                </div>
+                <input type="text" id="card-holder" placeholder="Kart Sahibi Adı Soyadı"
+                    class="p-2 border rounded-lg w-full">
+                <div class="flex justify-between items-center">
+                    <button onclick="showPaymentMethod('options')" class="text-sm text-gray-600 hover:underline">&larr;
+                        Geri</button>
+                    <button onclick="processPayment('card')"
+                        class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Ödemeyi Tamamla</button>
+                </div>
+            </div>
+            <div id="payment-eft-body" class="p-6 space-y-4 hidden">
+                <p class="font-semibold">Banka Bilgileri</p>
+                <p><strong>IBAN:</strong> TR12 3456 7890 1234 5678 9012 34</p>
+                <p><strong>Alıcı:</strong> DönüşümAY A.Ş.</p>
+                <div class="flex justify-between items-center mt-4">
+                    <button onclick="showPaymentMethod('options')" class="text-sm text-gray-600 hover:underline">&larr;
+                        Geri</button>
+                    <button onclick="processPayment('eft')"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Ödeme Talimatı
+                        Oluşturdum</button>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('payment-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            </div>
+        </div>
+    </div>
+    <!-- #endregion -->
+
+    <!-- Account Action Modal -->
+    <div id="account-action-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('account-action-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <h3 id="account-action-title" class="text-lg font-semibold text-gray-800"></h3>
+            <p id="account-action-text" class="text-gray-600 mt-2"></p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeModal('account-action-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Vazgeç</button>
+                <button id="account-action-confirm-btn" class="text-white px-4 py-2 rounded-lg">Evet, Onayla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package Selection Modal -->
+    <div id="package-selection-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('package-selection-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Paket Seçimi</h2>
+                <p class="text-gray-600 mt-1">Size en uygun paketi seçin ve özelliklerden yararlanın.</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Temel Paket -->
+                    <div
+                        class="border-2 border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors relative">
+                        <div class="text-center">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Temel Paket</h3>
+                            <div class="text-3xl font-bold text-blue-600 mb-4">₺49<span
+                                    class="text-sm text-gray-500">/ay</span></div>
+                        </div>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Ayda 3 ilan yayınlama hakkı</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Temel tasarım desteği</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>E-posta desteği</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Temel analiz raporları</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Müteahhit mesajlaşma</span>
+                            </li>
+                        </ul>
+                        <button onclick="selectPackage('temel')"
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Temel Paketi Seç
+                        </button>
+                    </div>
+
+                    <!-- Orta Paket -->
+                    <div class="border-2 border-orange-400 rounded-xl p-6 relative bg-orange-50">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <span class="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-medium">En
+                                Popüler</span>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Orta Paket</h3>
+                            <div class="text-3xl font-bold text-orange-600 mb-4">₺99<span
+                                    class="text-sm text-gray-500">/ay</span></div>
+                        </div>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Ayda 10 ilan yayınlama hakkı</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Gelişmiş tasarım desteği</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Öncelikli destek</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Detaylı analiz raporları</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Mimar mesajlaşma</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>İmar çapı desteği</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Hukuki danışmanlık</span>
+                            </li>
+                        </ul>
+                        <button onclick="selectPackage('orta')"
+                            class="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                            Orta Paketi Seç
+                        </button>
+                    </div>
+
+                    <!-- Yüksek Paket -->
+                    <div
+                        class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-300 transition-colors relative">
+                        <div class="text-center">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Yüksek Paket</h3>
+                            <div class="text-3xl font-bold text-purple-600 mb-4">₺199<span
+                                    class="text-sm text-gray-500">/ay</span></div>
+                        </div>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Sınırsız ilan yayınlama</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Premium tasarım desteği</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>7/24 premium destek</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Kapsamlı analiz raporları</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Tüm uzman mesajlaşma</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Öncelikli imar çapı</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Kapsamlı hukuki destek</span>
+                            </li>
+                            <li class="flex items-center text-sm">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span>Kişisel hesap yöneticisi</span>
+                            </li>
+                        </ul>
+                        <button onclick="selectPackage('yuksek')"
+                            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                            Yüksek Paketi Seç
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('package-selection-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade Subscription Modal -->
+    <div id="upgrade-subscription-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('upgrade-subscription-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 id="upgrade-modal-title" class="text-xl font-bold text-gray-800">Paketi Yükselt</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="payment-processing-view" class="hidden text-center py-8">
+                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-4"></i>
+                    <p class="font-semibold text-gray-700">Ödemeniz işleniyor...</p>
+                    <p class="text-sm text-gray-500">Lütfen bekleyin.</p>
+                </div>
+                <div id="payment-options-view" class="space-y-3">
+                    <p id="upgrade-modal-text">Seçtiğiniz pakete yükseltmek için lütfen bir ödeme yöntemi seçin.</p>
+                    <button onclick="processSubscriptionPayment('credit_card')"
+                        class="w-full text-left p-4 border rounded-lg hover:bg-gray-50 flex justify-between items-center transition-colors">
+                        <span class="font-semibold"><i class="fas fa-credit-card mr-3 text-primary"></i>Kredi/Banka
+                            Kartı ile Öde</span>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </button>
+                    <button onclick="processSubscriptionPayment('eft_havale')"
+                        class="w-full text-left p-4 border rounded-lg hover:bg-gray-50 flex justify-between items-center transition-colors">
+                        <span class="font-semibold"><i class="fas fa-university mr-3 text-primary"></i>EFT/Havale ile
+                            Öde</span>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+                <button type="button" onclick="closeModal('upgrade-subscription-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Card Payment Modal -->
+    <div id="credit-card-payment-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('credit-card-payment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Kredi Kartı ile Ödeme</h2>
+                <p class="text-gray-600 mt-1">Güvenli ödeme için kart bilgilerinizi girin.</p>
+            </div>
+            <div class="p-6">
+                <form id="credit-card-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kart Numarası</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            maxlength="19" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Son Kullanma</label>
+                            <input type="text" id="expiry-date" placeholder="MM/YY"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                maxlength="5" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                            <input type="text" id="cvv" placeholder="123"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                maxlength="3" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kart Üzerindeki İsim</label>
+                        <input type="text" id="card-name" placeholder="Ali Veli"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required>
+                    </div>
+
+                    <div id="card-payment-processing" class="hidden text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-blue-600 mb-2"></i>
+                        <p class="text-gray-700">Ödemeniz işleniyor...</p>
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('credit-card-payment-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                <button type="button" onclick="processCreditCardPayment()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-credit-card mr-2"></i>Ödemeyi Tamamla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EFT/Havale Payment Modal -->
+    <div id="eft-havale-payment-modal"
+        class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('eft-havale-payment-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">EFT/Havale ile Ödeme</h2>
+                <p class="text-gray-600 mt-1">Aşağıdaki hesap bilgilerine ödemenizi yapın.</p>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="font-bold text-blue-800 mb-3 flex items-center">
+                        <i class="fas fa-university mr-2"></i>
+                        DonusumAy Hesap Bilgileri
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Banka:</span>
+                            <span class="font-medium">Türkiye İş Bankası</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Hesap Adı:</span>
+                            <span class="font-medium">DonusumAy Teknoloji A.Ş.</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">IBAN:</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-mono font-medium">TR64 0006 4000 0011 2030 4055 01</span>
+                                <button onclick="copyToClipboard('TR64 0006 4000 0011 2030 4055 01')"
+                                    class="text-blue-600 hover:text-blue-800" title="Kopyala">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Swift Kodu:</span>
+                            <span class="font-medium">ISBKTRIS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="font-medium text-yellow-800 mb-2 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Önemli Notlar
+                    </h4>
+                    <ul class="text-sm text-yellow-700 space-y-1">
+                        <li>• Açıklama kısmına mutlaka <strong>müşteri numaranızı</strong> yazın</li>
+                        <li>• Ödeme sonrası dekont fotoğrafını destek hattımıza gönderin</li>
+                        <li>• Havale/EFT işlemleri 1-2 iş günü içerisinde onaylanır</li>
+                    </ul>
+                </div>
+
+                <div id="eft-payment-confirmation" class="hidden text-center py-4 text-green-600">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <p class="font-medium">Ödeme talimatı alındı!</p>
+                    <p class="text-sm text-gray-600">Ödemeniz onaylandıktan sonra paketiniz aktifleştirilecektir.</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('eft-havale-payment-modal')"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+                <button type="button" onclick="confirmEftPayment()"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-check mr-2"></i>Ödeme Talimatını Onaylıyorum
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div id="live-chat-modal"
+        class="fixed inset-0 z-[60] hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('live-chat-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl flex flex-col transform transition-all modal-content h-[70vh]"
+            onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+                <h2 id="live-chat-modal-title" class="text-xl font-bold text-gray-800">Canlı Destek</h2>
+                <button onclick="closeModal('live-chat-modal')"
+                    class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="live-chat-messages" class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
+                <!-- Live chat messages will be rendered here -->
+            </div>
+            <div class="p-4 bg-white border-t flex items-center space-x-2 flex-shrink-0">
+                <input type="file" id="live-chat-file-input" class="hidden" onchange="handleLiveChatFileUpload(event)"
+                    aria-label="Canlı sohbete dosya ekle">
+                <button onclick="document.getElementById('live-chat-file-input').click()"
+                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200" title="Dosya Gönder"><i
+                        class="fas fa-paperclip"></i></button>
+                <input type="text" id="live-chat-input" class="flex-1 w-full p-2 border rounded-lg"
+                    placeholder="Mesajınızı yazın..." onkeydown="if(event.key === 'Enter') sendLiveChatMessage()">
+                <button id="live-chat-send-btn" onclick="sendLiveChatMessage()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg" aria-label="Mesajı Gönder"
+                    style="background-color: blue;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Details Modal -->
+    <div id="contract-details-modal"
+        class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center"
+        onclick="closeModal('contract-details-modal')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col"
+            onclick="event.stopPropagation()">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="contract-details-modal-title" class="text-lg font-bold text-gray-800">Sözleşme Detayları</h3>
+                <button onclick="closeModal('contract-details-modal')"
+                    class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="flex-1 p-6 overflow-y-auto">
+                <div class="space-y-4">
+                    <!-- Document Preview -->
+                    <div class="bg-gray-100 rounded-lg p-4">
+                        <div id="document-preview"
+                            class="w-full h-[400px] bg-white rounded-lg shadow-inner flex items-center justify-center">
+                            <iframe id="document-iframe" src="" class="w-full h-full border-0"
+                                title="Belge Önizleme"></iframe>
+                        </div>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="viewDocument()"
+                            class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-eye mr-2"></i>Görüntüle
+                        </button>
+                        <button onclick="downloadDocument()"
+                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-download mr-2"></i>İndir
+                        </button>
+                        <button onclick="shareDocument()"
+                            class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-share-alt mr-2"></i>Paylaş
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ... existing code ...
+
+        function viewDocument() {
+            // Open document in a new tab
+            const iframe = document.getElementById('document-iframe');
+            if (iframe.src) {
+                window.open(iframe.src, '_blank');
+            }
+        }
+
+        function downloadDocument() {
+            // Trigger download of the document
+            const iframe = document.getElementById('document-iframe');
+            if (iframe.src) {
+                const link = document.createElement('a');
+                link.href = iframe.src;
+                link.download = 'document.pdf'; // You can set a dynamic name based on the document
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function shareDocument() {
+            // Show sharing options or copy link
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Belge Paylaşımı',
+                    text: 'DönüşümAY belge paylaşımı',
+                    url: document.getElementById('document-iframe').src
+                }).catch(err => {
+                    showNotification('Paylaşım sırasında bir hata oluştu.', 'error');
+                });
+            } else {
+                // Fallback to copying link
+                const url = document.getElementById('document-iframe').src;
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Belge bağlantısı panoya kopyalandı!', 'success');
+                }).catch(() => {
+                    showNotification('Bağlantı kopyalanırken bir hata oluştu.', 'error');
+                });
+            }
+        }
+
+        function openContractDetailsModal(documentUrl) {
+            const iframe = document.getElementById('document-iframe');
+            iframe.src = documentUrl;
+            showModal('contract-details-modal');
+        }
+    </script>
+</body>
+
+</html>
+
+<!-- Pre-Chat Modal -->
+<div id="pre-chat-modal" class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('pre-chat-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+        onclick="event.stopPropagation()">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">Destek Konusu Seçin</h2>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 mb-4">Size daha hızlı yardımcı olabilmemiz için lütfen görüşmek istediğiniz
+                konuyu seçin.</p>
+            <form id="pre-chat-form" class="space-y-3">
+                <label
+                    class="pre-chat-option block border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                    <input type="radio" name="chat-category" value="Para Çekme/Yatırma" class="hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Para Çekme/Yatırma</span>
+                        <i class="fas fa-check-circle text-primary hidden check-icon"></i>
+                    </div>
+                </label>
+                <label
+                    class="pre-chat-option block border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                    <input type="radio" name="chat-category" value="Doküman Yükleme" class="hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Doküman Yükleme</span>
+                        <i class="fas fa-check-circle text-primary hidden check-icon"></i>
+                    </div>
+                </label>
+                <label
+                    class="pre-chat-option block border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                    <input type="radio" name="chat-category" value="Hesap Sorunları" class="hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Hesap Sorunları</span>
+                        <i class="fas fa-check-circle text-primary hidden check-icon"></i>
+                    </div>
+                </label>
+                <label
+                    class="pre-chat-option block border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                    <input type="radio" name="chat-category" value="Teklifler/Projeler" class="hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Teklifler/Projeler</span>
+                        <i class="fas fa-check-circle text-primary hidden check-icon"></i>
+                    </div>
+                </label>
+                <label
+                    class="pre-chat-option block border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                    <input type="radio" name="chat-category" value="Diğer" class="hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Diğer</span>
+                        <i class="fas fa-check-circle text-primary hidden check-icon"></i>
+                    </div>
+                </label>
+            </form>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <button type="button" onclick="closeModal('pre-chat-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            <button type="button" onclick="initializeLiveChat()"
+                class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark"
+                style="background-color: blue;">Sohbeti Başlat</button>
+        </div>
+    </div>
+</div>
+
+<!-- #region LEGAL PROCESS MODALS -->
+<!-- Notary Document Upload Modal -->
+<div id="notary-document-upload-modal"
+    class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notary-document-upload-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all modal-content"
+        onclick="event.stopPropagation()">
+        <input type="hidden" id="notary-upload-project-id">
+        <div class="px-6 py-4 border-b">
+            <h2 id="notary-upload-modal-title" class="text-xl font-bold text-gray-800">Noter Belgelerini Yükle</h2>
+        </div>
+        <div class="p-6 max-h-[70vh] overflow-y-auto space-y-4">
+            <p class="text-gray-600 text-sm">Lütfen noter sürecinde gerekli olan belgeleri (kimlik fotokopisi,
+                vekaletname, sözleşme taslağı vb.) yükleyin.</p>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Belge
+                    Ekle</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <i class="fas fa-folder-open fa-3x text-gray-400 mx-auto"></i>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="notary-file-upload-input"
+                                class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none">
+                                <span>Dosya seç</span>
+                                <input id="notary-file-upload-input" name="notary-files" type="file" class="sr-only"
+                                    multiple onchange="handleNotaryFileUploadChange(event)">
+                            </label>
+                            <p class="pl-1">veya sürükleyip bırakın</p>
+                        </div>
+                        <p class="text-xs text-gray-500">PDF, PNG, JPG, DOCX</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notary-file-preview-container" class="space-y-2">
+                <!-- File previews will be shown here -->
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <button type="button" onclick="closeModal('notary-document-upload-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            <button type="button" id="upload-notary-docs-btn" onclick="uploadNotaryDocuments()"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:opacity-90 disabled:bg-gray-400"
+                disabled>Belgeleri Yükle</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notary Chat Modal -->
+<div id="notary-chat-modal"
+    class="fixed inset-0 z-[60] hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notary-chat-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl flex flex-col transform transition-all modal-content h-[70vh]"
+        onclick="event.stopPropagation()">
+        <input type="hidden" id="notary-chat-project-id">
+        <div class="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+            <h2 id="notary-chat-modal-title" class="text-xl font-bold text-gray-800">Noterle Mesajlaşma</h2>
+            <button onclick="closeModal('notary-chat-modal')"
+                class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div id="notary-chat-messages" class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
+
+
+            <!-- Notary chat messages will be rendered here -->
+        </div>
+        <div class="p-4 bg-white border-t flex items-center space-x-2 flex-shrink-0">
+            <input type="file" id="notary-chat-file-input" class="hidden" onchange="sendNotaryFile(event)"
+                aria-label="Noter sohbetine dosya ekle">
+            <button onclick="document.getElementById('notary-chat-file-input').click()"
+                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200" title="Dosya Gönder"><i
+                    class="fas fa-paperclip"></i></button>
+            <input type="text" id="notary-chat-input" class="flex-1 w-full p-2 border rounded-lg"
+                placeholder="Mesajınızı yazın..." onkeydown="if(event.key === 'Enter') sendMessageToNotary()">
+            <button id="notary-chat-send-btn" onclick="sendMessageToNotary()"
+                class="bg-primary text-white px-4 py-2 rounded-lg" style="background-color: blue;"
+                aria-label="Mesajı Gönder"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Notary Appointment Modal -->
+<div id="notary-appointment-modal"
+    class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notary-appointment-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex" onclick="event.stopPropagation()">
+        <input type="hidden" id="notary-appointment-project-id">
+
+        <!-- Left side - Calendar -->
+        <div class="flex-1 border-r">
+            <div class="p-6 border-b">
+                <h3 id="notary-appointment-modal-title" class="text-xl font-bold text-gray-800">Noter Randevu Seçimi
+                </h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)" class="text-gray-600 hover:text-gray-800" title="Önceki Ay">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="current-month-display">Temmuz 2025</span>
+                    <button onclick="changeMonth(1)" class="text-gray-600 hover:text-gray-800" title="Sonraki Ay">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-name">Pzt</div>
+                    <div class="calendar-day-name">Sal</div>
+                    <div class="calendar-day-name">Çar</div>
+                    <div class="calendar-day-name">Per</div>
+                    <div class="calendar-day-name">Cum</div>
+                    <div class="calendar-day-name">Cmt</div>
+                    <div class="calendar-day-name">Paz</div>
+                    <!-- Calendar days will be rendered here by JS -->
+                </div>
+                <div id="available-slots" class="calendar-slots hidden">
+                    <!-- Time slots will be rendered here when a date is selected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Appointment Details -->
+        <div class="w-96">
+            <div class="p-6 border-b">
+                <h4 class="font-semibold text-gray-800">Randevu Detayları</h4>
+            </div>
+            <div id="selected-appointment-details" class="hidden h-full">
+                <div class="p-6 space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">Tarih: <span id="selected-date"
+                                class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Saat: <span id="selected-time"
+                                class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Noter: <span id="selected-notary"
+                                class="font-medium text-gray-800"></span></p>
+                        <p class="text-sm text-gray-600">Adres: <span id="selected-location"
+                                class="font-medium text-gray-800"></span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="sms-reminder-toggle"
+                            class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                        <label for="sms-reminder-toggle" class="ml-2 block text-sm text-gray-900">SMS ile hatırlatma
+                            al</label>
+                    </div>
+                </div>
+                <div class="mt-auto p-6 bg-gray-50 border-t">
+                    <button onclick="confirmNotaryAppointment()" id="confirm-appointment-btn"
+                        class="w-full bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed mb-2"
+                        style="background-color: blue;" disabled>Randevuyu Onayla</button>
+                    <button onclick="closeModal('notary-appointment-modal')"
+                        class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+                </div>
+            </div>
+            <div id="no-appointment-selected" class="p-6 text-center text-gray-500">
+                <p>Lütfen takvimden bir tarih ve saat seçin</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Notarized Contract Modal -->
+<div id="notarized-contract-modal"
+    class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notarized-contract-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all modal-content"
+        onclick="event.stopPropagation()">
+        <input type="hidden" id="notarized-contract-project-id">
+        <div class="px-6 py-4 border-b">
+            <h2 id="notarized-contract-modal-title" class="text-xl font-bold text-gray-800">Noter Onaylı Sözleşme
+            </h2>
+        </div>
+        <div class="p-6">
+            <div id="notarized-contract-viewer" class="w-full h-96 bg-gray-200 flex items-center justify-center">
+                <p class="text-gray-500">Sözleşme önizlemesi yükleniyor...</p>
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+            <button type="button" onclick="closeModal('notarized-contract-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+            <button onclick="downloadNotarizedContract()"
+                class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2">
+                <i class="fas fa-download"></i>
+                <span>Sözleşmeyi İndir</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contractor Info Modal -->
+<div id="contractor-info-modal"
+    class="fixed inset-0 z-50 hidden modal bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('contractor-info-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all modal-content"
+        onclick="event.stopPropagation()">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 id="contractor-info-modal-title" class="text-xl font-bold text-gray-800">Müteahhit İletişim Bilgileri
+            </h2>
+            <button onclick="closeModal('contractor-info-modal')"
+                class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div class="p-6 space-y-4">
+            <!-- Contractor Details -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-building text-blue-600 mr-2"></i>
+                    <span id="contractor-name-display">Müteahhit Bilgileri</span>
+                </h3>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Telefon</label>
+                            <p id="contractor-phone-display" class="text-gray-800 font-medium">-</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">E-posta</label>
+                            <p id="contractor-email-display" class="text-gray-800 font-medium">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Adres</label>
+                        <p id="contractor-address-display" class="text-gray-800 font-medium">-</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Şirket Adı</label>
+                            <p id="contractor-company-display" class="text-gray-800 font-medium">-</p>
+                        </div>
+
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Yetkili Kişi</label>
+                            <p id="contractor-representative-display" class="text-gray-800 font-medium">-</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Deneyim</label>
+                            <p id="contractor-experience-display" class="text-gray-800 font-medium">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Tamamlanan Projeler</label>
+                        <p id="contractor-projects-display" class="text-gray-800 font-medium">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Actions -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-phone text-blue-600 mr-2"></i>
+                    Hızlı İletişim
+                </h4>
+                <div class="flex space-x-3">
+                    <button id="call-contractor-btn" onclick="callContractor()"
+                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                        <i class="fas fa-phone mr-2"></i>Ara
+                    </button>
+                    <button id="whatsapp-contractor-btn" onclick="whatsappContractor()"
+                        class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+                        <i class="fab fa-whatsapp mr-2"></i>WhatsApp
+                    </button>
+                    <button id="email-contractor-btn" onclick="emailContractor()"
+                        class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                        <i class="fas fa-envelope mr-2"></i>E-posta
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end">
+            <button onclick="closeModal('contractor-info-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notary Payment Modal -->
+<div id="notary-payment-modal"
+    class="fixed inset-0 z-[60] hidden bg-black bg-opacity-60 flex items-center justify-center"
+    onclick="closeModal('notary-payment-modal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+        <div class="p-6 border-b">
+            <h3 class="text-xl font-bold text-gray-800">Noter Ücret Ödemesi</h3>
+            <p class="text-gray-600 mt-1">Ödenecek Tutar: <span id="notary-payment-amount"
+                    class="font-bold text-orange-600">2,500 TL</span></p>
+            <p class="text-sm text-gray-500 mt-2">Proje: <span id="notary-project-name" class="font-medium"></span></p>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label for="notary-registered-cards" class="block text-sm font-medium text-gray-700 mb-1">Kayıtlı
+                    Kartlarım</label>
+                <select id="notary-registered-cards" onchange="fillNotaryCardDetails(this.value)"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                    <option value="">Yeni kart ile ödeme yap</option>
+                    <option value="card1">**** 1234 (Ziraat Bankası)</option>
+                    <option value="card2">**** 5678 (İş Bankası)</option>
+                </select>
+            </div>
+            <input type="text" id="notary-card-holder" placeholder="Kart Sahibinin Adı Soyadı"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+            <input type="text" id="notary-card-number" placeholder="Kart Numarası (örn: 1234 5678 1234 5678)"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" maxlength="19">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="notary-card-expiry" placeholder="Son Kul. Tarihi (AA/YY)"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    maxlength="5">
+                <input type="text" id="notary-card-cvv" placeholder="CVV"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    maxlength="4">
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="notary-save-card-checkbox"
+                    class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                <label for="notary-save-card-checkbox" class="ml-2 block text-sm text-gray-900">Kart Bilgilerimi
+                    Kaydet</label>
+            </div>
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p class="text-sm text-orange-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Bilgilendirme:</strong> Bu ödeme noter ücretleri için yapılmaktadır. Ödeme güvenli SSL
+                    şifreleme ile korunmaktadır.
+                </p>
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+            <button onclick="closeModal('notary-payment-modal')"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm font-medium transition-colors">İptal</button>
+            <button onclick="processNotaryPayment()"
+                class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 font-medium transition-colors">
+                <i class="fas fa-credit-card mr-2"></i>Güvenli Ödeme Yap
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- #endregion -->
+
+<!-- İmar Çapı İşlem Modalı -->
+<div id="imar-capi-process-modal"
+    class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 id="imar-capi-modal-title" class="text-2xl font-bold text-gray-800">İmar Çapı İşlemleri</h2>
+                <button onclick="closeModal('imar-capi-process-modal')" class="text-gray-400 hover:text-gray-600"
+                    title="Modalı Kapat">
+                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                    <span class="sr-only">Modalı Kapat</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-8">
+            <input type="hidden" id="current-project-id-imar-capi">
+
+            <!-- Adım 1: İmar Çapı İçin Belge Yükleme -->
+            <div id="step-1" class="step-content">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                        1</div>
+                    <h3 class="ml-3 text-xl font-semibold">İmar Çapı İçin Belgeler</h3>
+                </div>
+                <p class="text-gray-600 mb-6">İmar çapı almak için gerekli belgeleri yükleyin.</p>
+
+                <div class="space-y-4">
+                    <!-- Aplikasyon Krokisi Yükleme -->
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-gray-700">Aplikasyon Krokisi</label>
+                            <div class="upload-status text-sm" id="aplikasyon-status"></div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="file" class="hidden" id="aplikasyon-krokisi" accept=".pdf,.jpg,.jpeg,.png"
+                                onchange="handleImarCapiDocumentUpload(event, 'aplikasyon-krokisi', 'Aplikasyon Krokisi')">
+                            <label for="aplikasyon-krokisi"
+                                class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <i class="fas fa-upload mr-2"></i>Dosya Seç
+                            </label>
+                            <span class="text-sm text-gray-500" id="aplikasyon-filename">Dosya seçilmedi</span>
+                        </div>
+                    </div>
+
+                    <!-- Tapu Aslı Yükleme -->
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-gray-700">Tapu Aslı</label>
+                            <div class="upload-status text-sm" id="tapu-status"></div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="file" class="hidden" id="tapu-asli" accept=".pdf,.jpg,.jpeg,.png"
+                                onchange="handleImarCapiDocumentUpload(event, 'tapu-asli', 'Tapu Aslı')">
+                            <label for="tapu-asli"
+                                class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <i class="fas fa-upload mr-2"></i>Dosya Seç
+                            </label>
+                            <span class="text-sm text-gray-500" id="tapu-filename">Dosya seçilmedi</span>
+                        </div>
+                    </div>
+
+                    <!-- Dilekçe Yükleme -->
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-gray-700">Dilekçe</label>
+                            <div class="upload-status text-sm" id="dilekce-status"></div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="file" class="hidden" id="dilekce" accept=".pdf,.doc,.docx"
+                                onchange="handleImarCapiDocumentUpload(event, 'dilekce', 'Dilekçe')">
+                            <label for="dilekce"
+                                class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <i class="fas fa-upload mr-2"></i>Dosya Seç
+                            </label>
+                            <span class="text-sm text-gray-500" id="dilekce-filename">Dosya seçilmedi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="proceedToPayment()" id="proceed-payment-btn"
+                    class="mt-6 w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Ödeme Adımına Geç
+                </button>
+            </div>
+
+            <!-- Adım 2: Ödeme Yöntemi Seçimi -->
+            <div id="step-2" class="step-content hidden">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                        2</div>
+                    <h3 class="ml-3 text-xl font-semibold">Ödeme Yöntemi</h3>
+                </div>
+
+                <!-- Ödeme Tutarı -->
+                <div
+                    class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-6 mb-6">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-purple-800 mb-2">485 ₺</p>
+                        <p class="text-purple-600">İmar Çapı Belediye Harcı</p>
+                    </div>
+                </div>
+
+                <!-- Ödeme Yöntemleri -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="border-2 rounded-lg p-4 cursor-pointer hover:border-purple-500 transition-colors"
+                        onclick="selectPaymentMethod('credit-card')" id="credit-card-option">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                <div class="w-2 h-2 bg-purple-600 rounded-full hidden payment-radio"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-800">Kredi Kartı ile Ödeme</h4>
+                                <p class="text-sm text-gray-500">Güvenli online ödeme</p>
+                            </div>
+                            <i class="fas fa-credit-card text-2xl text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="border-2 rounded-lg p-4 cursor-pointer hover:border-purple-500 transition-colors"
+                        onclick="selectPaymentMethod('bank-transfer')" id="bank-transfer-option">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                                <div class="w-2 h-2 bg-purple-600 rounded-full hidden payment-radio"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-800">Havale ile Ödeme</h4>
+                                <p class="text-sm text-gray-500">Banka havalesi</p>
+                            </div>
+                            <i class="fas fa-university text-2xl text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="proceedWithPaymentMethod()" id="payment-method-btn"
+                    class="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Devam Et
+                </button>
+            </div>
+
+            <!-- Adım 3a: Kredi Kartı Ödeme -->
+            <div id="step-3a" class="step-content hidden">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                        3</div>
+                    <h3 class="ml-3 text-xl font-semibold">Kredi Kartı Bilgileri</h3>
+                </div>
+
+                <form id="credit-card-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kart Üzerindeki İsim</label>
+                            <input type="text" id="card-name" placeholder="Ad Soyad" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kart Numarası</label>
+                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                oninput="formatCardNumber(this)">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Son Kullanma Tarihi</label>
+                            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                oninput="formatExpiry(this)">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                            <input type="text" id="card-cvv" placeholder="123" maxlength="3" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="processCreditCardPayment()"
+                        class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition mt-6">
+                        <i class="fas fa-lock mr-2"></i>485 ₺ Ödeme Yap
+                    </button>
+                </form>
+            </div>
+
+            <!-- Adım 3b: Havale Bilgileri -->
+            <div id="step-3b" class="step-content hidden">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                        3</div>
+                    <h3 class="ml-3 text-xl font-semibold">Havale Bilgileri</h3>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h4 class="font-semibold text-blue-800 mb-4">Kadıköy Belediyesi Hesap Bilgileri</h4>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                            <span class="text-blue-700 font-medium">Hesap Adı:</span>
+                            <span class="text-blue-800">Kadıköy Belediyesi İmar Çapı Harcı</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                            <span class="text-blue-700 font-medium">Banka:</span>
+                            <span class="text-blue-800">Ziraat Bankası</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                            <span class="text-blue-700 font-medium">IBAN:</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-blue-800 font-mono" id="iban-number">TR64 0001 0013 7802 3456 7890
+                                    12</span>
+                                <button onclick="copyIban()" class="text-blue-600 hover:text-blue-800"
+                                    title="IBAN'ı Kopyala">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-blue-700 font-medium">Tutar:</span>
+                            <span class="text-blue-800 font-bold text-lg">485 ₺</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-yellow-800 text-sm">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Önemli:</strong> Havale açıklamasına mutlaka "İmar Çapı - Proje ID: <span
+                                id="project-reference"></span>" yazınız.
+                        </p>
+                    </div>
+
+                    <button onclick="confirmBankTransfer()"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition mt-4">
+                        Havale Yaptım, Onaylayın
+                    </button>
+                </div>
+            </div>
+
+            <!-- Adım 4: Ödeme Başarılı / İmar Çapı Bekleniyor -->
+            <div id="step-4" class="step-content hidden">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        ✓</div>
+                    <h3 class="ml-3 text-xl font-semibold">Ödeme Tamamlandı</h3>
+                </div>
+
+                <div class="text-center py-8">
+                    <div class="text-green-500 mb-4">
+                        <i class="fas fa-check-circle text-5xl"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Ödemeniz Başarıyla Alındı!</h4>
+                    <p class="text-gray-600 mb-6">İmar çapı işleminiz belediyeye iletildi. Sonuçlandığında size
+                        bildirilecektir.</p>
+
+                    <!-- Makbuz İndirme (Sadece kredi kartı ödemesi için) -->
+                    <div id="receipt-section" class="hidden mb-6">
+                        <button onclick="downloadReceipt()"
+                            class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-download mr-2"></i>Ödeme Makbuzunu İndir
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3"></div>
+                        <p class="text-gray-600 text-sm">İmar çapı belediyeden bekleniyor...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adım 5: İmar Çapı Hazır -->
+            <div id="step-5" class="step-content hidden">
+                <div class="flex items-center mb-4">
+                    <div
+                        class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        ✓</div>
+                    <h3 class="ml-3 text-xl font-semibold">İmar Çapı Hazır</h3>
+                </div>
+
+                <div class="text-center py-8">
+                    <div class="text-green-500 mb-4">
+                        <i class="fas fa-file-alt text-5xl"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">İmar Çapınız Hazır!</h4>
+                    <p class="text-gray-600 mb-6">İmar çapı belgenizi aşağıdaki butondan indirebilirsiniz.</p>
+
+                    <button onclick="downloadImarCapi(currentProjectIdImarCapi)"
+                        class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition text-lg">
+                        <i class="fas fa-download mr-2"></i>İmar Çapısını İndir
+                    </button>
+                </div>
+            </div>
+
+            <!-- İlerleme Çubuğu -->
+            <div class="mt-8 pt-6 border-t">
+                <div class="flex justify-between mb-2">
+                    <span class="text-xs text-gray-500">Başlangıç</span>
+                    <span class="text-xs text-gray-500">Tamamlandı</span>
+                </div>
+                <div class="h-2 bg-gray-200 rounded-full">
+                    <div id="progress-bar" class="h-full bg-purple-600 rounded-full transition-all duration-500"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Profil Düzenleme Modal -->
+<div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Profili Düzenle</h3>
+            <button onclick="closeEditProfileModal()" class="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Kapat">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <form id="edit-profile-form" onsubmit="handleProfileSave(event)">
+                <!-- İletişim Bilgileri -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-4">İletişim Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="profile-name" class="block text-sm font-medium text-gray-700 mb-1">Ad</label>
+                            <input type="text" id="profile-name" name="name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Adınızı girin">
+                        </div>
+                        <div>
+                            <label for="profile-surname"
+                                class="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
+                            <input type="text" id="profile-surname" name="surname" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Soyadınızı girin">
+                        </div>
+                        <div>
+                            <label for="profile-email"
+                                class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                            <input type="email" id="profile-email" name="email" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="E-posta adresinizi girin">
+                        </div>
+                        <div>
+                            <label for="profile-phone"
+                                class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                            <input type="tel" id="profile-phone" name="phone" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Telefon numaranızı girin">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adres Bilgileri -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-4">Adres Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label for="profile-street"
+                                class="block text-sm font-medium text-gray-700 mb-1">Sokak/Cadde</label>
+                            <input type="text" id="profile-street" name="street"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Sokak/cadde bilginizi girin">
+                        </div>
+                        <div>
+                            <label for="profile-city" class="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
+                            <input type="text" id="profile-city" name="city"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Şehir">
+                        </div>
+                        <div>
+                            <label for="profile-district"
+                                class="block text-sm font-medium text-gray-700 mb-1">İlçe</label>
+                            <input type="text" id="profile-district" name="district"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="İlçe">
+                        </div>
+                        <div>
+                            <label for="profile-zipcode" class="block text-sm font-medium text-gray-700 mb-1">Posta
+                                Kodu</label>
+                            <input type="text" id="profile-zipcode" name="zipcode"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Posta kodu">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeEditProfileModal()"
+                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Şifre Değiştirme Modal -->
+<div id="change-password-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Şifre Değiştir</h3>
+            <button onclick="closeChangePasswordModal()" class="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Kapat">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="change-password-form" onsubmit="handlePasswordChange(event)" class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label for="current-password" class="block text-sm font-medium text-gray-700 mb-1">Mevcut
+                        Şifre</label>
+                    <div class="relative">
+                        <input type="password" id="current-password" name="current-password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Mevcut şifrenizi girin">
+                        <button type="button" onclick="togglePasswordVisibility('current-password')"
+                            class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                            title="Şifreyi göster/gizle">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                            <span class="sr-only">Şifreyi göster/gizle</span>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">Yeni Şifre</label>
+                    <div class="relative">
+                        <input type="password" id="new-password" name="new-password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Yeni şifrenizi girin">
+                        <button type="button" onclick="togglePasswordVisibility('new-password')"
+                            class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                            title="Şifreyi göster/gizle">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                            <span class="sr-only">Şifreyi göster/gizle</span>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Şifreniz en az 8 karakter uzunluğunda olmalıdır.</p>
+                </div>
+                <div>
+                    <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Yeni Şifre
+                        (Tekrar)</label>
+                    <div class="relative">
+                        <input type="password" id="confirm-password" name="confirm-password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Yeni şifrenizi tekrar girin">
+                        <button type="button" onclick="togglePasswordVisibility('confirm-password')"
+                            class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                            title="Şifreyi göster/gizle">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                            <span class="sr-only">Şifreyi göster/gizle</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    Şifreyi Değiştir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Email Doğrulama Modal -->
+<div id="verify-email-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">E-posta Doğrulama</h3>
+            <button onclick="closeVerifyEmailModal()" class="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Kapat">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 mb-4">E-posta adresinize doğrulama kodu gönderdik. Lütfen gelen kodu aşağıya girin.
+            </p>
+            <div class="flex gap-2 mb-4">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 1. hane" aria-label="E-posta doğrulama kodu 1. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 2. hane" aria-label="E-posta doğrulama kodu 2. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 3. hane" aria-label="E-posta doğrulama kodu 3. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 4. hane" aria-label="E-posta doğrulama kodu 4. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 5. hane" aria-label="E-posta doğrulama kodu 5. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="E-posta doğrulama kodu 6. hane" aria-label="E-posta doğrulama kodu 6. hane">
+            </div>
+            <div class="text-center">
+                <button onclick="verifyEmailCode()"
+                    class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    Doğrula
+                </button>
+                <p class="mt-4 text-sm text-gray-600">
+                    Kod gelmedi mi? <button onclick="resendEmailCode()"
+                        class="text-purple-600 hover:text-purple-700">Tekrar Gönder</button>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Telefon Doğrulama Modal -->
+<div id="verify-phone-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Telefon Doğrulama</h3>
+            <button onclick="closeVerifyPhoneModal()" class="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Kapat">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 mb-4">Telefonunuza SMS ile doğrulama kodu gönderdik. Lütfen gelen kodu aşağıya
+                girin.</p>
+            <div class="flex gap-2 mb-4">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 1. hane" aria-label="SMS doğrulama kodu 1. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 2. hane" aria-label="SMS doğrulama kodu 2. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 3. hane" aria-label="SMS doğrulama kodu 3. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 4. hane" aria-label="SMS doğrulama kodu 4. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 5. hane" aria-label="SMS doğrulama kodu 5. hane">
+                <input type="text" maxlength="1"
+                    class="verification-code-input w-12 h-12 text-center text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    title="SMS doğrulama kodu 6. hane" aria-label="SMS doğrulama kodu 6. hane">
+            </div>
+            <div class="text-center">
+                <button onclick="verifyPhoneCode()"
+                    class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    Doğrula
+                </button>
+                <p class="mt-4 text-sm text-gray-600">
+                    Kod gelmedi mi? <button onclick="resendPhoneCode()"
+                        class="text-purple-600 hover:text-purple-700">Tekrar Gönder</button>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container" class="fixed bottom-4 right-4 z-50"></div>
+
+<script src="./js/customer-dashboard.js"></script>
+</body>
+
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

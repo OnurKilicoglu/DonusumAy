@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeler - DönüşümAY</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+            --bg-white: #FFFFFF;
+            --bg-light-gray: #F8F8F8;
+            --text-dark: #343a40;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .bg-primary { background-color: var(--primary); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .bg-accent { background-color: var(--accent); }
+        .text-primary { color: var(--primary); }
+        .text-primary-light { color: var(--primary-light); }
+        .text-primary-dark { color: var(--primary-dark); }
+        .text-accent { color: var(--accent); }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #3C005A 0%, #5A0043 25%, #800060 50%, #800080 75%, #550080 100%);
+        }
+        
+        .filter-shadow {
+            box-shadow: 0 10px 25px rgba(128, 0, 128, 0.1);
+        }
+        
+        .hover-transform {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-transform:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(128, 0, 128, 0.15);
+        }
+
+        .project-card {
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(90, 0, 168, 0.15);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="relative flex items-center justify-end h-16 sm:h-20">
+                    
+                    <!-- Logo -->
+                    <div class="absolute left-0 flex items-center">
+                        <a href="index.html" class="flex items-center hover-transform">
+                            <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg" style="width: 11rem;">
+                        </a>
+                    </div>
+                    
+                    <!-- Auth Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                        <a href="auth.html" class="px-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-300 font-medium">
+                            Giriş Yap
+                        </a>
+                        <a href="auth.html?register=true" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium">
+                            Kayıt Ol
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-gradient text-white py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl sm:text-5xl font-bold mb-6">Projelerimiz ve Hizmetlerimiz</h1>
+                    <p class="text-xl opacity-90 max-w-3xl mx-auto">
+                        Kentsel dönüşümden kat karşılığı projelere, her aşamada yanınızdayız.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="flex-grow py-12 sm:py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Hizmet Kategorileri -->
+                <section class="mb-20">
+                    <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Hizmet Kategorilerimiz</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Kentsel Dönüşüm -->
+                        <div class="service-card bg-white rounded-xl p-8 filter-shadow hover-transform">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-city service-icon text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Kentsel Dönüşüm</h3>
+                            <p class="text-gray-600 text-center mb-6">
+                                Riskli binaların yenilenmesi, modern yaşam alanlarının oluşturulması ve sürdürülebilir kentsel gelişim için kapsamlı çözümler sunuyoruz.
+                            </p>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Risk analizi ve raporlama</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Proje geliştirme ve planlama</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>İnşaat ve yenileme süreçleri</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Arsa Değerlendirme -->
+                        <div class="service-card bg-white rounded-xl p-8 filter-shadow hover-transform">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-map-marked-alt service-icon text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Arsa Değerlendirme</h3>
+                            <p class="text-gray-600 text-center mb-6">
+                                Arsanızın potansiyelini maksimuma çıkarmak için detaylı analiz ve değerlendirme hizmetleri sağlıyoruz.
+                            </p>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>İmar durumu analizi</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Fizibilite çalışmaları</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Değer tespiti ve raporlama</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Bina Yenileme -->
+                        <div class="service-card bg-white rounded-xl p-8 filter-shadow hover-transform">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-home service-icon text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Bina Yenileme</h3>
+                            <p class="text-gray-600 text-center mb-6">
+                                Mevcut binaların güçlendirilmesi, modernizasyonu ve enerji verimliliğinin artırılması için profesyonel çözümler.
+                            </p>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Yapısal güçlendirme</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Cephe yenileme</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Enerji tasarrufu çözümleri</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Kat Karşılığı Projeler -->
+                        <div class="service-card bg-white rounded-xl p-8 filter-shadow hover-transform">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-building service-icon text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Kat Karşılığı Projeler</h3>
+                            <p class="text-gray-600 text-center mb-6">
+                                Arsa sahipleri ve müteahhitler için kazançlı kat karşılığı inşaat projeleri geliştiriyoruz.
+                            </p>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Proje değerlendirme</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Müteahhit eşleştirme</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Sözleşme yönetimi</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Danışmanlık -->
+                        <div class="service-card bg-white rounded-xl p-8 filter-shadow hover-transform">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-comments service-icon text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Danışmanlık</h3>
+                            <p class="text-gray-600 text-center mb-6">
+                                Kentsel dönüşüm sürecinde ihtiyacınız olan her konuda profesyonel danışmanlık hizmetleri.
+                            </p>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Hukuki danışmanlık</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Finansal planlama</span>
+                                </li>
+                                <li class="flex items-start space-x-3">
+                                    <i class="fas fa-check text-accent mt-1"></i>
+                                    <span>Süreç yönetimi</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Örnek Projeler -->
+                <section class="mb-20">
+                    <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Tamamlanan Projelerimiz</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Proje 1 -->
+                        <div class="project-card bg-white rounded-xl overflow-hidden">
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                                <div class="w-full h-64 bg-gradient-to-r from-primary to-primary-dark"></div>
+                            </div>
+                            <div class="p-6">
+                                <span class="text-sm font-medium text-primary">Kentsel Dönüşüm</span>
+                                <h3 class="text-xl font-bold text-gray-800 mt-2">Yeşil Vadi Rezidans</h3>
+                                <p class="text-gray-600 mt-3">
+                                    Kadıköy'de 5000m² alan üzerinde 120 daireli modern yaşam kompleksi.
+                                </p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Tamamlanma: 2024</span>
+                                    <a href="#" class="text-primary hover:text-primary-dark font-medium">Detaylar →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proje 2 -->
+                        <div class="project-card bg-white rounded-xl overflow-hidden">
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                                <div class="w-full h-64 bg-gradient-to-r from-primary-dark to-primary"></div>
+                            </div>
+                            <div class="p-6">
+                                <span class="text-sm font-medium text-primary">Bina Yenileme</span>
+                                <h3 class="text-xl font-bold text-gray-800 mt-2">Mavi Köşk Apartmanı</h3>
+                                <p class="text-gray-600 mt-3">
+                                    Beşiktaş'ta tarihi binanın modern standartlara uygun renovasyonu.
+                                </p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Tamamlanma: 2024</span>
+                                    <a href="#" class="text-primary hover:text-primary-dark font-medium">Detaylar →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proje 3 -->
+                        <div class="project-card bg-white rounded-xl overflow-hidden">
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                                <div class="w-full h-64 bg-gradient-to-r from-primary to-primary-light"></div>
+                            </div>
+                            <div class="p-6">
+                                <span class="text-sm font-medium text-primary">Kat Karşılığı Proje</span>
+                                <h3 class="text-xl font-bold text-gray-800 mt-2">Yıldız Konakları</h3>
+                                <p class="text-gray-600 mt-3">
+                                    Ümraniye'de 3000m² arsa üzerinde 80 daireli modern site projesi.
+                                </p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Tamamlanma: 2024</span>
+                                    <a href="#" class="text-primary hover:text-primary-dark font-medium">Detaylar →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CTA Section -->
+                <section class="bg-white rounded-xl p-12 text-center filter-shadow">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Projenizi Başlatmaya Hazır mısınız?</h2>
+                    <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+                        DönüşümAY ile kentsel dönüşüm sürecinizi güvenle yönetin. Ücretsiz hesap oluşturun ve hemen başlayın.
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                        <a href="auth.html?register=true" class="px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium text-lg">
+                            Hemen Ücretsiz Kayıt Ol
+                        </a>
+                        <a href="contact.html" class="px-8 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-300 font-medium text-lg">
+                            Bize Ulaşın
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Ana Footer İçeriği -->
+                <div class="py-12 lg:py-16">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                        <!-- Şirket Bilgileri -->
+                        <div class="lg:col-span-1">
+                            <div class="flex items-center space-x-3 mb-6">
+                                <span class="text-xl font-bold">DönüşümAY</span>
+                            </div>
+                            <p class="text-gray-300 mb-6 leading-relaxed">
+                                Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri buluşturan köprü.
+                            </p>
+                            
+                            <!-- Sosyal Medya -->
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Hızlı Linkler -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                            <ul class="space-y-3">
+                                <li><a href="index.html" class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a></li>
+                                <li><a href="about.html" class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a></li>
+                                <li><a href="nasilcalisir.html" class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl Çalışır?</a></li>
+                                <li><a href="projeler.html" class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a></li>
+                                <li><a href="contact.html" class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Hizmetlerimiz -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                            <ul class="space-y-3">
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel Dönüşüm</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa Değerlendirme</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina Yenileme</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat Karşılığı Projeler</a></li>
+                                <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- İletişim ve Newsletter -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                            <div class="space-y-4 mb-6">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                    <div class="text-gray-300">
+                                        <p class="text-sm">Maslak Mahallesi,</p>
+                                        <p class="text-sm">Büyükdere Cad. No:123</p>
+                                        <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-phone text-primary"></i>
+                                    <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Newsletter -->
+                            <div>
+                                <h4 class="font-medium mb-3">Newsletter</h4>
+                                <div class="flex">
+                                    <input type="email" placeholder="E-posta adresiniz" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md text-white placeholder-gray-400 focus:outline-none focus:border-primary">
+                                    <button title="Newsletter'a Abone Ol" class="bg-primary px-4 py-2 rounded-r-md hover:bg-primary-dark transition-colors duration-300">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">Yeni projeler ve fırsatlardan haberdar olun.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alt Footer -->
+                <div class="border-t border-gray-800 py-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                        <div class="text-sm text-gray-400">
+                            &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                        </div>
+                        <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                            <button onclick="openPrivacyModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik Politikası</button>
+                            <button onclick="openTermsModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım Şartları</button>
+                            <button onclick="openCookieModal()" class="text-gray-400 hover:text-white transition-colors duration-200">Çerez Politikası</button>
+                            <button onclick="openKvkkModal()" class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+<<<<<<< HEAD
+</html> 
+=======
+</html> 
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf

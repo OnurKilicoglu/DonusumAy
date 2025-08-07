@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DönüşümAY - Favorilerim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A00A8;
+            --primary-light: #8B00FF;
+            --primary-dark: #4B0082;
+            --accent: #28a745;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .feature-tag {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="BEĞENDİĞİM.png" alt="DönüşümAY Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg"
+                        style="width: 11rem;">
+                    <div class="ml-3">
+                        <p class="text-sm text-gray-600">Favorilerim</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="./index.html"
+                        class="text-gray-700 hover:text-purple-600 transition-colors duration-200">Ana Sayfa</a>
+                    <a href="./ilanlar.html"
+                        class="text-gray-700 hover:text-purple-600 transition-colors duration-200">İlanlar</a>
+                    <a href="#"
+                        class="text-gray-700 hover:text-purple-600 transition-colors duration-200">Hakkımızda</a>
+                    <a href="#" class="text-gray-700 hover:text-purple-600 transition-colors duration-200">İletişim</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <button title="Favorilerim" class="text-red-600 hover:text-red-700 transition-colors duration-200">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button
+                        class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                        İlan Ver
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-6">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="./index.html" class="hover:text-purple-600">Ana Sayfa</a></li>
+                <li><i class="fas fa-chevron-right"></i></li>
+                <li class="text-gray-800 font-medium">Favorilerim</li>
+            </ol>
+        </nav>
+
+        <!-- Favorites Section -->
+        <div class="space-y-6">
+            <h1 class="text-2xl font-bold text-gray-800">Favori İlanlarım</h1>
+
+            <!-- Favorites Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="favorites-container">
+                <!-- Favorite items will be dynamically added here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <i class="fas fa-heart text-6xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Henüz Favori İlanınız Yok</h3>
+                <p class="text-gray-600 mb-4">İlanları keşfedin ve beğendiklerinizi favorilere ekleyin.</p>
+                <a href="./ilanlar.html"
+                    class="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                    İlanları Keşfet
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Ana Footer İçeriği -->
+            <div class="py-12 lg:py-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                    <!-- Şirket Bilgileri -->
+                    <div class="lg:col-span-1">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <span class="text-xl font-bold">DönüşümAY</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            Türkiye'nin en güvenilir kentsel dönüşüm platformu. Arsa/bina sahipleri ile profesyonelleri
+                            buluşturan köprü.
+                        </p>
+                        <!-- Sosyal Medya -->
+                        <div class="flex space-x-4">
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#"
+                                class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hızlı Linkler -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hızlı Linkler</h3>
+                        <ul class="space-y-3">
+                            <li><a href="index.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Ana Sayfa</a>
+                            </li>
+                            <li><a href="contact.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Hakkımızda</a>
+                            </li>
+                            <li><a href="nasilcalisir.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Nasıl
+                                    Çalışır?</a></li>
+                            <li><a href="projeler.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Projeler</a>
+                            </li>
+                            <li><a href="contact.html"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">İletişim</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Hizmetlerimiz -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">Hizmetlerimiz</h3>
+                        <ul class="space-y-3">
+                            <li><a href="#"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Kentsel
+                                    Dönüşüm</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Arsa
+                                    Değerlendirme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Bina
+                                    Yenileme</a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Kat
+                                    Karşılığı Projeler</a></li>
+                            <li><a href="#"
+                                    class="text-gray-300 hover:text-white transition-colors duration-200">Danışmanlık</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- İletişim -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-6">İletişim</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                <div class="text-gray-300">
+                                    <p class="text-sm">Maslak Mahallesi,</p>
+                                    <p class="text-sm">Büyükdere Cad. No:123</p>
+                                    <p class="text-sm">34485 Sarıyer/İstanbul</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-phone text-primary"></i>
+                                <span class="text-gray-300 text-sm">+90 212 555 01 23</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="text-gray-300 text-sm">info@donusumay.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt Footer -->
+            <div class="border-t border-gray-800 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-sm text-gray-400">
+                        &copy; 2025 DönüşümAY. Tüm Hakları Saklıdır.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <button onclick="openPrivacyModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Gizlilik
+                            Politikası</button>
+                        <button onclick="openTermsModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Kullanım
+                            Şartları</button>
+                        <button onclick="openCookieModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">Çerez
+                            Politikası</button>
+                        <button onclick="openKvkkModal()"
+                            class="text-gray-400 hover:text-white transition-colors duration-200">KVKK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="./js/favorilerim.js"></script>
+</body>
+
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 7c2648f217cd90583ed52613a38179d721df4bdf
